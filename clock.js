@@ -208,8 +208,19 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         resize() {
             if (!canvas) return;
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+
+            const container = canvas.parentElement;
+            if (!container) return;
+
+            // Measure the parent container
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+
+            // Set the canvas attributes to match the container's dimensions
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
+
+            // The rest of the logic uses the new canvas dimensions
             dimensions.centerX = canvas.width / 2;
             dimensions.centerY = canvas.height / 2;
 

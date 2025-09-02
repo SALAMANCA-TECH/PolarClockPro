@@ -14,8 +14,8 @@
     /* Canvas container */
     .canvas-container {
         position: relative;
-        height: 100vh;
-        width: 100vh; /* Base size on viewport height */
+        width: 100%;
+        height: 100%;
         max-width: calc(100vw - 380px); /* Guarantees space for the UI panel */
         aspect-ratio: 1 / 1; /* This is key: it forces the element to be a perfect square */
         flex-shrink: 0;
@@ -27,6 +27,12 @@
         height: 100%;
     }
     
+    #polarClockCanvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
     /* Digital clock display */
     #digitalDisplay {
         position: absolute;
