@@ -81,8 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
             state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
         }
 
-        digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
-        digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+        // FIX: Add null-checks to prevent crashes if the HTML elements don't exist.
+        if (digitalTime) {
+            digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
+        }
+        if (digitalDate) {
+            digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+        }
         
         checkAdvancedAlarms(now);
         window.ClockModule.update(settings, state);
