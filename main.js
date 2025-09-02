@@ -329,22 +329,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         requestAnimationFrame(update);
 
-        // Hide the loading overlay and THEN resize the clock
-        if (loadingOverlay) {
-            loadingOverlay.style.opacity = '0';
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-                // --- FIX: Force resize AFTER the overlay is gone ---
-                console.log("Overlay hidden, forcing resize.");
-                window.ClockModule.resize();
-            }, 500);
-        } else {
-            // Fallback for when there's no loading overlay
-            window.onload = () => {
-                console.log("Window loaded, forcing resize.");
-                window.ClockModule.resize();
-            };
-        }
+        // Listen for the clock to be ready, then hide the overlay
+        document.addEventListener('clockready', () => {
+            if (loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                // Hide the element after the transition is complete
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500); // Should match the transition duration in the CSS
+            }
+        }, { once: true });
+
+        // Force a resize after a short delay to ensure the DOM is stable.
+        // This is decoupled from hiding the loading overlay.
+        setTimeout(() => {
+            console.log("Forcing initial resize.");
+            window.ClockModule.resize();
+        }, 100); // A short delay is sufficient
     }
     
     initializeApp();
