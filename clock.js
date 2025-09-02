@@ -95,7 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawClock = () => {
-        if (!settings.currentColors) return;
+        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
+        if (!settings.currentColors || !globalState.timer) {
+            return; // Exit if settings or state are not yet initialized
+        }
 
         const now = new Date();
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
@@ -139,7 +142,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawStopwatch = () => {
-        if (!settings.currentColors) return;
+        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
+        if (!settings.currentColors || !globalState.stopwatch) {
+            return; // Exit if settings or state are not yet initialized
+        }
         
         const time = new Date(globalState.stopwatch.elapsedTime);
         const milliseconds = time.getUTCMilliseconds();
