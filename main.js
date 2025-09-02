@@ -353,9 +353,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove it from the DOM after the transition
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
+                // --- FIX: Force a resize after the layout is stable ---
+                window.ClockModule.resize(); 
             }, 500);
         }
     }
     
     initializeApp();
 });
+
