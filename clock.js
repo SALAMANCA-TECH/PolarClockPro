@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // --- MODULE-SCOPED VARIABLES ---
     let settings = {};
-    // FIX: Removed the local state object. The module will now rely on the state passed from main.js.
     let globalState = {}; 
 
     let dimensions = {};
@@ -96,7 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawClock = () => {
-        if (!settings.currentColors) return;
+        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
+        if (!settings.currentColors || !globalState.timer) {
+            return; // Exit if settings or state are not yet initialized
+        }
 
         const now = new Date();
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
@@ -123,8 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
         drawTrackedAlarmTimer(now);
-        // FIX: Use the globalState passed from main.js
-        if (globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
+        if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
             const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
@@ -141,9 +142,11 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawStopwatch = () => {
-        if (!settings.currentColors) return;
+        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
+        if (!settings.currentColors || !globalState.stopwatch) {
+            return; // Exit if settings or state are not yet initialized
+        }
         
-        // FIX: Use the globalState passed from main.js
         const time = new Date(globalState.stopwatch.elapsedTime);
         const milliseconds = time.getUTCMilliseconds();
         const seconds = time.getUTCSeconds();
@@ -175,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let animationFrameId = null;
     const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // FIX: Use the globalState to determine what to draw
         if (globalState.mode === 'stopwatch') {
             drawStopwatch();
         } else {
@@ -185,8 +187,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const ClockModule = {
-        init(initialSettings) {
+        init(initialSettings, initialState) {
             settings = initialSettings;
+            globalState = initialState;
             this.resize();
             window.addEventListener('resize', () => this.resize());
             this.resume();
@@ -220,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const alarmLineWidth = 20;
             const gap = 15;
 
-            // FIX: Check globalState for resize calculations
             let totalWidth = secondLineWidth / 2;
             totalWidth += minuteLineWidth + gap;
             if (settings.showTimeLines) {
@@ -272,9 +274,11 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         update(newSettings, newState) {
             settings = newSettings;
-            // FIX: Update the globalState variable
             globalState = newState;
+            // --- FIX: Ensure the animation loop is running every time state is updated. ---
+            this.resume();
         }
     };
     window.ClockModule = ClockModule;
 });
+

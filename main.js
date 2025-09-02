@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const digitalTime = document.getElementById('digitalTime');
     const digitalDate = document.getElementById('digitalDate');
     const digitalDisplay = document.getElementById('digitalDisplay');
-    // Add a reference to the loading overlay
     const loadingOverlay = document.getElementById('loading-overlay');
     
     // --- GLOBAL STATE ---
@@ -322,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadSettings();
         loadAdvancedAlarms();
 
-        window.ClockModule.init(settings);
+        window.ClockModule.init(settings, state);
         window.ToolsModule.init(state);
         window.PomodoroModule.init(state, settings);
 
@@ -330,32 +329,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         requestAnimationFrame(update);
 
-        document.getElementById('dateLinesToggle').addEventListener('change', (e) => {
-            settings.showDateLines = e.target.checked;
-            saveSettings();
-            window.ClockModule.resize();
-        });
-
-        document.getElementById('timeLinesToggle').addEventListener('change', (e) => {
-            settings.showTimeLines = e.target.checked;
-            saveSettings();
-            window.ClockModule.resize();
-        });
-
-        document.getElementById('gradientToggle').addEventListener('change', (e) => {
-            settings.useGradient = e.target.checked;
-            saveSettings();
-        });
-
-        // Hide the loading overlay now that everything is initialized
+        // Hide the loading overlay and resize the clock once the animation is complete.
         if (loadingOverlay) {
-            loadingOverlay.style.opacity = '0';
-            // Remove it from the DOM after the transition
-            setTimeout(() => {
+            let resizeCalled = false;
+            const onOverlayHidden = () => {
+                if (resizeCalled) return;
+                resizeCalled = true;
                 loadingOverlay.style.display = 'none';
-                // --- FIX: Force a resize after the layout is stable ---
-                window.ClockModule.resize(); 
-            }, 500);
+                console.log("Overlay transition finished, forcing resize.");
+                window.ClockModule.resize();
+            };
+
+            // Listen for the end of the transition
+            loadingOverlay.addEventListener('transitionend', onOverlayHidden, { once: true });
+
+            // Set the opacity to start the transition
+            loadingOverlay.style.opacity = '0';
+
+            // Fallback timeout in case the transitionend event doesn't fire
+            setTimeout(onOverlayHidden, 550);
+        } else {
+            // Fallback for when there's no loading overlay at all
+            window.onload = () => {
+                console.log("Window loaded, forcing resize.");
+                window.ClockModule.resize();
+            };
         }
     }
     
