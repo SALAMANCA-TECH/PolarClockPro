@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadSettings();
         loadAdvancedAlarms();
 
-        window.ClockModule.init(settings);
+        window.ClockModule.init(settings, state); // Pass initial state here
         window.ToolsModule.init(state);
         window.PomodoroModule.init(state, settings);
 
@@ -365,4 +365,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initializeApp();
 });
+
 

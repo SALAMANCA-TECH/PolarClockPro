@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
         drawTrackedAlarmTimer(now);
-        if (globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
+        if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
             const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
@@ -181,8 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const ClockModule = {
-        init(initialSettings) {
+        init(initialSettings, initialState) {
             settings = initialSettings;
+            globalState = initialState;
             this.resize();
             window.addEventListener('resize', () => this.resize());
             this.resume();
