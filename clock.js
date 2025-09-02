@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         init(initialSettings, initialState) {
             settings = initialSettings;
             globalState = initialState;
-            this.resize();
+            // this.resize(); // This is called prematurely, causing the bug. It's now called from main.js at the correct time.
             window.addEventListener('resize', () => this.resize());
             this.resume();
         },
