@@ -91,10 +91,9 @@
     }
 
     .main-nav-buttons {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-        max-width: 350px;
+        flex-direction: row;
+        gap: 20px;
+        width: auto;
     }
 
     .view-header {
@@ -106,7 +105,7 @@
         margin-bottom: 1rem;
     }
 
-    .header-button, .back-button, .main-nav-button {
+    .header-button, .back-button {
         padding: 12px 18px;
         font-size: 1.1rem;
         border: 2px solid #444;
@@ -118,6 +117,23 @@
         width: 100%;
         text-align: center;
     }
+
+    .main-nav-button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 1.8rem;
+        border: 2px solid #444;
+        background-color: transparent;
+        color: #ccc;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
     .header-button:hover, .back-button:hover, .main-nav-button:hover {
         background-color: #333;
         border-color: #666;
@@ -398,10 +414,9 @@
         <!-- Main Navigation View -->
         <div id="mainView" class="ui-content">
             <div class="main-nav-buttons">
-                <button id="goToToolsBtn" class="main-nav-button">Tools</button>
-                <button id="goToCustomizeBtn" class="main-nav-button">Customize</button>
-                <button id="goToSettingsBtn" class="main-nav-button">Settings</button>
-                <button id="goToAlarmsBtn" class="main-nav-button">Alarms</button>
+                <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
+                <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
+                <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
             </div>
         </div>
 
@@ -571,7 +586,6 @@
         
         <!-- Settings View -->
         <div id="settingsView" class="ui-content" style="display: none;">
-.
             <div class="view-header">
                 <button id="backToMainFromSettings" class="back-button">Back</button>
                 <h2 class="view-title">Settings</h2>
@@ -590,14 +604,6 @@
                     <button id="modePercentage" class="display-mode-button">Percentage</button>
                     <button id="modeRemainder" class="display-mode-button">Remainder</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Customize View -->
-        <div id="customizeView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromCustomize" class="back-button">Back</button>
-                <h2 class="view-title">Customize</h2>
             </div>
             <div class="settings-section">
                 <h3>Color Scheme</h3>
@@ -657,20 +663,21 @@
         </div>
     </div>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    const App = {};
+
+    // --- UI Module ---
+    (function(App) {
         const views = {
             main: document.getElementById('mainView'),
             settings: document.getElementById('settingsView'),
-            customize: document.getElementById('customizeView'),
             tools: document.getElementById('toolsView'),
         };
         const navButtons = {
             goToSettings: document.getElementById('goToSettingsBtn'),
-            goToCustomize: document.getElementById('goToCustomizeBtn'),
             goToTools: document.getElementById('goToToolsBtn'),
             goToAlarms: document.getElementById('goToAlarmsBtn'),
             backFromSettings: document.getElementById('backToMainFromSettings'),
-            backFromCustomize: document.getElementById('backToMainFromCustomize'),
             backFromTools: document.getElementById('backToMainFromTools'),
         };
         const toolTabs = {
@@ -691,22 +698,22 @@
 
         function showView(viewToShow) {
             const isMainView = viewToShow === views.main;
-
-            if (window.ClockModule) {
+            if (App.Clock) {
                 if (isMainView) {
-                    ClockModule.resume();
+                    App.Clock.resume();
                 } else {
-                    ClockModule.pause();
+                    App.Clock.pause();
                 }
             }
-
             Object.values(views).forEach(v => v.style.display = 'none');
             viewToShow.style.display = 'flex';
         }
+
         function handleActiveButton(clickedButton, buttonGroup) {
             buttonGroup.forEach(button => button.classList.remove('active'));
             clickedButton.classList.add('active');
         }
+
         function showToolsPanel(panelToShow, tabToActivate) {
             Object.values(toolPanels).forEach(p => p.style.display = 'none');
             panelToShow.style.display = 'flex';
@@ -717,317 +724,265 @@
             document.dispatchEvent(event);
         }
 
-        navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
-        navButtons.goToCustomize.addEventListener('click', () => showView(views.customize));
-        navButtons.goToTools.addEventListener('click', () => showView(views.tools));
-        navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
-        navButtons.backFromCustomize.addEventListener('click', () => showView(views.main));
-        navButtons.backFromTools.addEventListener('click', () => showView(views.main));
-        navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
+        App.UI = {
+            init: function() {
+                navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
+                navButtons.goToTools.addEventListener('click', () => showView(views.tools));
+                navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
+                navButtons.backFromTools.addEventListener('click', () => showView(views.main));
+                navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
-        toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
-        toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-        toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
-        toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
+                toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
+                toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
+                toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
+                toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
 
-        pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
-        closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+                pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
+                closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+            },
+            handleActiveButton: handleActiveButton
+        };
+    }(App));
 
-        window.handleActiveButton = handleActiveButton;
-    });
+    // --- Clock Module ---
+    (function(App) {
+        const canvas = document.getElementById('polarClockCanvas');
+        if (!canvas) { return; }
+        const ctx = canvas.getContext('2d');
 
-/**
- * clock.js: A dedicated module for rendering the Polar Clock.
- * This module encapsulates all canvas drawing, resizing, and animation logic
- * to ensure the clock is a stable, self-contained visual component.
- */
-document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('polarClockCanvas');
-    if (!canvas) { return; }
-    const ctx = canvas.getContext('2d');
+        let settings = {};
+        let globalState = {};
+        let dimensions = {};
+        const baseStartAngle = -Math.PI / 2;
+        let lastNow = new Date();
+        let isFirstFrameDrawn = false;
+        let animationFrameId = null;
 
-    // --- MODULE-SCOPED VARIABLES ---
-    let settings = {};
-    let globalState = {};
+        const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
+            if (startAngle >= endAngle - 0.01 || radius <= 0) return;
+            const useGradient = settings && settings.useGradient;
+            const gradient = ctx.createConicGradient(baseStartAngle, x, y);
+            gradient.addColorStop(0, colorLight);
+            gradient.addColorStop(1, colorDark);
+            ctx.strokeStyle = useGradient ? gradient : colorLight;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, startAngle, endAngle);
+            ctx.lineWidth = lineWidth;
+            ctx.stroke();
+        };
 
-    let dimensions = {};
-    const baseStartAngle = -Math.PI / 2;
-    let lastNow = new Date();
-    let isFirstFrameDrawn = false;
+        const drawLabel = (arc) => {
+            const textX = dimensions.centerX;
+            const textY = dimensions.centerY + arc.radius;
 
-    const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
-        if (startAngle >= endAngle - 0.01 || radius <= 0) return;
-        const useGradient = settings && settings.useGradient;
-        const gradient = ctx.createConicGradient(baseStartAngle, x, y);
-        gradient.addColorStop(0, colorLight);
-        gradient.addColorStop(1, colorDark);
-        ctx.strokeStyle = useGradient ? gradient : colorLight;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, startAngle, endAngle);
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-    };
+            let fontSizeMultiplier = (arc.key === 'month') ? 0.8 : 0.6;
+            let circleSizeMultiplier = (arc.key === 'month') ? 0.85 : 0.7;
+            if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
 
-    const drawLabel = (arc) => {
-        const textX = dimensions.centerX;
-        const textY = dimensions.centerY + arc.radius;
+            const circleRadius = arc.lineWidth * circleSizeMultiplier;
+            ctx.beginPath();
+            ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `${arc.lineWidth * fontSizeMultiplier}px Bahnschrift`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(arc.text, textX, textY);
+        };
 
-        let fontSizeMultiplier = (arc.key === 'month') ? 0.8 : 0.6;
-        let circleSizeMultiplier = (arc.key === 'month') ? 0.85 : 0.7;
-        if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
+        const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
 
-        const circleRadius = arc.lineWidth * circleSizeMultiplier;
-        ctx.beginPath();
-        ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#000000';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = `${arc.lineWidth * fontSizeMultiplier}px Bahnschrift`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(arc.text, textX, textY);
-    };
+        const getLabelText = (unit, now) => {
+            const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), milliseconds = now.getMilliseconds();
+            const daysInMonth = getDaysInMonth(year, month);
 
-    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-
-    const getLabelText = (unit, now) => {
-        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), milliseconds = now.getMilliseconds();
-        const daysInMonth = getDaysInMonth(year, month);
-
-        switch (settings.labelDisplayMode) {
-            case 'percentage':
-                let percent = 0;
-                const totalMsInDay = 86400000;
-                const currentMsInDay = (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds;
-                if (unit === 'seconds') percent = (seconds * 1000 + milliseconds) / 60000 * 100;
-                if (unit === 'minutes') percent = (minutes * 60000 + seconds * 1000 + milliseconds) / 3600000 * 100;
-                if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
-                if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
-                if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                return `${Math.floor(percent)}%`;
-            case 'remainder':
-                if (unit === 'seconds') return 59 - seconds;
-                if (unit === 'minutes') return 59 - minutes;
-                if (unit === 'hours') return 11 - (hours % 12);
-                if (unit === 'day') return daysInMonth - date;
-                if (unit === 'month') return 11 - month;
-                return '';
-            default: // standard
-                if (unit === 'seconds') return seconds.toString().padStart(2, '0');
-                if (unit === 'minutes') return minutes.toString().padStart(2, '0');
-                if (unit === 'hours') {
-                    if (settings.is24HourFormat) {
-                        return hours.toString().padStart(2, '0');
-                    } else {
-                        return (hours % 12 || 12).toString();
+            switch (settings.labelDisplayMode) {
+                case 'percentage':
+                    let percent = 0;
+                    const totalMsInDay = 86400000;
+                    const currentMsInDay = (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds;
+                    if (unit === 'seconds') percent = (seconds * 1000 + milliseconds) / 60000 * 100;
+                    if (unit === 'minutes') percent = (minutes * 60000 + seconds * 1000 + milliseconds) / 3600000 * 100;
+                    if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
+                    if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
+                    if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
+                    return `${Math.floor(percent)}%`;
+                case 'remainder':
+                    if (unit === 'seconds') return 59 - seconds;
+                    if (unit === 'minutes') return 59 - minutes;
+                    if (unit === 'hours') return 11 - (hours % 12);
+                    if (unit === 'day') return daysInMonth - date;
+                    if (unit === 'month') return 11 - month;
+                    return '';
+                default: // standard
+                    if (unit === 'seconds') return seconds.toString().padStart(2, '0');
+                    if (unit === 'minutes') return minutes.toString().padStart(2, '0');
+                    if (unit === 'hours') {
+                        if (settings.is24HourFormat) {
+                            return hours.toString().padStart(2, '0');
+                        } else {
+                            return (hours % 12 || 12).toString();
+                        }
                     }
-                }
-                if (unit === 'day') return date.toString();
-                if (unit === 'month') return (month + 1).toString().padStart(2, '0');
-                return '';
-        }
-    };
-
-    const drawClock = () => {
-        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
-        if (!settings.currentColors || !globalState.timer) {
-            return; // Exit if settings or state are not yet initialized
-        }
-
-        const now = new Date();
-        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
-        const daysInMonth = getDaysInMonth(year, month);
-
-        const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
-        const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
-        const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-        const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
-
-        const arcs = [];
-
-        if (settings.showDateLines) {
-            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-        }
-
-        if (settings.showTimeLines) {
-            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-        }
-
-        arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-        arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
-
-        drawTrackedAlarmTimer(now);
-        if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
-            const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
-            const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
-        }
-        arcs.forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                arc.text = getLabelText(arc.key, now);
-                drawLabel(arc);
+                    if (unit === 'day') return date.toString();
+                    if (unit === 'month') return (month + 1).toString().padStart(2, '0');
+                    return '';
             }
-        });
+        };
 
-        lastNow = now;
-
-        if (!isFirstFrameDrawn && dimensions.secondsRadius > 0) {
-            isFirstFrameDrawn = true;
-            canvas.dispatchEvent(new CustomEvent('clockready', { bubbles: true }));
-        }
-    };
-
-    const drawStopwatch = () => {
-        // --- FIX: Add guard clauses to prevent drawing before state is ready. ---
-        if (!settings.currentColors || !globalState.stopwatch) {
-            return; // Exit if settings or state are not yet initialized
-        }
-
-        const time = new Date(globalState.stopwatch.elapsedTime);
-        const milliseconds = time.getUTCMilliseconds();
-        const seconds = time.getUTCSeconds();
-        const minutes = time.getUTCMinutes();
-        const hours = time.getUTCHours();
-
-        const secondsEndAngle = baseStartAngle + ((seconds + milliseconds / 1000) / 60) * Math.PI * 2;
-        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-        const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-
-        const arcs = [
-            { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle, text: hours.toString().padStart(2, '0') },
-            { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle, text: minutes.toString().padStart(2, '0') },
-            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle, text: seconds.toString().padStart(2, '0') }
-        ];
-
-        arcs.forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                drawLabel(arc);
+        const drawClock = () => {
+            if (!settings.currentColors || !globalState.timer) {
+                return;
             }
-        });
-    };
 
-    function drawTrackedAlarmTimer(now) {
-        // ... drawing logic for tracked alarm ...
-    }
+            const now = new Date();
+            const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+            const daysInMonth = getDaysInMonth(year, month);
 
-    let animationFrameId = null;
-    const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (globalState.mode === 'stopwatch') {
-            drawStopwatch();
-        } else {
-            drawClock();
-        }
-        animationFrameId = requestAnimationFrame(animate);
-    };
+            const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
+            const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
+            const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
+            const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
 
-    const ClockModule = {
-        init(initialSettings, initialState) {
-            settings = initialSettings;
-            globalState = initialState;
-            // this.resize(); // This is called prematurely, causing the bug. It's now called from main.js at the correct time.
-            window.addEventListener('resize', () => this.resize());
-            this.resume();
-        },
-        pause() {
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
+            const arcs = [];
+
+            if (settings.showDateLines) {
+                arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
+                arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
             }
-        },
-        resume() {
-            if (!animationFrameId) {
-                lastNow = new Date(); // Reset time to avoid a jump
-                animate();
-            }
-        },
-        resize() {
-            if (!canvas) return;
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            dimensions.centerX = canvas.width / 2;
-            dimensions.centerY = canvas.height / 2;
 
-            const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-            const monthLineWidth = 20;
-            const dayLineWidth = 30;
-            const hourLineWidth = 45;
-            const minuteLineWidth = 30;
-            const secondLineWidth = 30;
-            const timerLineWidth = 30;
-            const alarmLineWidth = 20;
-            const gap = 15;
-
-            let totalWidth = secondLineWidth / 2;
-            totalWidth += minuteLineWidth + gap;
             if (settings.showTimeLines) {
-                totalWidth += hourLineWidth + gap;
+                arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
             }
-            if (settings.showDateLines) {
-                totalWidth += dayLineWidth + gap;
-                totalWidth += monthLineWidth + gap;
+
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
+            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+
+            if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
+                const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
+                const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
             }
-            if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-            if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+            arcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    arc.text = getLabelText(arc.key, now);
+                    drawLabel(arc);
+                }
+            });
 
+            lastNow = now;
 
-            const scale = baseRadius / totalWidth;
+            if (!isFirstFrameDrawn && dimensions.secondsRadius > 0) {
+                isFirstFrameDrawn = true;
+                canvas.dispatchEvent(new CustomEvent('clockready', { bubbles: true }));
+            }
+        };
 
-            let currentRadius = baseRadius;
+        const drawStopwatch = () => {
+            if (!settings.currentColors || !globalState.stopwatch) {
+                return;
+            }
 
-            dimensions.secondsRadius = currentRadius - (secondLineWidth / 2) * scale;
-            currentRadius -= (secondLineWidth + gap) * scale;
+            const time = new Date(globalState.stopwatch.elapsedTime);
+            const milliseconds = time.getUTCMilliseconds();
+            const seconds = time.getUTCSeconds();
+            const minutes = time.getUTCMinutes();
+            const hours = time.getUTCHours();
 
-            dimensions.minutesRadius = currentRadius - (minuteLineWidth / 2) * scale;
-            currentRadius -= (minuteLineWidth + gap) * scale;
+            const secondsEndAngle = baseStartAngle + ((seconds + milliseconds / 1000) / 60) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
+            const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
 
-            dimensions.hoursRadius = currentRadius - (hourLineWidth / 2) * scale;
-            currentRadius -= (hourLineWidth + gap) * scale;
+            const arcs = [
+                { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle, text: hours.toString().padStart(2, '0') },
+                { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle, text: minutes.toString().padStart(2, '0') },
+                { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle, text: seconds.toString().padStart(2, '0') }
+            ];
 
-            if (settings.showDateLines) {
-                dimensions.dayRadius = currentRadius - (dayLineWidth / 2) * scale;
-                currentRadius -= (dayLineWidth + gap) * scale;
-                dimensions.monthRadius = currentRadius - (monthLineWidth / 2) * scale;
-                currentRadius -= (monthLineWidth + gap) * scale;
+            arcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawLabel(arc);
+                }
+            });
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (globalState.mode === 'stopwatch') {
+                drawStopwatch();
             } else {
-                dimensions.dayRadius = 0;
-                dimensions.monthRadius = 0;
+                drawClock();
             }
+            animationFrameId = requestAnimationFrame(animate);
+        };
 
-            if (globalState.timer && globalState.timer.totalSeconds > 0) {
-                dimensions.timerRadius = currentRadius - (timerLineWidth / 2) * scale;
-                currentRadius -= (timerLineWidth + gap) * scale;
-            } else {
-                dimensions.timerRadius = 0;
+        App.Clock = {
+            init: function(initialSettings, initialState) {
+                settings = initialSettings;
+                globalState = initialState;
+                window.addEventListener('resize', () => this.resize());
+                this.resume();
+            },
+            pause: function() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            },
+            resume: function() {
+                if (!animationFrameId) {
+                    lastNow = new Date();
+                    animate();
+                }
+            },
+            resize: function() {
+                if (!canvas) return;
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                dimensions.centerX = canvas.width / 2;
+                dimensions.centerY = canvas.height / 2;
+
+                const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
+                const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, gap = 15;
+
+                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
+                if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
+                if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+                if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
+                if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+
+                const scale = baseRadius / totalWidth;
+                let currentRadius = baseRadius;
+
+                dimensions.secondsRadius = currentRadius - (secondLineWidth / 2) * scale;
+                currentRadius -= (secondLineWidth + gap) * scale;
+                dimensions.minutesRadius = currentRadius - (minuteLineWidth / 2) * scale;
+                currentRadius -= (minuteLineWidth + gap) * scale;
+                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (hourLineWidth / 2) * scale : 0;
+                if (settings.showTimeLines) currentRadius -= (hourLineWidth + gap) * scale;
+                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dayLineWidth / 2) * scale : 0;
+                if (settings.showDateLines) currentRadius -= (dayLineWidth + gap) * scale;
+                dimensions.monthRadius = settings.showDateLines ? currentRadius - (monthLineWidth / 2) * scale : 0;
+            },
+            update: function(newSettings, newState) {
+                settings = newSettings;
+                globalState = newState;
+                this.resume();
             }
+        };
+    }(App));
 
-            if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) {
-                dimensions.trackedAlarmRadius = currentRadius - (alarmLineWidth / 2) * scale;
-            } else {
-                dimensions.trackedAlarmRadius = 0;
-            }
-        },
-        update(newSettings, newState) {
-            settings = newSettings;
-            globalState = newState;
-            // --- FIX: Ensure the animation loop is running every time state is updated. ---
-            this.resume();
-        }
-    };
-    window.ClockModule = ClockModule;
-});
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- DOM ELEMENTS ---
+    // --- Tools Module ---
+    (function(App) {
         const toggleTimerBtn = document.getElementById('toggleTimerBtn');
         const resetTimerBtn = document.getElementById('resetTimer');
         const timerHoursInput = document.getElementById('timerHours');
@@ -1044,30 +999,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const catchUpSecondsInput = document.getElementById('catchUpSeconds');
         const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
 
-        const ToolsModule = {
+        App.Tools = {
             state: null,
-            init(appState) {
+            init: function(appState) {
                 this.state = appState;
                 this.setupEventListeners();
-                this.updateLapDisplay(); // Initial render of saved laps
-                this.updateButtonStates(); // Set initial button text
+                this.updateLapDisplay();
+                this.updateButtonStates();
             },
-
-            // --- DYNAMIC BUTTONS ---
-            updateButtonStates() {
+            updateButtonStates: function() {
                 toggleTimerBtn.textContent = this.state.timer.isRunning ? 'Pause' : 'Start';
                 toggleStopwatchBtn.textContent = this.state.stopwatch.isRunning ? 'Pause' : 'Start';
             },
-
-            // --- TIMER LOGIC ---
-            toggleTimer() {
-                if (this.state.timer.isRunning) {
-                    this.pauseTimer();
-                } else {
-                    this.startTimer();
-                }
+            toggleTimer: function() {
+                this.state.timer.isRunning ? this.pauseTimer() : this.startTimer();
             },
-            startTimer() {
+            startTimer: function() {
                 if (this.state.timer.remainingSeconds <= 0) {
                     this.state.timer.totalSeconds = (parseInt(timerHoursInput.value) || 0) * 3600 + (parseInt(timerMinutesInput.value) || 0) * 60 + (parseInt(timerSecondsInput.value) || 0);
                     this.state.timer.remainingSeconds = this.state.timer.totalSeconds;
@@ -1077,11 +1024,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 this.updateButtonStates();
             },
-            pauseTimer() {
+            pauseTimer: function() {
                 this.state.timer.isRunning = false;
                 this.updateButtonStates();
             },
-            resetTimer() {
+            resetTimer: function() {
                 this.state.timer.isRunning = false;
                 this.state.timer.totalSeconds = 0;
                 this.state.timer.remainingSeconds = 0;
@@ -1090,25 +1037,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 timerSecondsInput.value = "0";
                 this.updateButtonStates();
             },
-
-            // --- STOPWATCH LOGIC ---
-            toggleStopwatch() {
-                if (this.state.stopwatch.isRunning) {
-                    this.pauseStopwatch();
-                } else {
-                    this.startStopwatch();
-                }
+            toggleStopwatch: function() {
+                this.state.stopwatch.isRunning ? this.pauseStopwatch() : this.startStopwatch();
             },
-            startStopwatch() {
+            startStopwatch: function() {
                 this.state.stopwatch.isRunning = true;
                 this.state.stopwatch.startTime = Date.now() - this.state.stopwatch.elapsedTime;
                 this.updateButtonStates();
             },
-            pauseStopwatch() {
+            pauseStopwatch: function() {
                 this.state.stopwatch.isRunning = false;
                 this.updateButtonStates();
             },
-            resetStopwatch() {
+            resetStopwatch: function() {
                 this.state.stopwatch.isRunning = false;
                 this.state.stopwatch.elapsedTime = 0;
                 this.state.stopwatch.laps = [];
@@ -1118,13 +1059,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.updateButtonStates();
                 document.dispatchEvent(new CustomEvent('statechange'));
             },
-            lapStopwatch() {
-                if (!this.state.stopwatch.isRunning && this.state.stopwatch.elapsedTime === 0) return; // Prevent lap on reset
+            lapStopwatch: function() {
+                if (!this.state.stopwatch.isRunning && this.state.stopwatch.elapsedTime === 0) return;
                 this.state.stopwatch.laps.push({ time: this.state.stopwatch.elapsedTime, label: '' });
                 this.updateLapDisplay();
                 document.dispatchEvent(new CustomEvent('statechange'));
             },
-            updateLapDisplay() {
+            updateLapDisplay: function() {
                 lapTimesContainer.innerHTML = '';
                 this.state.stopwatch.laps.forEach((lap, index) => {
                     const lapElement = document.createElement('li');
@@ -1137,11 +1078,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     lapTimesContainer.prepend(lapElement);
                 });
             },
-            formatTime(ms) {
+            formatTime: function(ms) {
                 const d = new Date(ms);
                 return `${d.getUTCMinutes().toString().padStart(2, '0')}:${d.getUTCSeconds().toString().padStart(2, '0')}.${d.getUTCMilliseconds().toString().padStart(3, '0')}`;
             },
-            addManualCatchUpTime() {
+            addManualCatchUpTime: function() {
                 const minutes = parseInt(catchUpMinutesInput.value) || 0;
                 const seconds = parseInt(catchUpSecondsInput.value) || 0;
                 const timeToAddMs = (minutes * 60 + seconds) * 1000;
@@ -1155,17 +1096,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.dispatchEvent(new CustomEvent('statechange'));
                 }
             },
-            setupEventListeners() {
+            setupEventListeners: function() {
                 toggleTimerBtn.addEventListener('click', () => this.toggleTimer());
                 resetTimerBtn.addEventListener('click', () => this.resetTimer());
                 intervalToggle.addEventListener('change', (e) => this.state.timer.isInterval = e.target.checked);
-
                 toggleStopwatchBtn.addEventListener('click', () => this.toggleStopwatch());
                 resetStopwatchBtn.addEventListener('click', () => this.resetStopwatch());
                 lapStopwatchBtn.addEventListener('click', () => this.lapStopwatch());
-
                 addCatchUpTimeBtn.addEventListener('click', () => this.addManualCatchUpTime());
-
                 lapTimesContainer.addEventListener('input', (e) => {
                     if (e.target.classList.contains('lap-label-input')) {
                         const index = parseInt(e.target.dataset.index);
@@ -1176,60 +1114,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         };
-        window.ToolsModule = ToolsModule;
-    });
+    }(App));
 
-    /**
-     * pomodoro.js: A module for the Pomodoro Timer feature.
-     */
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- DOM ELEMENTS ---
+    // --- Pomodoro Module ---
+    (function(App) {
         const statusDisplay = document.getElementById('pomodoroStatus');
         const timerDisplay = document.getElementById('pomodoroTimerDisplay');
         const workDurationInput = document.getElementById('pomodoroWorkDuration');
         const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
         const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
 
-        // --- MODULE API ---
-        const PomodoroModule = {
-            state: null, // To be linked by main.js
+        App.Pomodoro = {
+            state: null,
             settings: null,
-
-            init(appState, appSettings) {
+            init: function(appState, appSettings) {
                 this.state = appState;
                 this.settings = appSettings;
                 this.setupEventListeners();
-                this.updateDisplay(); // Initial display setup
+                this.updateDisplay();
             },
-
-            start() {
+            start: function() {
                 if (this.state.pomodoro.isRunning) return;
                 this.state.pomodoro.isRunning = true;
-                // If the timer is at zero when starting, begin the next phase immediately
                 if (this.state.pomodoro.remainingSeconds <= 0) {
                     this.startNextPhase();
                 }
             },
-
-            pause() {
+            pause: function() {
                 this.state.pomodoro.isRunning = false;
             },
-
-            reset() {
+            reset: function() {
                 this.state.pomodoro.isRunning = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
-                // Load duration from the input field on reset
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 this.updateDisplay();
-                // Fire an event so other modules (like main.js) know to clear animations
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
-
-            startNextPhase() {
+            startNextPhase: function() {
                 let nextPhase = 'work';
                 let duration = (parseInt(workDurationInput.value) || 25) * 60;
-
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
@@ -1239,15 +1163,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         nextPhase = 'shortBreak';
                         duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
-                } // If the current phase is a break, the next phase is always 'work'
-
+                }
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
                 this.playSound();
                 this.updateDisplay();
             },
-
-            updateDisplay() {
+            updateDisplay: function() {
                 const minutes = Math.floor(this.state.pomodoro.remainingSeconds / 60);
                 const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -1257,375 +1179,198 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
                 statusDisplay.textContent = statusText;
             },
-
-            playSound() {
-                // Fire a custom event that the main.js module will listen for
+            playSound: function() {
                 const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
                 document.dispatchEvent(event);
             },
-
-            setupEventListeners() {
+            setupEventListeners: function() {
                 document.getElementById('startPomodoro').addEventListener('click', () => this.start());
                 document.getElementById('pausePomodoro').addEventListener('click', () => this.pause());
                 document.getElementById('resetPomodoro').addEventListener('click', () => this.reset());
             }
         };
+    }(App));
 
-        // Expose the module to the global window object so main.js can interact with it.
-        window.PomodoroModule = PomodoroModule;
-    });
+    // --- Main Application ---
+    (function(App) {
+        const clockContainer = document.querySelector('.canvas-container');
+        const digitalTime = document.getElementById('digitalTime');
+        const digitalDate = document.getElementById('digitalDate');
 
-document.addEventListener('DOMContentLoaded', function() {
-    // --- DOM ELEMENTS ---
-    const clockContainer = document.querySelector('.canvas-container');
-    const digitalTime = document.getElementById('digitalTime');
-    const digitalDate = document.getElementById('digitalDate');
-    const digitalDisplay = document.getElementById('digitalDisplay');
-    const loadingOverlay = document.getElementById('loading-overlay');
-
-    // --- GLOBAL STATE ---
-    let settings = {};
-    let state = {
-        mode: 'clock',
-        timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-        pomodoro: {
-            isRunning: false,
-            phase: 'work', // 'work', 'shortBreak', 'longBreak'
-            cycles: 0,
-            remainingSeconds: 25 * 60,
-        },
-        stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
-        trackedAlarm: { id: null, nextAlarmTime: null },
-        advancedAlarms: [],
-        lastMinuteChecked: -1
-    };
-
-    const colorPalettes = {
-        default: { month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' } },
-        neon: { month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' } },
-        pastel: { month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' } },
-        colorblind: { month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
-    };
-
-    // --- CORE APPLICATION LOOP ---
-    let lastFrameTime = 0;
-    function update(timestamp) {
-        if (!lastFrameTime) lastFrameTime = timestamp;
-        const deltaTime = timestamp - lastFrameTime;
-        lastFrameTime = timestamp;
-
-        const now = new Date();
-
-        if (state.timer.isRunning) {
-            state.timer.remainingSeconds -= deltaTime / 1000;
-            if (state.timer.remainingSeconds <= 0) {
-                timerFinished();
-            }
-        }
-
-        if (state.pomodoro.isRunning) {
-            state.pomodoro.remainingSeconds -= deltaTime / 1000;
-            window.PomodoroModule.updateDisplay();
-
-            if (settings.pomodoroGlowEnabled && state.pomodoro.remainingSeconds <= 30) {
-                const glowClass = state.pomodoro.phase === 'work' ? 'glowing-work' : 'glowing-break';
-                if (!clockContainer.classList.contains(glowClass)) {
-                    clockContainer.classList.remove('glowing-work', 'glowing-break');
-                    clockContainer.classList.add(glowClass);
-                }
-            } else {
-                clockContainer.classList.remove('glowing-work', 'glowing-break');
-            }
-
-            if (settings.pomodoroPulseEnabled && state.pomodoro.remainingSeconds <= 10) {
-                if (!clockContainer.classList.contains('pulsing-warning')) {
-                    clockContainer.classList.add('pulsing-warning');
-                }
-            } else {
-                clockContainer.classList.remove('pulsing-warning');
-            }
-
-            if (state.pomodoro.remainingSeconds <= 0) {
-                window.PomodoroModule.startNextPhase();
-                clockContainer.classList.remove('pulsing-warning', 'glowing-work', 'glowing-break');
-            }
-        } else {
-            clockContainer.classList.remove('pulsing-warning', 'glowing-work', 'glowing-break');
-        }
-
-        if (state.stopwatch.isRunning) {
-            state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
-        }
-
-        // FIX: Add null-checks to prevent crashes if the HTML elements don't exist.
-        if (digitalTime) {
-            digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
-        }
-        if (digitalDate) {
-            digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
-        }
-
-        checkAdvancedAlarms(now);
-        window.ClockModule.update(settings, state);
-        requestAnimationFrame(update);
-    }
-
-    function timerFinished() {
-        playSound(settings.timerSound, settings.volume);
-        if (state.timer.isInterval) {
-            state.timer.remainingSeconds = state.timer.totalSeconds;
-        } else {
-            window.ToolsModule.resetTimer();
-        }
-    }
-
-    // --- STATE & SETTINGS PERSISTENCE ---
-    function saveState() {
-        localStorage.setItem('polarClockState', JSON.stringify(state));
-    }
-    function loadState() {
-        const savedState = localStorage.getItem('polarClockState');
-        if (savedState) {
-            const loadedState = JSON.parse(savedState);
-            state = { ...state, ...loadedState };
-            state.timer.isRunning = false;
-            state.stopwatch.isRunning = false;
-            state.pomodoro.isRunning = false;
-        }
-    }
-    function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
-    function loadSettings() {
-        const savedSettings = localStorage.getItem('polarClockSettings');
-        const defaultSettings = {
-            is24HourFormat: false, labelDisplayMode: 'standard',
-            showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
-            volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav',
-            pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
+        let settings = {};
+        let state = {
+            mode: 'clock',
+            timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+            stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
+            trackedAlarm: { id: null, nextAlarmTime: null },
+            advancedAlarms: [],
+            lastMinuteChecked: -1
         };
-        settings = savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : defaultSettings;
-        settings.currentColors = colorPalettes[settings.colorPreset];
-        applySettingsToUI();
-    }
-    function applySettingsToUI() {
-        const format12Btn = document.getElementById('format12');
-        const format24Btn = document.getElementById('format24');
-        const modeStandardBtn = document.getElementById('modeStandard');
-        const modePercentageBtn = document.getElementById('modePercentage');
-        const modeRemainderBtn = document.getElementById('modeRemainder');
-        const presetDefaultBtn = document.getElementById('presetDefault');
-        const presetNeonBtn = document.getElementById('presetNeon');
-        const presetPastelBtn = document.getElementById('presetPastel');
-        const presetColorblindBtn = document.getElementById('presetColorblind');
-        const gradientToggle = document.getElementById('gradientToggle');
-        const dateLinesToggle = document.getElementById('dateLinesToggle');
-        const timeLinesToggle = document.getElementById('timeLinesToggle');
-        const volumeControl = document.getElementById('volumeControl');
 
-        if(settings.is24HourFormat) {
-            window.handleActiveButton(format24Btn, [format12Btn, format24Btn]);
-        } else {
-            window.handleActiveButton(format12Btn, [format12Btn, format24Btn]);
-        }
+        const colorPalettes = {
+            default: { month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' } },
+            neon: { month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' } },
+            pastel: { month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' } },
+            colorblind: { month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
+        };
 
-        const modeMap = { standard: modeStandardBtn, percentage: modePercentageBtn, remainder: modeRemainderBtn };
-        window.handleActiveButton(modeMap[settings.labelDisplayMode], [modeStandardBtn, modePercentageBtn, modeRemainderBtn]);
+        function update(timestamp) {
+            const now = new Date();
+            const deltaTime = (timestamp - (lastFrameTime || timestamp)) / 1000;
+            lastFrameTime = timestamp;
 
-        const colorMap = { default: presetDefaultBtn, neon: presetNeonBtn, pastel: presetPastelBtn, colorblind: presetColorblindBtn };
-        window.handleActiveButton(colorMap[settings.colorPreset], [presetDefaultBtn, presetNeonBtn, presetPastelBtn, presetColorblindBtn]);
-
-        gradientToggle.checked = settings.useGradient;
-        dateLinesToggle.checked = settings.showDateLines;
-        timeLinesToggle.checked = settings.showTimeLines;
-        volumeControl.value = settings.volume;
-
-        document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
-        document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
-        document.getElementById('dateLinesToggle').checked = settings.showDateLines;
-        document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
-        document.getElementById('gradientToggle').checked = settings.useGradient;
-    }
-
-    function loadAdvancedAlarms() {
-        const storedAlarms = localStorage.getItem('polarAlarms');
-        if (storedAlarms) state.advancedAlarms = JSON.parse(storedAlarms);
-    }
-    function checkAdvancedAlarms(now) {
-        const currentMinute = now.getMinutes();
-        if (currentMinute === state.lastMinuteChecked) {
-            return; // Already checked this minute
-        }
-        state.lastMinuteChecked = currentMinute;
-
-        const currentDay = now.getDay(); // 0 (Sun) to 6 (Sat)
-        const currentHour = now.getHours(); // 0 to 23
-
-        state.advancedAlarms.forEach(alarm => {
-            if (!alarm.enabled) {
-                return;
+            if (state.timer.isRunning) {
+                state.timer.remainingSeconds -= deltaTime;
+                if (state.timer.remainingSeconds <= 0) timerFinished();
+            }
+            if (state.pomodoro.isRunning) {
+                state.pomodoro.remainingSeconds -= deltaTime;
+                App.Pomodoro.updateDisplay();
+                if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
+            }
+            if (state.stopwatch.isRunning) {
+                state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
 
-            const alarmHour24 = convertTo24Hour(alarm.hour, alarm.ampm);
+            if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
+            if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
 
-            if (alarmHour24 === currentHour && parseInt(alarm.minute) === currentMinute) {
-                if (alarm.days && alarm.days.length > 0) {
-                    if (alarm.days.includes(currentDay)) {
-                        playSound(alarm.sound, settings.volume);
-                        if (alarm.isTemporary) {
-                            alarm.enabled = false;
-                            // Save the updated alarms array back to localStorage
-                            localStorage.setItem('polarAlarms', JSON.stringify(state.advancedAlarms));
-                        }
-                    }
-                } else if (alarm.isTemporary) {
-                    // One-time temporary alarm
+            checkAdvancedAlarms(now);
+            App.Clock.update(settings, state);
+            requestAnimationFrame(update);
+        }
+        let lastFrameTime;
+
+        function timerFinished() {
+            playSound(settings.timerSound, settings.volume);
+            if (state.timer.isInterval) {
+                state.timer.remainingSeconds = state.timer.totalSeconds;
+            } else {
+                App.Tools.resetTimer();
+            }
+        }
+
+        function saveState() { localStorage.setItem('polarClockState', JSON.stringify(state)); }
+        function loadState() {
+            const savedState = localStorage.getItem('polarClockState');
+            if (savedState) {
+                Object.assign(state, JSON.parse(savedState));
+                state.timer.isRunning = false;
+                state.stopwatch.isRunning = false;
+                state.pomodoro.isRunning = false;
+            }
+        }
+        function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('polarClockSettings');
+            const defaultSettings = {
+                is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
+            };
+            Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
+            settings.currentColors = colorPalettes[settings.colorPreset];
+            applySettingsToUI();
+        }
+        function applySettingsToUI() {
+            document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
+            document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
+            ['modeStandard', 'modePercentage', 'modeRemainder'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
+            ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
+            document.getElementById('gradientToggle').checked = settings.useGradient;
+            document.getElementById('dateLinesToggle').checked = settings.showDateLines;
+            document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
+            document.getElementById('volumeControl').value = settings.volume;
+            document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
+            document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
+        }
+
+        function loadAdvancedAlarms() {
+            const storedAlarms = localStorage.getItem('polarAlarms');
+            if (storedAlarms) state.advancedAlarms = JSON.parse(storedAlarms);
+        }
+        function checkAdvancedAlarms(now) {
+            const currentMinute = now.getMinutes();
+            if (currentMinute === state.lastMinuteChecked) return;
+            state.lastMinuteChecked = currentMinute;
+            const currentDay = now.getDay();
+            const currentHour = now.getHours();
+            state.advancedAlarms.forEach(alarm => {
+                if (alarm.enabled && convertTo24Hour(alarm.hour, alarm.ampm) === currentHour && parseInt(alarm.minute) === currentMinute && (alarm.days.length === 0 || alarm.days.includes(currentDay))) {
                     playSound(alarm.sound, settings.volume);
-                    alarm.enabled = false;
-                    localStorage.setItem('polarAlarms', JSON.stringify(state.advancedAlarms));
+                    if (alarm.isTemporary) {
+                        alarm.enabled = false;
+                        localStorage.setItem('polarAlarms', JSON.stringify(state.advancedAlarms));
+                    }
                 }
-            }
-        });
-    }
-
-    function convertTo24Hour(hour, ampm) {
-        hour = parseInt(hour);
-        if (ampm === 'PM' && hour !== 12) {
-            hour += 12;
-        }
-        if (ampm === 'AM' && hour === 12) {
-            hour = 0; // Midnight case
-        }
-        return hour;
-    }
-    function playSound(soundFile, volume) {
-        if (!soundFile) return;
-        const audio = new Audio(`assets/Sounds/${soundFile}`);
-        audio.volume = volume;
-        audio.play().catch(e => console.error("Error playing sound:", e));
-    }
-
-    function setupEventListeners() {
-        const format12Btn = document.getElementById('format12');
-        const format24Btn = document.getElementById('format24');
-        const modeStandardBtn = document.getElementById('modeStandard');
-        const modePercentageBtn = document.getElementById('modePercentage');
-        const modeRemainderBtn = document.getElementById('modeRemainder');
-        const presetDefaultBtn = document.getElementById('presetDefault');
-        const presetNeonBtn = document.getElementById('presetNeon');
-        const presetPastelBtn = document.getElementById('presetPastel');
-        const presetColorblindBtn = document.getElementById('presetColorblind');
-        const gradientToggle = document.getElementById('gradientToggle');
-        const dateLinesToggle = document.getElementById('dateLinesToggle');
-        const timeLinesToggle = document.getElementById('timeLinesToggle');
-        const volumeControl = document.getElementById('volumeControl');
-        const formatButtons = [format12Btn, format24Btn];
-        const modeButtons = [modeStandardBtn, modePercentageBtn, modeRemainderBtn];
-        const colorPresetButtons = [presetDefaultBtn, presetNeonBtn, presetPastelBtn, presetColorblindBtn];
-
-        document.addEventListener('modechange', (e) => {
-            state.mode = e.detail.mode;
-            if (state.mode === 'timer') window.ToolsModule.resetTimer();
-            if (state.mode === 'stopwatch') window.ToolsModule.resetStopwatch();
-            if (state.mode === 'pomodoro') window.PomodoroModule.reset();
-        });
-        document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
-        document.addEventListener('statechange', saveState);
-
-        format12Btn.addEventListener('click', () => {
-            settings.is24HourFormat = false;
-            window.handleActiveButton(format12Btn, formatButtons);
-            saveSettings();
-        });
-        format24Btn.addEventListener('click', () => {
-            settings.is24HourFormat = true;
-            window.handleActiveButton(format24Btn, formatButtons);
-            saveSettings();
-        });
-        modeStandardBtn.addEventListener('click', () => {
-            settings.labelDisplayMode = 'standard';
-            window.handleActiveButton(modeStandardBtn, modeButtons);
-            saveSettings();
-        });
-        modePercentageBtn.addEventListener('click', () => {
-            settings.labelDisplayMode = 'percentage';
-            window.handleActiveButton(modePercentageBtn, modeButtons);
-            saveSettings();
-        });
-        modeRemainderBtn.addEventListener('click', () => {
-            settings.labelDisplayMode = 'remainder';
-            window.handleActiveButton(modeRemainderBtn, modeButtons);
-            saveSettings();
-        });
-
-        colorPresetButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const preset = button.id.replace('preset', '').toLowerCase();
-                settings.colorPreset = preset;
-                settings.currentColors = colorPalettes[preset];
-                window.handleActiveButton(button, colorPresetButtons);
-                saveSettings();
             });
-        });
-        gradientToggle.addEventListener('change', (e) => {
-            settings.useGradient = e.target.checked;
-            saveSettings();
-        });
-        dateLinesToggle.addEventListener('change', (e) => {
-            settings.showDateLines = e.target.checked;
-            saveSettings();
-        });
-        timeLinesToggle.addEventListener('change', (e) => {
-            settings.showTimeLines = e.target.checked;
-            saveSettings();
-        });
-        volumeControl.addEventListener('input', (e) => {
-            settings.volume = parseFloat(e.target.value);
-            saveSettings();
-        });
+        }
 
-        document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => {
-            settings.pomodoroGlowEnabled = e.target.checked;
-            saveSettings();
-        });
-        document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => {
-            settings.pomodoroPulseEnabled = e.target.checked;
-            saveSettings();
-        });
-    }
+        function convertTo24Hour(hour, ampm) {
+            hour = parseInt(hour);
+            if (ampm === 'PM' && hour !== 12) hour += 12;
+            if (ampm === 'AM' && hour === 12) hour = 0;
+            return hour;
+        }
+        function playSound(soundFile, volume) {
+            if (!soundFile) return;
+            const audio = new Audio(`assets/Sounds/${soundFile}`);
+            audio.volume = volume;
+            audio.play().catch(e => console.error("Error playing sound:", e));
+        }
 
-    // --- INITIALIZATION ---
-    function initializeApp() {
-        loadState();
-        loadSettings();
-        loadAdvancedAlarms();
+        function setupEventListeners() {
+            document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
+            document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
+            ['standard', 'percentage', 'remainder'].forEach(mode => {
+                document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`).addEventListener('click', () => { settings.labelDisplayMode = mode; saveSettings(); applySettingsToUI(); });
+            });
+            ['default', 'neon', 'pastel', 'colorblind'].forEach(preset => {
+                document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
+            });
+            document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
+            document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
+            document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
+            document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
+            document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
+            document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
 
-        window.ClockModule.init(settings, state);
-        window.ToolsModule.init(state);
-        window.PomodoroModule.init(state, settings);
+            document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
+            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
+            document.addEventListener('statechange', saveState);
+        }
 
-        setupEventListeners();
+        function initializeApp() {
+            loadState();
+            loadSettings();
+            loadAdvancedAlarms();
 
-        requestAnimationFrame(update);
+            App.UI.init();
+            App.Clock.init(settings, state);
+            App.Tools.init(state);
+            App.Pomodoro.init(state, settings);
 
-        // Listen for the clock to be ready, then hide the overlay
-        document.addEventListener('clockready', () => {
-            if (loadingOverlay) {
-                loadingOverlay.style.opacity = '0';
-                // Hide the element after the transition is complete
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 500); // Should match the transition duration in the CSS
-            }
-        }, { once: true });
+            setupEventListeners();
+            requestAnimationFrame(update);
 
-        // Force a resize after a short delay to ensure the DOM is stable.
-        // This is decoupled from hiding the loading overlay.
-        setTimeout(() => {
-            console.log("Forcing initial resize.");
-            window.ClockModule.resize();
-        }, 100); // A short delay is sufficient
-    }
+            document.addEventListener('clockready', () => {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+                }
+            }, { once: true });
 
-    initializeApp();
+            setTimeout(() => {
+                console.log("Forcing initial resize.");
+                App.Clock.resize();
+            }, 100);
+        }
+
+        initializeApp();
+    }(App));
 });
     </script>
 </body>
