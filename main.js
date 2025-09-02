@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const digitalTime = document.getElementById('digitalTime');
     const digitalDate = document.getElementById('digitalDate');
     const digitalDisplay = document.getElementById('digitalDisplay');
-    // Add a reference to the loading overlay
     const loadingOverlay = document.getElementById('loading-overlay');
     
     // --- GLOBAL STATE ---
@@ -350,15 +349,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hide the loading overlay now that everything is initialized
         if (loadingOverlay) {
             loadingOverlay.style.opacity = '0';
-            // Remove it from the DOM after the transition
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
-                // --- FIX: Force a resize after the layout is stable ---
-                window.ClockModule.resize(); 
             }, 500);
         }
     }
     
+    // --- FINAL INITIALIZATION ---
+    // This ensures all resources (styles, images) are loaded before we resize the canvas.
+    window.onload = function() {
+        if (window.ClockModule) {
+            window.ClockModule.resize();
+        }
+    };
+
     initializeApp();
 });
 
