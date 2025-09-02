@@ -8,13 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!canvas) { return; }
     const ctx = canvas.getContext('2d');
     
+    // --- MODULE-SCOPED VARIABLES ---
     let settings = {};
-    let state = {
-        mode: 'clock',
-        timer: { totalSeconds: 0, remainingSeconds: 0 },
-        stopwatch: { elapsedTime: 0 },
-        trackedAlarm: { nextAlarmTime: null }
-    };
+    // FIX: Removed the local state object. The module will now rely on the state passed from main.js.
+    let globalState = {}; 
 
     let dimensions = {};
     const baseStartAngle = -Math.PI / 2;
@@ -22,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
-        // Ensure settings.useGradient is checked before creating a gradient
         const useGradient = settings && settings.useGradient;
         const gradient = ctx.createConicGradient(baseStartAngle, x, y);
         gradient.addColorStop(0, colorLight);
@@ -100,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawClock = () => {
-        // Guard against running before settings are loaded.
         if (!settings.currentColors) return;
 
         const now = new Date();
@@ -128,8 +123,9 @@ document.addEventListener('DOMContentLoaded', function() {
         arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
         drawTrackedAlarmTimer(now);
-        if (state.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
-            const timerProgress = state.timer.remainingSeconds / state.timer.totalSeconds;
+        // FIX: Use the globalState passed from main.js
+        if (globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
+            const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
         }
@@ -145,10 +141,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const drawStopwatch = () => {
-        // Guard against running before settings are loaded.
         if (!settings.currentColors) return;
-
-        const time = new Date(state.stopwatch.elapsedTime);
+        
+        // FIX: Use the globalState passed from main.js
+        const time = new Date(globalState.stopwatch.elapsedTime);
         const milliseconds = time.getUTCMilliseconds();
         const seconds = time.getUTCSeconds();
         const minutes = time.getUTCMinutes();
@@ -179,7 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let animationFrameId = null;
     const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (state.mode === 'stopwatch') {
+        // FIX: Use the globalState to determine what to draw
+        if (globalState.mode === 'stopwatch') {
             drawStopwatch();
         } else {
             drawClock();
@@ -207,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
         resize() {
+            if (!canvas) return;
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             dimensions.centerX = canvas.width / 2;
@@ -222,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const alarmLineWidth = 20;
             const gap = 15;
 
+            // FIX: Check globalState for resize calculations
             let totalWidth = secondLineWidth / 2;
             totalWidth += minuteLineWidth + gap;
             if (settings.showTimeLines) {
@@ -231,8 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalWidth += dayLineWidth + gap;
                 totalWidth += monthLineWidth + gap;
             }
-            if (state.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-            if (state.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+            if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
+            if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+
 
             const scale = baseRadius / totalWidth;
 
@@ -257,14 +257,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.monthRadius = 0;
             }
 
-            if (state.timer.totalSeconds > 0) {
+            if (globalState.timer && globalState.timer.totalSeconds > 0) {
                 dimensions.timerRadius = currentRadius - (timerLineWidth / 2) * scale;
                 currentRadius -= (timerLineWidth + gap) * scale;
             } else {
                 dimensions.timerRadius = 0;
             }
 
-            if (state.trackedAlarm.nextAlarmTime) {
+            if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) {
                 dimensions.trackedAlarmRadius = currentRadius - (alarmLineWidth / 2) * scale;
             } else {
                 dimensions.trackedAlarmRadius = 0;
@@ -272,7 +272,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         update(newSettings, newState) {
             settings = newSettings;
-            state = { ...state, ...newState };
+            // FIX: Update the globalState variable
+            globalState = newState;
         }
     };
     window.ClockModule = ClockModule;
