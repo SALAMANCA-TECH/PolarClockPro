@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadSettings();
         loadAdvancedAlarms();
 
-        window.ClockModule.init(settings, state); // Pass initial state here
+        window.ClockModule.init(settings, state);
         window.ToolsModule.init(state);
         window.PomodoroModule.init(state, settings);
 
@@ -329,41 +329,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         requestAnimationFrame(update);
 
-        document.getElementById('dateLinesToggle').addEventListener('change', (e) => {
-            settings.showDateLines = e.target.checked;
-            saveSettings();
-            window.ClockModule.resize();
-        });
-
-        document.getElementById('timeLinesToggle').addEventListener('change', (e) => {
-            settings.showTimeLines = e.target.checked;
-            saveSettings();
-            window.ClockModule.resize();
-        });
-
-        document.getElementById('gradientToggle').addEventListener('change', (e) => {
-            settings.useGradient = e.target.checked;
-            saveSettings();
-        });
-
-        // Hide the loading overlay now that everything is initialized
+        // Hide the loading overlay and THEN resize the clock
         if (loadingOverlay) {
             loadingOverlay.style.opacity = '0';
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
+                // --- FIX: Force resize AFTER the overlay is gone ---
+                console.log("Overlay hidden, forcing resize.");
+                window.ClockModule.resize();
             }, 500);
+        } else {
+            // Fallback for when there's no loading overlay
+            window.onload = () => {
+                console.log("Window loaded, forcing resize.");
+                window.ClockModule.resize();
+            };
         }
     }
     
-    // --- FINAL INITIALIZATION ---
-    // This ensures all resources (styles, images) are loaded before we resize the canvas.
-    window.onload = function() {
-        if (window.ClockModule) {
-            window.ClockModule.resize();
-        }
-    };
-
     initializeApp();
 });
-
 
