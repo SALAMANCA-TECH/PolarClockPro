@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let dimensions = {};
     const baseStartAngle = -Math.PI / 2;
     let lastNow = new Date();
+    let isFirstFrameDrawn = false;
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
@@ -139,6 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         lastNow = now;
+
+        if (!isFirstFrameDrawn && dimensions.secondsRadius > 0) {
+            isFirstFrameDrawn = true;
+            canvas.dispatchEvent(new CustomEvent('clockready', { bubbles: true }));
+        }
     };
 
     const drawStopwatch = () => {
