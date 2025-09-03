@@ -623,6 +623,10 @@
             </div>
             <div class="settings-section">
                 <h3>Separators</h3>
+                <div class="format-buttons">
+                    <button id="separatorStandard" class="format-button">Standard</button>
+                    <button id="separatorRuler" class="format-button">Ruler</button>
+                </div>
                 <div class="setting-toggle">
                     <span>Date Lines (Month, Day)</span>
                     <label class="switch">
@@ -803,7 +807,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillText(arc.text, textX, textY);
         };
 
-        const drawSeparators = (radius, count, arcLineWidth) => {
+        const drawSeparators = (radius, count, arcLineWidth, arcKey) => {
             if (!radius || radius <= 0) return;
 
             const innerRadius = radius - (arcLineWidth / 2);
@@ -813,23 +817,41 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
             ctx.lineWidth = 2; // Separator line width
 
-            for (let i = 0; i < count; i++) {
-                const angle = baseStartAngle + (i / count) * Math.PI * 2;
+            if ((arcKey === 'minutes' || arcKey === 'seconds') && settings.separatorStyle === 'Standard') {
+                const standardPositions = [1, 2, 4, 5, 7, 8, 10, 11, 3, 9, 12];
+                const hourAngle = (Math.PI * 2) / 12;
 
-                // Skip the 6 o'clock position with a small tolerance
-                if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                    continue;
+                for (const pos of standardPositions) {
+                    const angle = baseStartAngle + (pos * hourAngle);
+                    const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
+                    const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
+                    const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
+                    const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
                 }
+            } else {
+                for (let i = 0; i < count; i++) {
+                    const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
-                const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
-                const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
-                const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
+                    // Skip the 6 o'clock position with a small tolerance
+                    if (Math.abs(angle - sixOClockAngle) < 0.01) {
+                        continue;
+                    }
 
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
+                    const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
+                    const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
+                    const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
+                    const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                }
             }
         };
 
@@ -926,16 +948,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // --- Draw Separators ---
             if (settings.showTimeLines) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
             }
             if (settings.showDateLines) {
-                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month');
+                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day');
             }
             if (settings.showWeekBar) {
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
+                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week');
             }
 
             lastNow = now;
@@ -1339,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                separatorStyle: 'Ruler',
                 showWeekBar: false,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
@@ -1353,6 +1376,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
+            document.getElementById('separatorStandard').classList.toggle('active', settings.separatorStyle === 'Standard');
+            document.getElementById('separatorRuler').classList.toggle('active', settings.separatorStyle === 'Ruler');
             document.getElementById('gradientToggle').checked = settings.useGradient;
             document.getElementById('dateLinesToggle').checked = settings.showDateLines;
             document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
@@ -1406,6 +1431,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
             });
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
+            document.getElementById('separatorStandard').addEventListener('click', () => { settings.separatorStyle = 'Standard'; saveSettings(); applySettingsToUI(); });
+            document.getElementById('separatorRuler').addEventListener('click', () => { settings.separatorStyle = 'Ruler'; saveSettings(); applySettingsToUI(); });
             document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('weekBarToggle').addEventListener('change', (e) => { settings.showWeekBar = e.target.checked; saveSettings(); App.Clock.resize(); });
