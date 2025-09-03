@@ -356,6 +356,11 @@
         border-radius: 50%; /* Ensures shadow is circular */
     }
 
+    .accordion-container { display: flex; flex-direction: column; gap: 0.5rem; }
+    .accordion-item { border: 1px solid #444; border-radius: 8px; overflow: hidden; }
+    .accordion-header { width: 100%; padding: 1rem; background-color: #2a2a2a; color: #fff; text-align: left; font-weight: bold; cursor: pointer; border: none; outline: none; transition: background-color 0.3s; }
+    .accordion-header:hover, .accordion-header.active { background-color: #3a3a3a; }
+    .accordion-content { padding: 1rem; background-color: #1f1f1f; display: none; flex-direction: column; gap: 1rem; }
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
         body {
@@ -590,70 +595,82 @@
                 <button id="backToMainFromSettings" class="back-button">Back</button>
                 <h2 class="view-title">Settings</h2>
             </div>
-            <div class="settings-section">
-                <h3>Time Format</h3>
-                <div class="format-buttons">
-                    <button id="format12" class="format-button">12 Hour</button>
-                    <button id="format24" class="format-button">24 Hour</button>
+            <div class="accordion-container w-full max-w-xs">
+                <div class="accordion-item">
+                    <button class="accordion-header">Time Format</button>
+                    <div class="accordion-content">
+                        <div class="format-buttons">
+                            <button id="format12" class="format-button">12 Hour</button>
+                            <button id="format24" class="format-button">24 Hour</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="settings-section">
-                <h3>Label Display</h3>
-                <div class="display-mode-buttons">
-                    <button id="modeStandard" class="display-mode-button">Standard</button>
-                    <button id="modePercentage" class="display-mode-button">Percentage</button>
-                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                <div class="accordion-item">
+                    <button class="accordion-header">Label Display</button>
+                    <div class="accordion-content">
+                        <div class="display-mode-buttons">
+                            <button id="modeStandard" class="display-mode-button">Standard</button>
+                            <button id="modePercentage" class="display-mode-button">Percentage</button>
+                            <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="settings-section">
-                <h3>Color Scheme</h3>
-                <div class="color-preset-buttons">
-                    <button id="presetDefault" class="color-preset-button">Default</button>
-                    <button id="presetNeon" class="color-preset-button">Neon</button>
-                    <button id="presetPastel" class="color-preset-button">Pastel</button>
-                    <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                <div class="accordion-item">
+                    <button class="accordion-header">Color Scheme</button>
+                    <div class="accordion-content">
+                        <div class="color-preset-buttons">
+                            <button id="presetDefault" class="color-preset-button">Default</button>
+                            <button id="presetNeon" class="color-preset-button">Neon</button>
+                            <button id="presetPastel" class="color-preset-button">Pastel</button>
+                            <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Gradient</span>
+                            <label class="switch">
+                                <input type="checkbox" id="gradientToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="setting-toggle">
-                    <span>Gradient</span>
-                    <label class="switch">
-                        <input type="checkbox" id="gradientToggle">
-                        <span class="slider"></span>
-                    </label>
+                <div class="accordion-item">
+                    <button class="accordion-header">Separators</button>
+                    <div class="accordion-content">
+                        <div class="format-buttons">
+                            <button id="separatorStandard" class="format-button">Standard</button>
+                            <button id="separatorRuler" class="format-button">Ruler</button>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Date Lines (Month, Day)</span>
+                            <label class="switch">
+                                <input type="checkbox" id="dateLinesToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Time Lines (Hours)</span>
+                            <label class="switch">
+                                <input type="checkbox" id="timeLinesToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Show Week Bar</span>
+                            <label class="switch">
+                                <input type="checkbox" id="weekBarToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="settings-section">
-                <h3>Separators</h3>
-                <div class="format-buttons">
-                    <button id="separatorStandard" class="format-button">Standard</button>
-                    <button id="separatorRuler" class="format-button">Ruler</button>
-                </div>
-                <div class="setting-toggle">
-                    <span>Date Lines (Month, Day)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="dateLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Time Lines (Hours)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="timeLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Show Week Bar</span>
-                    <label class="switch">
-                        <input type="checkbox" id="weekBarToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Audio</h3>
-                <div class="setting-toggle">
-                    <span>Volume</span>
-                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+                <div class="accordion-item">
+                    <button class="accordion-header">Audio</button>
+                    <div class="accordion-content">
+                        <div class="setting-toggle">
+                            <span>Volume</span>
+                            <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -750,6 +767,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
                 closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+
+                const accordionHeaders = document.querySelectorAll('.accordion-header');
+                accordionHeaders.forEach(header => {
+                    header.addEventListener('click', () => {
+                        const currentlyActive = document.querySelector('.accordion-header.active');
+                        if (currentlyActive && currentlyActive !== header) {
+                            currentlyActive.classList.remove('active');
+                            currentlyActive.nextElementSibling.style.display = 'none';
+                        }
+
+                        header.classList.toggle('active');
+                        const content = header.nextElementSibling;
+                        if (content.style.display === 'flex') {
+                            content.style.display = 'none';
+                        } else {
+                            content.style.display = 'flex';
+                        }
+                    });
+                });
             },
             handleActiveButton: handleActiveButton
         };
