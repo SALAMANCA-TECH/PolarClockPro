@@ -907,7 +907,57 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
+        const drawPomodoroClock = () => {
+            if (!settings.currentColors || !globalState.pomodoro) {
+                return;
+            }
+
+            const remainingSeconds = globalState.pomodoro.remainingSeconds;
+            const pomodoroMinutes = Math.floor(remainingSeconds / 60);
+            const pomodoroSeconds = Math.floor(remainingSeconds % 60);
+
+            const minutesProgress = pomodoroMinutes / 60;
+            const secondsProgress = pomodoroSeconds / 60;
+
+            const minutesAngles = getArcAngles(minutesProgress);
+            const secondsAngles = getArcAngles(secondsProgress);
+
+            const arcs = [];
+
+            // We only draw minutes and seconds for the pomodoro timer
+            arcs.push({
+                key: 'minutes',
+                radius: dimensions.minutesRadius,
+                colors: settings.currentColors.minutes,
+                lineWidth: 30,
+                startAngle: minutesAngles.startAngle,
+                endAngle: minutesAngles.endAngle,
+                text: pomodoroMinutes.toString().padStart(2, '0')
+            });
+            arcs.push({
+                key: 'seconds',
+                radius: dimensions.secondsRadius,
+                colors: settings.currentColors.seconds,
+                lineWidth: 30,
+                startAngle: secondsAngles.startAngle,
+                endAngle: secondsAngles.endAngle,
+                text: pomodoroSeconds.toString().padStart(2, '0')
+            });
+
+            arcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawLabel(arc);
+                }
+            });
+        };
+
         const drawClock = () => {
+            if (globalState.mode === 'pomodoro') {
+                drawPomodoroClock();
+                return;
+            }
+
             if (!settings.currentColors || !globalState.timer) {
                 return;
             }
