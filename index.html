@@ -893,6 +893,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const daysInMonth = getDaysInMonth(year, month);
             const weekOfYear = getWeekOfYear(now);
 
+            // --- Angle Calculations ---
             const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
             const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
             const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
@@ -900,32 +901,85 @@ document.addEventListener('DOMContentLoaded', function() {
             const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
             const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
 
-            const arcs = [];
+            // --- Arc Definitions ---
+            const allArcs = [
+                {
+                    key: 'timer',
+                    radius: dimensions.timerRadius,
+                    lineWidth: dimensions.timerLineWidth,
+                    condition: globalState.timer && globalState.timer.totalSeconds > 0,
+                    isTimer: true
+                },
+                {
+                    key: 'month',
+                    radius: dimensions.monthRadius,
+                    lineWidth: dimensions.monthLineWidth,
+                    endAngle: monthEndAngle,
+                    colors: settings.currentColors.month,
+                    condition: settings.showDateLines
+                },
+                {
+                    key: 'day',
+                    radius: dimensions.dayRadius,
+                    lineWidth: dimensions.dayLineWidth,
+                    endAngle: dayEndAngle,
+                    colors: settings.currentColors.day,
+                    condition: settings.showDateLines
+                },
+                {
+                    key: 'hours',
+                    radius: dimensions.hoursRadius,
+                    lineWidth: dimensions.hoursLineWidth,
+                    endAngle: hoursEndAngle,
+                    colors: settings.currentColors.hours,
+                    condition: settings.showTimeLines
+                },
+                {
+                    key: 'minutes',
+                    radius: dimensions.minutesRadius,
+                    lineWidth: dimensions.minutesLineWidth,
+                    endAngle: minutesEndAngle,
+                    colors: settings.currentColors.minutes,
+                    condition: true
+                },
+                {
+                    key: 'seconds',
+                    radius: dimensions.secondsRadius,
+                    lineWidth: dimensions.secondsLineWidth,
+                    endAngle: secondsEndAngle,
+                    colors: settings.currentColors.seconds,
+                    condition: true
+                },
+                {
+                    key: 'week',
+                    radius: dimensions.weekRadius,
+                    lineWidth: dimensions.weekLineWidth,
+                    endAngle: weekEndAngle,
+                    colors: settings.currentColors.week,
+                    condition: settings.showWeekBar
+                }
+            ];
 
-            if (settings.showWeekBar) {
-                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
-            }
+            const visibleArcs = allArcs.filter(arc => arc.condition && arc.radius > 0);
 
-            if (settings.showDateLines) {
-                arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-                arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            }
+            // --- Drawing Arcs ---
+            visibleArcs.forEach(arc => {
+                let startAngle, endAngle, colors;
 
-            if (settings.showTimeLines) {
-                arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-            }
+                if (arc.isTimer) {
+                    const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
+                    startAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
+                    endAngle = baseStartAngle + Math.PI * 2;
+                    colors = { light: '#FF8A80', dark: '#D50000' };
+                } else {
+                    startAngle = baseStartAngle;
+                    endAngle = arc.endAngle;
+                    colors = arc.colors;
+                }
 
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, startAngle, endAngle, colors.light, colors.dark, arc.lineWidth);
 
-            if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
-                const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
-                const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
-            }
-            arcs.forEach(arc => {
-                if (arc.radius > 0 && settings.currentColors) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                if (!arc.isTimer) {
                     arc.text = getLabelText(arc.key, now);
                     drawLabel(arc);
                 }
@@ -1017,17 +1071,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.centerY = canvas.height / 2;
 
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-                const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
+                const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, weekLineWidth = 15, gap = 15;
 
-                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
-                if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
-                if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
-                if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-                if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+                // Correct totalWidth calculation
+                let totalWidth = 0;
+                const arcWidths = [];
+                if (settings.showWeekBar) arcWidths.push(weekLineWidth);
+                arcWidths.push(secondLineWidth);
+                arcWidths.push(minuteLineWidth);
+                if (settings.showTimeLines) arcWidths.push(hourLineWidth);
+                if (settings.showDateLines) {
+                    arcWidths.push(dayLineWidth);
+                    arcWidths.push(monthLineWidth);
+                }
+                if (globalState.timer && globalState.timer.totalSeconds > 0) arcWidths.push(timerLineWidth);
 
-                const scale = baseRadius / totalWidth;
+                if (arcWidths.length > 0) {
+                    totalWidth = arcWidths.reduce((a, b) => a + b, 0) + (arcWidths.length - 1) * gap;
+                }
+
+                const scale = totalWidth > 0 ? baseRadius / totalWidth : 0;
                 let currentRadius = baseRadius;
+
+                // Calculate radii from outside-in in the correct order
+                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
+                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
+                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
                 dimensions.secondsLineWidth = secondLineWidth * scale;
                 dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
@@ -1049,9 +1118,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
                 if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+                dimensions.timerLineWidth = (globalState.timer && globalState.timer.totalSeconds > 0) ? timerLineWidth * scale : 0;
+                dimensions.timerRadius = (globalState.timer && globalState.timer.totalSeconds > 0) ? currentRadius - (dimensions.timerLineWidth / 2) : 0;
+                if (globalState.timer && globalState.timer.totalSeconds > 0) currentRadius -= (dimensions.timerLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
