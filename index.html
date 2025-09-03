@@ -591,6 +591,16 @@
                 <h2 class="view-title">Settings</h2>
             </div>
             <div class="settings-section">
+                <h3>Inverse Mode</h3>
+                <div class="setting-toggle">
+                    <span>Inverse Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="inverseModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
                 <h3>Time Format</h3>
                 <div class="format-buttons">
                     <button id="format12" class="format-button">12 Hour</button>
@@ -883,6 +893,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
+        const getDisplayProgress = (progress) => {
+            return settings.inverseMode ? 1 - progress : progress;
+        };
+
         const drawClock = () => {
             if (!settings.currentColors || !globalState.timer) {
                 return;
@@ -893,12 +907,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const daysInMonth = getDaysInMonth(year, month);
             const weekOfYear = getWeekOfYear(now);
 
-            const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
-            const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
-            const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
-            const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-            const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+            const monthProgress = (month + date / daysInMonth) / 12;
+            const dayProgress = (date - 1 + (hours + minutes / 60) / 24) / daysInMonth;
+            const weekProgress = weekOfYear / 52;
+            const hoursProgress = ((hours % 12) + minutes / 60) / 12;
+            const minutesProgress = (minutes + seconds / 60) / 60;
+            const secondsProgress = (seconds + now.getMilliseconds() / 1000) / 60;
+
+            const monthEndAngle = baseStartAngle + getDisplayProgress(monthProgress) * Math.PI * 2;
+            const dayEndAngle = baseStartAngle + getDisplayProgress(dayProgress) * Math.PI * 2;
+            const weekEndAngle = baseStartAngle + getDisplayProgress(weekProgress) * Math.PI * 2;
+            const hoursEndAngle = baseStartAngle + getDisplayProgress(hoursProgress) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + getDisplayProgress(minutesProgress) * Math.PI * 2;
+            const secondsEndAngle = baseStartAngle + getDisplayProgress(secondsProgress) * Math.PI * 2;
+
 
             const arcs = [];
 
@@ -1341,6 +1363,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                inverseMode: false,
                 showWeekBar: false,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
@@ -1362,6 +1385,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('volumeControl').value = settings.volume;
             document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
             document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
+            document.getElementById('inverseModeToggle').checked = settings.inverseMode;
         }
 
         function loadAdvancedAlarms() {
@@ -1414,6 +1438,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
             document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
             document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
+            document.getElementById('inverseModeToggle').addEventListener('change', (e) => { settings.inverseMode = e.target.checked; saveSettings(); });
 
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
             document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
