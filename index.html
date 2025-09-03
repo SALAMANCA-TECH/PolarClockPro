@@ -1491,6 +1491,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
         function loadSettings() {
+            // FIX: Re-added the missing constant definition for savedSettings
+            const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
                 inverseMode: false,
@@ -1608,3 +1610,4 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
