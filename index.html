@@ -902,16 +902,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const arcs = [];
 
+            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
+            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
+            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
             if (settings.showWeekBar) {
                 arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
             }
-
-            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
@@ -1024,29 +1022,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
-
-                dimensions.minutesLineWidth = minuteLineWidth * scale;
-                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
-
-                dimensions.hoursLineWidth = hourLineWidth * scale;
-                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
-
-                dimensions.dayLineWidth = dayLineWidth * scale;
-                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-                currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
+                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
+                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
                 dimensions.monthLineWidth = monthLineWidth * scale;
                 dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
                 currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+                dimensions.dayLineWidth = dayLineWidth * scale;
+                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
+                currentRadius -= (dimensions.dayLineWidth + gap * scale);
+
+                dimensions.hoursLineWidth = hourLineWidth * scale;
+                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
+                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+
+                dimensions.minutesLineWidth = minuteLineWidth * scale;
+                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
+                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
+
+                dimensions.secondsLineWidth = secondLineWidth * scale;
+                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
