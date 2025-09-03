@@ -908,48 +908,36 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const drawPomodoroClock = () => {
-            if (!settings.currentColors || !globalState.pomodoro) {
+            if (!settings.currentColors || !globalState.pomodoro || !globalState.pomodoro.totalSecondsInPhase) {
                 return;
             }
 
+            const totalSeconds = globalState.pomodoro.totalSecondsInPhase;
             const remainingSeconds = globalState.pomodoro.remainingSeconds;
+
+            // Ensure we don't divide by zero and progress doesn't exceed 1
+            const elapsedProgress = totalSeconds > 0 ? Math.min(1, (totalSeconds - remainingSeconds) / totalSeconds) : 0;
+
             const pomodoroMinutes = Math.floor(remainingSeconds / 60);
             const pomodoroSeconds = Math.floor(remainingSeconds % 60);
 
-            const minutesProgress = pomodoroMinutes / 60;
-            const secondsProgress = pomodoroSeconds / 60;
+            const arcAngles = getArcAngles(elapsedProgress);
 
-            const minutesAngles = getArcAngles(minutesProgress);
-            const secondsAngles = getArcAngles(secondsProgress);
-
-            const arcs = [];
-
-            // We only draw minutes and seconds for the pomodoro timer
-            arcs.push({
-                key: 'minutes',
-                radius: dimensions.minutesRadius,
-                colors: settings.currentColors.minutes,
+            const pomodoroArc = {
+                key: 'pomodoro', // Use a unique key
+                radius: dimensions.minutesRadius, // Use the minutes arc's radius for prominence
+                colors: settings.currentColors.minutes, // Use the minutes arc's color
                 lineWidth: 30,
-                startAngle: minutesAngles.startAngle,
-                endAngle: minutesAngles.endAngle,
-                text: pomodoroMinutes.toString().padStart(2, '0')
-            });
-            arcs.push({
-                key: 'seconds',
-                radius: dimensions.secondsRadius,
-                colors: settings.currentColors.seconds,
-                lineWidth: 30,
-                startAngle: secondsAngles.startAngle,
-                endAngle: secondsAngles.endAngle,
-                text: pomodoroSeconds.toString().padStart(2, '0')
-            });
+                startAngle: arcAngles.startAngle,
+                endAngle: arcAngles.endAngle,
+                text: `${pomodoroMinutes.toString().padStart(2, '0')}:${pomodoroSeconds.toString().padStart(2, '0')}`
+            };
 
-            arcs.forEach(arc => {
-                if (arc.radius > 0 && settings.currentColors) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                    drawLabel(arc);
-                }
-            });
+            // Draw only the single pomodoro arc
+            if (pomodoroArc.radius > 0 && settings.currentColors) {
+                drawArc(dimensions.centerX, dimensions.centerY, pomodoroArc.radius, pomodoroArc.startAngle, pomodoroArc.endAngle, pomodoroArc.colors.light, pomodoroArc.colors.dark, pomodoroArc.lineWidth);
+                drawLabel(pomodoroArc);
+            }
         };
 
         const drawClock = () => {
@@ -1304,7 +1292,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.isRunning = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
-                this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+                const duration = (parseInt(workDurationInput.value) || 25) * 60;
+                this.state.pomodoro.totalSecondsInPhase = duration;
+                this.state.pomodoro.remainingSeconds = duration;
                 this.updateDisplay();
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
@@ -1322,6 +1312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 this.state.pomodoro.phase = nextPhase;
+                this.state.pomodoro.totalSecondsInPhase = duration;
                 this.state.pomodoro.remainingSeconds = duration;
                 this.playSound();
                 this.updateDisplay();
@@ -1358,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, totalSecondsInPhase: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
