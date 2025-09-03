@@ -118,6 +118,10 @@
         text-align: center;
     }
 
+    .settings-menu-button {
+        margin-bottom: 1rem;
+    }
+
     .main-nav-button {
         width: 60px;
         height: 60px;
@@ -587,79 +591,120 @@
         <!-- Settings View -->
         <div id="settingsView" class="ui-content" style="display: none;">
             <div class="view-header">
-                <button id="backToMainFromSettings" class="back-button">Back</button>
+                <button id="backToMainFromSettings" class="back-button">Back to Main</button>
+            </div>
+            <!-- Settings Main Menu -->
+            <div id="settingsMenu" class="ui-panel">
                 <h2 class="view-title">Settings</h2>
+                <button class="header-button settings-menu-button" data-target="timeFormatSettings">Time Format</button>
+                <button class="header-button settings-menu-button" data-target="labelDisplaySettings">Label Display</button>
+                <button class="header-button settings-menu-button" data-target="colorSchemeSettings">Color Scheme</button>
+                <button class="header-button settings-menu-button" data-target="separatorsSettings">Separators</button>
+                <button class="header-button settings-menu-button" data-target="audioSettings">Audio</button>
+                <!-- FIX: Added Inverse Mode to the main settings menu for consistency -->
+                <button class="header-button settings-menu-button" data-target="displayModeSettings">Display Mode</button>
             </div>
-            <div class="settings-section">
-                <h3>Inverse Mode</h3>
-                <div class="setting-toggle">
-                    <span>Inverse Mode</span>
-                    <label class="switch">
-                        <input type="checkbox" id="inverseModeToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Time Format</h3>
-                <div class="format-buttons">
-                    <button id="format12" class="format-button">12 Hour</button>
-                    <button id="format24" class="format-button">24 Hour</button>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Label Display</h3>
-                <div class="display-mode-buttons">
-                    <button id="modeStandard" class="display-mode-button">Standard</button>
-                    <button id="modePercentage" class="display-mode-button">Percentage</button>
-                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
+
+            <!-- Time Format Settings -->
+            <div id="timeFormatSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Time Format</h3>
+                    <div class="format-buttons">
+                        <button id="format12" class="format-button">12 Hour</button>
+                        <button id="format24" class="format-button">24 Hour</button>
+                    </div>
                 </div>
             </div>
-            <div class="settings-section">
-                <h3>Color Scheme</h3>
-                <div class="color-preset-buttons">
-                    <button id="presetDefault" class="color-preset-button">Default</button>
-                    <button id="presetNeon" class="color-preset-button">Neon</button>
-                    <button id="presetPastel" class="color-preset-button">Pastel</button>
-                    <button id="presetColorblind" class="color-preset-button">Colorblind</button>
-                </div>
-                <div class="setting-toggle">
-                    <span>Gradient</span>
-                    <label class="switch">
-                        <input type="checkbox" id="gradientToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Separators</h3>
-                <div class="setting-toggle">
-                    <span>Date Lines (Month, Day)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="dateLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Time Lines (Hours)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="timeLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Show Week Bar</span>
-                    <label class="switch">
-                        <input type="checkbox" id="weekBarToggle">
-                        <span class="slider"></span>
-                    </label>
+
+            <!-- FIX: Created a new submenu for Display Mode to house the Inverse Mode toggle -->
+            <div id="displayModeSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Display Mode</h3>
+                    <div class="setting-toggle">
+                        <span>Inverse Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="inverseModeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div class="settings-section">
-                <h3>Audio</h3>
-                <div class="setting-toggle">
-                    <span>Volume</span>
-                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+
+
+            <!-- Label Display Settings -->
+            <div id="labelDisplaySettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Label Display</h3>
+                    <div class="display-mode-buttons">
+                        <button id="modeStandard" class="display-mode-button">Standard</button>
+                        <button id="modePercentage" class="display-mode-button">Percentage</button>
+                        <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Scheme Settings -->
+            <div id="colorSchemeSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Color Scheme</h3>
+                    <div class="color-preset-buttons">
+                        <button id="presetDefault" class="color-preset-button">Default</button>
+                        <button id="presetNeon" class="color-preset-button">Neon</button>
+                        <button id="presetPastel" class="color-preset-button">Pastel</button>
+                        <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Gradient</span>
+                        <label class="switch">
+                            <input type="checkbox" id="gradientToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separators Settings -->
+            <div id="separatorsSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Separators</h3>
+                    <div class="setting-toggle">
+                        <span>Date Lines (Month, Day)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dateLinesToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Time Lines (Hours)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="timeLinesToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Show Week Bar</span>
+                        <label class="switch">
+                            <input type="checkbox" id="weekBarToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div id="audioSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Audio</h3>
+                    <div class="setting-toggle">
+                        <span>Volume</span>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+                    </div>
                 </div>
             </div>
         </div>
@@ -712,6 +757,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
         const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
         const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const settingsMenuButtons = document.querySelectorAll('.settings-menu-button');
+        const settingsSubmenus = document.querySelectorAll('.settings-submenu');
+        const backToSettingsButtons = document.querySelectorAll('.back-to-settings');
 
         function showView(viewToShow) {
             const isMainView = viewToShow === views.main;
@@ -743,7 +792,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         App.UI = {
             init: function() {
-                navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
+                navButtons.goToSettings.addEventListener('click', () => {
+                    showView(views.settings);
+                    settingsSubmenus.forEach(submenu => submenu.style.display = 'none');
+                    settingsMenu.style.display = 'flex';
+                });
                 navButtons.goToTools.addEventListener('click', () => showView(views.tools));
                 navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
                 navButtons.backFromTools.addEventListener('click', () => showView(views.main));
@@ -756,6 +809,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
                 closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+
+                settingsMenuButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetId = button.dataset.target;
+                        const targetSubmenu = document.getElementById(targetId);
+                        settingsMenu.style.display = 'none';
+                        if (targetSubmenu) {
+                            targetSubmenu.style.display = 'flex';
+                        }
+                    });
+                });
+
+                backToSettingsButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        settingsSubmenus.forEach(submenu => submenu.style.display = 'none');
+                        settingsMenu.style.display = 'flex';
+                    });
+                });
             },
             handleActiveButton: handleActiveButton
         };
@@ -1420,7 +1491,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
         function loadSettings() {
-            const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
                 inverseMode: false,
