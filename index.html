@@ -1034,14 +1034,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.centerY = canvas.height / 2;
 
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-                const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
+                const arcThickness = 20;
+                const gap = 5;
+                const monthLineWidth = arcThickness, dayLineWidth = arcThickness, hourLineWidth = arcThickness, minuteLineWidth = arcThickness, secondLineWidth = arcThickness, timerLineWidth = arcThickness, alarmLineWidth = arcThickness, weekLineWidth = arcThickness;
 
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap + hourLineWidth + gap + dayLineWidth + gap + monthLineWidth + gap;
                 if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
-                const scale = baseRadius / totalWidth;
+                const innerOffset = baseRadius * 0.3;
+                const scale = (baseRadius - innerOffset) / totalWidth;
                 let currentRadius = baseRadius;
 
                 dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
