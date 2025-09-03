@@ -356,11 +356,6 @@
         border-radius: 50%; /* Ensures shadow is circular */
     }
 
-    .accordion-container { display: flex; flex-direction: column; gap: 0.5rem; }
-    .accordion-item { border: 1px solid #444; border-radius: 8px; overflow: hidden; }
-    .accordion-header { width: 100%; padding: 1rem; background-color: #2a2a2a; color: #fff; text-align: left; font-weight: bold; cursor: pointer; border: none; outline: none; transition: background-color 0.3s; }
-    .accordion-header:hover, .accordion-header.active { background-color: #3a3a3a; }
-    .accordion-content { padding: 1rem; background-color: #1f1f1f; display: none; flex-direction: column; gap: 1rem; }
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
         body {
@@ -595,82 +590,66 @@
                 <button id="backToMainFromSettings" class="back-button">Back</button>
                 <h2 class="view-title">Settings</h2>
             </div>
-            <div class="accordion-container w-full max-w-xs">
-                <div class="accordion-item">
-                    <button class="accordion-header">Time Format</button>
-                    <div class="accordion-content">
-                        <div class="format-buttons">
-                            <button id="format12" class="format-button">12 Hour</button>
-                            <button id="format24" class="format-button">24 Hour</button>
-                        </div>
-                    </div>
+            <div class="settings-section">
+                <h3>Time Format</h3>
+                <div class="format-buttons">
+                    <button id="format12" class="format-button">12 Hour</button>
+                    <button id="format24" class="format-button">24 Hour</button>
                 </div>
-                <div class="accordion-item">
-                    <button class="accordion-header">Label Display</button>
-                    <div class="accordion-content">
-                        <div class="display-mode-buttons">
-                            <button id="modeStandard" class="display-mode-button">Standard</button>
-                            <button id="modePercentage" class="display-mode-button">Percentage</button>
-                            <button id="modeRemainder" class="display-mode-button">Remainder</button>
-                        </div>
-                    </div>
+            </div>
+            <div class="settings-section">
+                <h3>Label Display</h3>
+                <div class="display-mode-buttons">
+                    <button id="modeStandard" class="display-mode-button">Standard</button>
+                    <button id="modePercentage" class="display-mode-button">Percentage</button>
+                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
                 </div>
-                <div class="accordion-item">
-                    <button class="accordion-header">Color Scheme</button>
-                    <div class="accordion-content">
-                        <div class="color-preset-buttons">
-                            <button id="presetDefault" class="color-preset-button">Default</button>
-                            <button id="presetNeon" class="color-preset-button">Neon</button>
-                            <button id="presetPastel" class="color-preset-button">Pastel</button>
-                            <button id="presetColorblind" class="color-preset-button">Colorblind</button>
-                        </div>
-                        <div class="setting-toggle">
-                            <span>Gradient</span>
-                            <label class="switch">
-                                <input type="checkbox" id="gradientToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
+            </div>
+            <div class="settings-section">
+                <h3>Color Scheme</h3>
+                <div class="color-preset-buttons">
+                    <button id="presetDefault" class="color-preset-button">Default</button>
+                    <button id="presetNeon" class="color-preset-button">Neon</button>
+                    <button id="presetPastel" class="color-preset-button">Pastel</button>
+                    <button id="presetColorblind" class="color-preset-button">Colorblind</button>
                 </div>
-                <div class="accordion-item">
-                    <button class="accordion-header">Separators</button>
-                    <div class="accordion-content">
-                        <div class="format-buttons">
-                            <button id="separatorStandard" class="format-button">Standard</button>
-                            <button id="separatorRuler" class="format-button">Ruler</button>
-                        </div>
-                        <div class="setting-toggle">
-                            <span>Date Lines (Month, Day)</span>
-                            <label class="switch">
-                                <input type="checkbox" id="dateLinesToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-toggle">
-                            <span>Time Lines (Hours)</span>
-                            <label class="switch">
-                                <input type="checkbox" id="timeLinesToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-toggle">
-                            <span>Show Week Bar</span>
-                            <label class="switch">
-                                <input type="checkbox" id="weekBarToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
+                <div class="setting-toggle">
+                    <span>Gradient</span>
+                    <label class="switch">
+                        <input type="checkbox" id="gradientToggle">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="accordion-item">
-                    <button class="accordion-header">Audio</button>
-                    <div class="accordion-content">
-                        <div class="setting-toggle">
-                            <span>Volume</span>
-                            <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
-                        </div>
-                    </div>
+            </div>
+            <div class="settings-section">
+                <h3>Separators</h3>
+                <div class="setting-toggle">
+                    <span>Date Lines (Month, Day)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="dateLinesToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <span>Time Lines (Hours)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="timeLinesToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <span>Show Week Bar</span>
+                    <label class="switch">
+                        <input type="checkbox" id="weekBarToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h3>Audio</h3>
+                <div class="setting-toggle">
+                    <span>Volume</span>
+                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
                 </div>
             </div>
         </div>
@@ -767,25 +746,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
                 closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
-
-                const accordionHeaders = document.querySelectorAll('.accordion-header');
-                accordionHeaders.forEach(header => {
-                    header.addEventListener('click', () => {
-                        const currentlyActive = document.querySelector('.accordion-header.active');
-                        if (currentlyActive && currentlyActive !== header) {
-                            currentlyActive.classList.remove('active');
-                            currentlyActive.nextElementSibling.style.display = 'none';
-                        }
-
-                        header.classList.toggle('active');
-                        const content = header.nextElementSibling;
-                        if (content.style.display === 'flex') {
-                            content.style.display = 'none';
-                        } else {
-                            content.style.display = 'flex';
-                        }
-                    });
-                });
             },
             handleActiveButton: handleActiveButton
         };
@@ -843,7 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillText(arc.text, textX, textY);
         };
 
-        const drawSeparators = (radius, count, arcLineWidth, arcKey) => {
+        const drawSeparators = (radius, count, arcLineWidth) => {
             if (!radius || radius <= 0) return;
 
             const innerRadius = radius - (arcLineWidth / 2);
@@ -853,41 +813,23 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
             ctx.lineWidth = 2; // Separator line width
 
-            if ((arcKey === 'minutes' || arcKey === 'seconds') && settings.separatorStyle === 'Standard') {
-                const standardPositions = [1, 2, 4, 5, 7, 8, 10, 11, 3, 9, 12];
-                const hourAngle = (Math.PI * 2) / 12;
+            for (let i = 0; i < count; i++) {
+                const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                for (const pos of standardPositions) {
-                    const angle = baseStartAngle + (pos * hourAngle);
-                    const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
-                    const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
-                    const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
-                    const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
-
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
+                // Skip the 6 o'clock position with a small tolerance
+                if (Math.abs(angle - sixOClockAngle) < 0.01) {
+                    continue;
                 }
-            } else {
-                for (let i = 0; i < count; i++) {
-                    const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                    // Skip the 6 o'clock position with a small tolerance
-                    if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                        continue;
-                    }
+                const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
+                const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
+                const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
+                const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
 
-                    const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
-                    const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
-                    const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
-                    const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
-
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                }
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
             }
         };
 
@@ -960,14 +902,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const arcs = [];
 
-            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
             if (settings.showWeekBar) {
                 arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
             }
+
+            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
+            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
+            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
+            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
@@ -984,16 +928,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // --- Draw Separators ---
             if (settings.showTimeLines) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
             }
             if (settings.showDateLines) {
-                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month');
-                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day');
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
             }
             if (settings.showWeekBar) {
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week');
+                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
             }
 
             lastNow = now;
@@ -1070,42 +1014,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.centerY = canvas.height / 2;
 
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-                const arcThickness = 20;
-                const gap = 5;
-                const monthLineWidth = arcThickness, dayLineWidth = arcThickness, hourLineWidth = arcThickness, minuteLineWidth = arcThickness, secondLineWidth = arcThickness, timerLineWidth = arcThickness, alarmLineWidth = arcThickness, weekLineWidth = arcThickness;
+                const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap + hourLineWidth + gap + dayLineWidth + gap + monthLineWidth + gap;
                 if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
-                const innerOffset = baseRadius * 0.3;
-                const scale = (baseRadius - innerOffset) / totalWidth;
+                const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
-
-                dimensions.monthLineWidth = monthLineWidth * scale;
-                dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
-                currentRadius -= (dimensions.monthLineWidth + gap * scale);
-
-                dimensions.dayLineWidth = dayLineWidth * scale;
-                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-                currentRadius -= (dimensions.dayLineWidth + gap * scale);
-
-                dimensions.hoursLineWidth = hourLineWidth * scale;
-                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                dimensions.secondsLineWidth = secondLineWidth * scale;
+                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
 
                 dimensions.minutesLineWidth = minuteLineWidth * scale;
                 dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
                 currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
+                dimensions.hoursLineWidth = hourLineWidth * scale;
+                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
+                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+
+                dimensions.dayLineWidth = dayLineWidth * scale;
+                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
+                currentRadius -= (dimensions.dayLineWidth + gap * scale);
+
+                dimensions.monthLineWidth = monthLineWidth * scale;
+                dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
+                currentRadius -= (dimensions.monthLineWidth + gap * scale);
+
+                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
+                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
+                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1400,7 +1341,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
-                separatorStyle: 'Ruler',
                 showWeekBar: false,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
@@ -1415,8 +1355,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
-            document.getElementById('separatorStandard').classList.toggle('active', settings.separatorStyle === 'Standard');
-            document.getElementById('separatorRuler').classList.toggle('active', settings.separatorStyle === 'Ruler');
             document.getElementById('gradientToggle').checked = settings.useGradient;
             document.getElementById('dateLinesToggle').checked = settings.showDateLines;
             document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
@@ -1470,8 +1408,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
             });
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
-            document.getElementById('separatorStandard').addEventListener('click', () => { settings.separatorStyle = 'Standard'; saveSettings(); applySettingsToUI(); });
-            document.getElementById('separatorRuler').addEventListener('click', () => { settings.separatorStyle = 'Ruler'; saveSettings(); applySettingsToUI(); });
             document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('weekBarToggle').addEventListener('change', (e) => { settings.showWeekBar = e.target.checked; saveSettings(); App.Clock.resize(); });
