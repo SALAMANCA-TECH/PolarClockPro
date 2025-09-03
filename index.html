@@ -893,8 +893,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        const getDisplayProgress = (progress) => {
-            return settings.inverseMode ? 1 - progress : progress;
+        const getArcAngles = (progress) => {
+            if (settings.inverseMode) {
+                return {
+                    startAngle: baseStartAngle + progress * Math.PI * 2,
+                    endAngle: baseStartAngle + Math.PI * 2
+                };
+            } else {
+                return {
+                    startAngle: baseStartAngle,
+                    endAngle: baseStartAngle + progress * Math.PI * 2
+                };
+            }
         };
 
         const drawClock = () => {
@@ -914,26 +924,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const minutesProgress = (minutes + seconds / 60) / 60;
             const secondsProgress = (seconds + now.getMilliseconds() / 1000) / 60;
 
-            const monthEndAngle = baseStartAngle + getDisplayProgress(monthProgress) * Math.PI * 2;
-            const dayEndAngle = baseStartAngle + getDisplayProgress(dayProgress) * Math.PI * 2;
-            const weekEndAngle = baseStartAngle + getDisplayProgress(weekProgress) * Math.PI * 2;
-            const hoursEndAngle = baseStartAngle + getDisplayProgress(hoursProgress) * Math.PI * 2;
-            const minutesEndAngle = baseStartAngle + getDisplayProgress(minutesProgress) * Math.PI * 2;
-            const secondsEndAngle = baseStartAngle + getDisplayProgress(secondsProgress) * Math.PI * 2;
+            const monthAngles = getArcAngles(monthProgress);
+            const dayAngles = getArcAngles(dayProgress);
+            const weekAngles = getArcAngles(weekProgress);
+            const hoursAngles = getArcAngles(hoursProgress);
+            const minutesAngles = getArcAngles(minutesProgress);
+            const secondsAngles = getArcAngles(secondsProgress);
 
 
             const arcs = [];
 
             if (settings.showWeekBar) {
-                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
+                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, startAngle: weekAngles.startAngle, endAngle: weekAngles.endAngle });
             }
 
-            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, startAngle: monthAngles.startAngle, endAngle: monthAngles.endAngle });
+            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, startAngle: dayAngles.startAngle, endAngle: dayAngles.endAngle });
+            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, startAngle: hoursAngles.startAngle, endAngle: hoursAngles.endAngle });
 
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, startAngle: minutesAngles.startAngle, endAngle: minutesAngles.endAngle });
+            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, startAngle: secondsAngles.startAngle, endAngle: secondsAngles.endAngle });
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
@@ -942,7 +952,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     arc.text = getLabelText(arc.key, now);
                     drawLabel(arc);
                 }
