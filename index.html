@@ -1043,8 +1043,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             arcs.forEach(arc => {
                 if (arc.radius > 0 && arc.max > 0) {
-                    const progress = arc.value / arc.max;
-                    const angles = getArcAngles(progress);
+                    // To create a clockwise-filling arc representing elapsed time, we calculate the elapsed proportion.
+                    // e.g., for seconds, elapsed proportion = 1 - (remaining_seconds / 60).
+                    const elapsedProportion = 1 - (arc.value / arc.max);
+                    const angles = getArcAngles(elapsedProportion);
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, angles.startAngle, angles.endAngle, arc.color.light, arc.color.dark, arc.lineWidth);
                     arc.text = arc.value.toString().padStart(arc.key === 'days' ? 1 : 2, '0');
                     drawLabel(arc);
@@ -1057,8 +1059,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawPomodoroClock();
                 return;
             }
-            if (globalState.mode === 'countdown' && globalState.countdown.totalSeconds > 0) {
-                drawCountdownClock();
+            if (globalState.mode === 'countdown') {
+                if (globalState.countdown.totalSeconds > 0) {
+                    drawCountdownClock();
+                }
+                // If totalSeconds is 0, do nothing, resulting in a blank clock.
                 return;
             }
 
