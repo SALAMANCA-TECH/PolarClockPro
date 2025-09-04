@@ -539,6 +539,11 @@
             <div id="countdownPanel" class="ui-panel" style="display: none;">
                 <div class="time-inputs">
                     <div class="input-group">
+                        <input type="number" id="countdownMonths" placeholder="0" min="0" value="0">
+                        <label>Months</label>
+                    </div>
+                    <span>:</span>
+                    <div class="input-group">
                         <input type="number" id="countdownDays" placeholder="0" min="0" value="0">
                         <label>Days</label>
                     </div>
@@ -882,6 +887,23 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const drawClock = () => {
+            if (globalState.mode === 'countdown') {
+                if (!globalState.countdown.targetDate || !globalState.countdown.startDate) return;
+
+                const totalDuration = globalState.countdown.targetDate - globalState.countdown.startDate;
+                const remainingTime = globalState.countdown.targetDate - new Date();
+
+                if (totalDuration <= 0) return;
+
+                const progress = remainingTime / totalDuration;
+
+                const startAngle = baseStartAngle + (1 - progress) * Math.PI * 2;
+                const endAngle = baseStartAngle + Math.PI * 2;
+
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.countdownRadius, startAngle, endAngle, settings.currentColors.day.light, settings.currentColors.day.dark, dimensions.countdownLineWidth);
+
+                return;
+            }
             if (!settings.currentColors || !globalState.timer) {
                 return;
             }
@@ -919,12 +941,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
                 const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', dimensions.timerLineWidth);
-            }
-            if (globalState.countdown && globalState.countdown.totalSeconds > 0 && dimensions.countdownRadius > 0) {
-                const countdownProgress = globalState.countdown.remainingSeconds / globalState.countdown.totalSeconds;
-                const countdownStartAngle = baseStartAngle + (1 - countdownProgress) * Math.PI * 2;
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.countdownRadius, countdownStartAngle, baseStartAngle + Math.PI * 2, '#80FF8A', '#00D510', dimensions.countdownLineWidth);
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
             }
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
@@ -1022,48 +1039,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
-                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
-                if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
-                if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
-                if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-                if (globalState.countdown && globalState.countdown.totalSeconds > 0) totalWidth += 30 + gap; // countdownLineWidth
-                if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
+                if (globalState.mode === 'countdown') {
+                    dimensions.countdownRadius = baseRadius * 0.8;
+                    dimensions.countdownLineWidth = baseRadius * 0.2;
+                } else {
+                    let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
+                    if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
+                    if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+                    if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
+                    if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
+                    if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
-                const scale = baseRadius / totalWidth;
-                let currentRadius = baseRadius;
+                    const scale = baseRadius / totalWidth;
+                    let currentRadius = baseRadius;
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
+                    dimensions.secondsLineWidth = secondLineWidth * scale;
+                    dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                    currentRadius -= (dimensions.secondsLineWidth + gap * scale);
 
-                dimensions.minutesLineWidth = minuteLineWidth * scale;
-                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
+                    dimensions.minutesLineWidth = minuteLineWidth * scale;
+                    dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
+                    currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
-                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
-                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                    dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
+                    dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
+                    if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
 
-                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
-                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                    dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
+                    dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
+                    if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
 
-                dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
-                dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
+                    dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
+                    dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
+                    if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
-
-                dimensions.timerLineWidth = (globalState.timer && globalState.timer.totalSeconds > 0) ? timerLineWidth * scale : 0;
-                dimensions.timerRadius = (globalState.timer && globalState.timer.totalSeconds > 0) ? currentRadius - (dimensions.timerLineWidth / 2) : 0;
-                if (globalState.timer && globalState.timer.totalSeconds > 0) currentRadius -= (dimensions.timerLineWidth + gap * scale);
-
-                dimensions.countdownLineWidth = (globalState.countdown && globalState.countdown.totalSeconds > 0) ? 30 * scale : 0;
-                dimensions.countdownRadius = (globalState.countdown && globalState.countdown.totalSeconds > 0) ? currentRadius - (dimensions.countdownLineWidth / 2) : 0;
-                if (globalState.countdown && globalState.countdown.totalSeconds > 0) currentRadius -= (dimensions.countdownLineWidth + gap * scale);
+                    dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
+                    dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
+                    if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+                }
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1093,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const toggleCountdownBtn = document.getElementById('toggleCountdownBtn');
         const resetCountdownBtn = document.getElementById('resetCountdownBtn');
+        const countdownMonthsInput = document.getElementById('countdownMonths');
         const countdownDaysInput = document.getElementById('countdownDays');
         const countdownHoursInput = document.getElementById('countdownHours');
         const countdownMinutesInput = document.getElementById('countdownMinutes');
@@ -1109,81 +1123,91 @@ document.addEventListener('DOMContentLoaded', function() {
             updateButtonStates: function() {
                 toggleTimerBtn.textContent = this.state.timer.isRunning ? 'Pause' : 'Start';
                 toggleStopwatchBtn.textContent = this.state.stopwatch.isRunning ? 'Pause' : 'Start';
-                toggleCountdownBtn.textContent = this.state.countdown.isRunning ? 'Pause' : 'Start';
-            },
-            // Countdown Logic
-            toggleCountdown: function() {
-                this.state.countdown.isRunning ? this.pauseCountdown() : this.startCountdown();
-            },
-            startCountdown: function() {
-                this.normalizeCountdownInputs();
-                if (this.state.countdown.remainingSeconds > 0) {
-                    this.state.countdown.isRunning = true;
-                    this.setCountdownInputsDisabled(true);
+                if (toggleCountdownBtn) {
+                    toggleCountdownBtn.textContent = this.state.countdown.isRunning ? 'Pause' : 'Start';
                 }
-                this.updateButtonStates();
             },
-            pauseCountdown: function() {
-                this.state.countdown.isRunning = false;
-                this.updateButtonStates();
-            },
-            resetCountdown: function() {
-                this.state.countdown.isRunning = false;
-                this.state.countdown.totalSeconds = 0;
-                this.state.countdown.remainingSeconds = 0;
-                countdownDaysInput.value = "0";
-                countdownHoursInput.value = "0";
-                countdownMinutesInput.value = "0";
-                countdownSecondsInput.value = "0";
-                this.setCountdownInputsDisabled(false);
-                this.updateButtonStates();
-                document.dispatchEvent(new CustomEvent('statechange'));
-            },
-            updateCountdownFromInput: function() {
+
+            // New Countdown Logic
+            setCountdownFromInputs: function() {
                 if (this.state.countdown.isRunning) return;
 
+                const months = parseInt(countdownMonthsInput.value) || 0;
                 const days = parseInt(countdownDaysInput.value) || 0;
                 const hours = parseInt(countdownHoursInput.value) || 0;
                 const minutes = parseInt(countdownMinutesInput.value) || 0;
                 const seconds = parseInt(countdownSecondsInput.value) || 0;
 
-                const totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+                this.state.countdown.duration = { months, days, hours, minutes, seconds };
 
-                this.state.countdown.totalSeconds = totalSeconds;
-                this.state.countdown.remainingSeconds = totalSeconds;
+                const now = new Date();
+                let targetDate = new Date(now.getTime());
+
+                targetDate.setMonth(targetDate.getMonth() + months);
+                targetDate.setDate(targetDate.getDate() + days);
+                targetDate.setHours(targetDate.getHours() + hours);
+                targetDate.setMinutes(targetDate.getMinutes() + minutes);
+                targetDate.setSeconds(targetDate.getSeconds() + seconds);
+
+                this.state.countdown.targetDate = targetDate;
+
+                this.state.countdown.remaining = intervalToDuration({ start: now, end: targetDate });
 
                 document.dispatchEvent(new CustomEvent('statechange'));
             },
-            normalizeCountdownInputs: function() {
-                let days = parseInt(countdownDaysInput.value) || 0;
-                let hours = parseInt(countdownHoursInput.value) || 0;
-                let minutes = parseInt(countdownMinutesInput.value) || 0;
-                let seconds = parseInt(countdownSecondsInput.value) || 0;
+            toggleCountdown: function() {
+                this.state.countdown.isRunning ? this.pauseCountdown() : this.startCountdown();
+            },
+            startCountdown: function() { // This function now handles both start and resume
+                if (this.state.countdown.remainingMsOnPause) {
+                    // Resuming
+                    const now = new Date();
+                    this.state.countdown.targetDate = new Date(now.getTime() + this.state.countdown.remainingMsOnPause);
+                    this.state.countdown.remainingMsOnPause = null;
+                } else {
+                    // Starting from scratch
+                    this.state.countdown.startDate = new Date();
+                    this.setCountdownFromInputs();
+                }
 
-                let totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+                if (this.state.countdown.targetDate > new Date()) {
+                    this.state.countdown.isRunning = true;
+                    this.setCountdownInputsDisabled(true);
+                    toggleCountdownBtn.textContent = 'Pause';
+                }
+            },
+            pauseCountdown: function() {
+                this.state.countdown.isRunning = false;
+                if (this.state.countdown.targetDate) {
+                    this.state.countdown.remainingMsOnPause = this.state.countdown.targetDate - new Date();
+                }
+                toggleCountdownBtn.textContent = 'Start';
+            },
+            resetCountdown: function() {
+                this.state.countdown.isRunning = false;
+                this.state.countdown.targetDate = null;
+                this.state.countdown.duration = { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+                this.state.countdown.remaining = null;
+                this.state.countdown.remainingMsOnPause = null;
 
-                const d = Math.floor(totalSeconds / 86400);
-                totalSeconds %= 86400;
-                const h = Math.floor(totalSeconds / 3600);
-                totalSeconds %= 3600;
-                const m = Math.floor(totalSeconds / 60);
-                const s = totalSeconds % 60;
+                countdownMonthsInput.value = "0";
+                countdownDaysInput.value = "0";
+                countdownHoursInput.value = "0";
+                countdownMinutesInput.value = "0";
+                countdownSecondsInput.value = "0";
 
-                countdownDaysInput.value = d;
-                countdownHoursInput.value = h;
-                countdownMinutesInput.value = m;
-                countdownSecondsInput.value = s;
-
-                const finalTotalSeconds = (d * 86400) + (h * 3600) + (m * 60) + s;
-                this.state.countdown.totalSeconds = finalTotalSeconds;
-                this.state.countdown.remainingSeconds = finalTotalSeconds;
+                this.setCountdownInputsDisabled(false);
+                toggleCountdownBtn.textContent = 'Start';
+                document.dispatchEvent(new CustomEvent('statechange'));
             },
             setCountdownInputsDisabled: function(disabled) {
+                countdownMonthsInput.disabled = disabled;
                 countdownDaysInput.disabled = disabled;
                 countdownHoursInput.disabled = disabled;
                 countdownMinutesInput.disabled = disabled;
                 countdownSecondsInput.disabled = disabled;
             },
+
 
             // Timer Logic
             toggleTimer: function() {
@@ -1212,6 +1236,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 timerSecondsInput.value = "0";
                 this.updateButtonStates();
             },
+
+            // Stopwatch Logic
             toggleStopwatch: function() {
                 this.state.stopwatch.isRunning ? this.pauseStopwatch() : this.startStopwatch();
             },
@@ -1275,6 +1301,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleTimerBtn.addEventListener('click', () => this.toggleTimer());
                 resetTimerBtn.addEventListener('click', () => this.resetTimer());
                 intervalToggle.addEventListener('change', (e) => this.state.timer.isInterval = e.target.checked);
+
                 toggleStopwatchBtn.addEventListener('click', () => this.toggleStopwatch());
                 resetStopwatchBtn.addEventListener('click', () => this.resetStopwatch());
                 lapStopwatchBtn.addEventListener('click', () => this.lapStopwatch());
@@ -1283,16 +1310,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (toggleCountdownBtn) {
                     toggleCountdownBtn.addEventListener('click', () => this.toggleCountdown());
                     resetCountdownBtn.addEventListener('click', () => this.resetCountdown());
-                    countdownDaysInput.addEventListener('input', () => this.updateCountdownFromInput());
-                    countdownHoursInput.addEventListener('input', () => this.updateCountdownFromInput());
-                    countdownMinutesInput.addEventListener('input', () => this.updateCountdownFromInput());
-                    countdownSecondsInput.addEventListener('input', () => this.updateCountdownFromInput());
 
-                    // Normalize on blur for better UX
-                    countdownDaysInput.addEventListener('blur', () => this.normalizeCountdownInputs());
-                    countdownHoursInput.addEventListener('blur', () => this.normalizeCountdownInputs());
-                    countdownMinutesInput.addEventListener('blur', () => this.normalizeCountdownInputs());
-                    countdownSecondsInput.addEventListener('blur', () => this.normalizeCountdownInputs());
+                    const inputs = [countdownMonthsInput, countdownDaysInput, countdownHoursInput, countdownMinutesInput, countdownSecondsInput];
+                    inputs.forEach(input => {
+                        input.addEventListener('blur', () => this.setCountdownFromInputs());
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault(); // Prevent tab from moving to next element
+                                this.setCountdownFromInputs();
+                            }
+                        });
+                    });
                 }
 
                 lapTimesContainer.addEventListener('input', (e) => {
@@ -1392,7 +1420,16 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
+            countdown: {
+                isRunning: false,
+                targetDate: null,
+                // Store the user-entered duration for resets
+                duration: { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 },
+                // Store the remaining time components for display
+                remaining: null,
+                remainingMsOnPause: null,
+                startDate: null
+            },
             pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
@@ -1416,24 +1453,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.timer.remainingSeconds -= deltaTime;
                 if (state.timer.remainingSeconds <= 0) timerFinished();
             }
-            if (state.countdown.isRunning) {
-                state.countdown.remainingSeconds -= deltaTime;
-                if (state.countdown.remainingSeconds <= 5 && state.countdown.remainingSeconds > 0) {
-                    clockContainer.classList.add('glowing-countdown');
-                } else {
-                    // Remove it if it was added and time is > 5 or timer is paused.
-                    // This handles pausing and resuming correctly.
-                    clockContainer.classList.remove('glowing-countdown');
-                }
 
-                if (state.countdown.remainingSeconds <= 0) {
-                    countdownFinished();
+            if (state.mode === 'countdown') {
+                if (state.countdown.isRunning) {
+                    const remainingMs = state.countdown.targetDate - now;
+
+                    if (remainingMs <= 5000 && remainingMs > 0) {
+                        clockContainer.classList.add('glowing-countdown');
+                    } else {
+                        clockContainer.classList.remove('glowing-countdown');
+                    }
+
+                    if (remainingMs <= 0) {
+                        countdownFinished();
+                    } else {
+                        state.countdown.remaining = intervalToDuration({ start: now, end: state.countdown.targetDate });
+                    }
+                } else {
+                    // If not running, but a target date is set, calculate remaining time for display
+                    if (state.countdown.targetDate) {
+                        state.countdown.remaining = intervalToDuration({ start: new Date(), end: state.countdown.targetDate });
+                    }
                 }
             } else if (!state.pomodoro.isRunning) {
-                // If countdown is not running, and pomodoro is not running, remove class.
-                // This is to avoid conflicts. A better system would be a centralized effect manager.
                 clockContainer.classList.remove('glowing-countdown');
             }
+
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
@@ -1443,14 +1488,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
 
-            if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
-            if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+            if (state.mode === 'countdown') {
+                digitalDate.style.display = 'none';
+                digitalTime.textContent = formatSecondsToCountdown(state.countdown.remaining);
+            } else {
+                digitalDate.style.display = 'block';
+                if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
+                if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+            }
 
             checkAdvancedAlarms(now);
             App.Clock.update(settings, state);
             requestAnimationFrame(update);
         }
         let lastFrameTime;
+
+        function intervalToDuration({ start, end }) {
+            if (start > end) {
+                return { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+            }
+
+            let startDate = new Date(start);
+            let endDate = new Date(end);
+
+            let years = endDate.getFullYear() - startDate.getFullYear();
+            let months = endDate.getMonth() - startDate.getMonth();
+            let days = endDate.getDate() - startDate.getDate();
+            let hours = endDate.getHours() - startDate.getHours();
+            let minutes = endDate.getMinutes() - startDate.getMinutes();
+            let seconds = endDate.getSeconds() - startDate.getSeconds();
+
+            if (seconds < 0) {
+                minutes--;
+                seconds += 60;
+            }
+            if (minutes < 0) {
+                hours--;
+                minutes += 60;
+            }
+            if (hours < 0) {
+                days--;
+                hours += 24;
+            }
+            if (days < 0) {
+                months--;
+                const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            months += years * 12;
+
+            return { months, days, hours, minutes, seconds };
+        }
+
+        function formatSecondsToCountdown(remaining) {
+            if (!remaining) return "00:00:00:00:00";
+            const { months, days, hours, minutes, seconds } = remaining;
+            return [
+                String(months).padStart(2, '0'),
+                String(days).padStart(2, '0'),
+                String(hours).padStart(2, '0'),
+                String(minutes).padStart(2, '0'),
+                String(Math.floor(seconds)).padStart(2, '0')
+            ].join(':');
+        }
 
         function timerFinished() {
             playSound(settings.timerSound, settings.volume);
@@ -1555,7 +1660,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
             document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
 
-            document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
+            document.addEventListener('modechange', (e) => {
+                state.mode = e.detail.mode;
+                App.Clock.resize();
+            });
             document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
             document.addEventListener('statechange', saveState);
         }
