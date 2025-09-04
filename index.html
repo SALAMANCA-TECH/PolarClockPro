@@ -118,6 +118,10 @@
         text-align: center;
     }
 
+    .settings-menu-button {
+        margin-bottom: 1rem;
+    }
+
     .main-nav-button {
         width: 60px;
         height: 60px;
@@ -341,6 +345,12 @@
         100% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
     }
 
+    @keyframes glow-countdown {
+        0% { box-shadow: 0 0 10px rgba(128, 255, 138, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(128, 255, 138, 0.5); }
+        100% { box-shadow: 0 0 10px rgba(128, 255, 138, 0.2); }
+    }
+
     /* Animation Classes */
     .pulsing-warning {
         animation: pulse 2s infinite ease-in-out;
@@ -353,6 +363,11 @@
 
     .glowing-break {
         animation: glow-break 3s infinite ease-in-out;
+        border-radius: 50%; /* Ensures shadow is circular */
+    }
+
+    .glowing-countdown {
+        animation: glow-countdown 3s infinite ease-in-out;
         border-radius: 50%; /* Ensures shadow is circular */
     }
 
@@ -428,9 +443,8 @@
             <div class="tab-buttons">
                 <button id="timerTab" class="tab-button active">Timer</button>
                 <button id="pomodoroTab" class="tab-button">Pomodoro</button>
-                <button id="alarmTab" class="tab-button">Alarm</button>
-                <button id="stopwatchTab" class="tab-button">Stopwatch</button>
                 <button id="countdownTab" class="tab-button">Countdown</button>
+                <button id="stopwatchTab" class="tab-button">Stopwatch</button>
             </div>
             <!-- Timer Panel -->
             <div id="timerPanel" class="ui-panel">
@@ -525,67 +539,9 @@
                     </div>
                 </div>
             </div>
-            <!-- Alarm Panel -->
-            <div id="alarmPanel" class="ui-panel" style="display: none;">
-                <div class="time-inputs">
-                    <div class="input-group">
-                        <input type="number" id="alarmHours" placeholder="0" min="1" max="12" value="8">
-                        <label>Hours</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="alarmMinutes" placeholder="00" min="0" max="59" value="0">
-                        <label>Minutes</label>
-                    </div>
-                </div>
-                <div class="alarm-controls">
-                    <div id="amPmContainer" class="am-pm-toggle">
-                        <button id="amButton" class="format-button am-pm-button active">AM</button>
-                        <button id="pmButton" class="format-button am-pm-button">PM</button>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Alarm Off/On</span>
-                        <label class="switch">
-                            <input type="checkbox" id="alarmToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Sound</span>
-                        <select id="alarmSound" class="sound-select">
-                            <option value="Ahooga.wav">Ahooga</option>
-                            <option value="bell01.mp3" selected>Bell 1</option>
-                            <option value="Bwauhm.mp3">Bwauhm</option>
-                            <option value="Lenovo_Error.mp3">Lenovo Error</option>
-                            <option value="nice_digital_watch.mp3">Nice Watch</option>
-                            <option value="rotten_digital_watch.wav">Rotten Watch</option>
-                            <option value="Tick_Tock.wav">Tick Tock 1</option>
-                            <option value="Tick_Tock_Two.wav">Tick Tock 2</option>
-                        </select>
-                        <button class="preview-btn" data-target="alarmSound">Preview</button>
-                    </div>
-                </div>
-            </div>
-            <!-- Stopwatch Panel -->
-            <div id="stopwatchPanel" class="ui-panel" style="display: none;">
-                <div class="control-buttons">
-                    <button id="toggleStopwatchBtn">Start</button>
-                    <button id="lapStopwatch">Lap</button>
-                    <button id="resetStopwatch">Reset</button>
-                </div>
-                <div class="settings-section w-full max-w-xs">
-                    <h3 class="text-sm uppercase text-gray-400 mt-4">Catch Up Time</h3>
-                    <div class="flex items-center justify-center gap-2">
-                        <input type="number" id="catchUpMinutes" class="time-input-small" placeholder="Min" min="0">
-                        <input type="number" id="catchUpSeconds" class="time-input-small" placeholder="Sec" min="0" max="59">
-                        <button id="addCatchUpTimeBtn" class="control-btn">Add Time</button>
-                    </div>
-                </div>
-                <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
-            </div>
             <!-- Countdown Panel -->
             <div id="countdownPanel" class="ui-panel" style="display: none;">
-                 <div class="time-inputs">
+                <div class="time-inputs">
                     <div class="input-group">
                         <input type="number" id="countdownDays" placeholder="0" min="0" value="0">
                         <label>Days</label>
@@ -607,78 +563,146 @@
                     </div>
                 </div>
                 <div class="control-buttons">
-                    <button id="startCountdownBtn">Start</button>
+                    <button id="toggleCountdownBtn">Start</button>
                     <button id="resetCountdownBtn">Reset</button>
                 </div>
+            </div>
+            <!-- Stopwatch Panel -->
+            <div id="stopwatchPanel" class="ui-panel" style="display: none;">
+                <div class="control-buttons">
+                    <button id="toggleStopwatchBtn">Start</button>
+                    <button id="lapStopwatch">Lap</button>
+                    <button id="resetStopwatch">Reset</button>
+                </div>
+                <div class="settings-section w-full max-w-xs">
+                    <h3 class="text-sm uppercase text-gray-400 mt-4">Catch Up Time</h3>
+                    <div class="flex items-center justify-center gap-2">
+                        <input type="number" id="catchUpMinutes" class="time-input-small" placeholder="Min" min="0">
+                        <input type="number" id="catchUpSeconds" class="time-input-small" placeholder="Sec" min="0" max="59">
+                        <button id="addCatchUpTimeBtn" class="control-btn">Add Time</button>
+                    </div>
+                </div>
+                <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
             </div>
         </div>
         
         <!-- Settings View -->
         <div id="settingsView" class="ui-content" style="display: none;">
             <div class="view-header">
-                <button id="backToMainFromSettings" class="back-button">Back</button>
+                <button id="backToMainFromSettings" class="back-button">Back to Main</button>
+            </div>
+            <!-- Settings Main Menu -->
+            <div id="settingsMenu" class="ui-panel">
                 <h2 class="view-title">Settings</h2>
+                <button class="header-button settings-menu-button" data-target="timeFormatSettings">Time Format</button>
+                <button class="header-button settings-menu-button" data-target="labelDisplaySettings">Label Display</button>
+                <button class="header-button settings-menu-button" data-target="colorSchemeSettings">Color Scheme</button>
+                <button class="header-button settings-menu-button" data-target="separatorsSettings">Separators</button>
+                <button class="header-button settings-menu-button" data-target="audioSettings">Audio</button>
+                <!-- FIX: Added Inverse Mode to the main settings menu for consistency -->
+                <button class="header-button settings-menu-button" data-target="displayModeSettings">Display Mode</button>
             </div>
-            <div class="settings-section">
-                <h3>Time Format</h3>
-                <div class="format-buttons">
-                    <button id="format12" class="format-button">12 Hour</button>
-                    <button id="format24" class="format-button">24 Hour</button>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Label Display</h3>
-                <div class="display-mode-buttons">
-                    <button id="modeStandard" class="display-mode-button">Standard</button>
-                    <button id="modePercentage" class="display-mode-button">Percentage</button>
-                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Color Scheme</h3>
-                <div class="color-preset-buttons">
-                    <button id="presetDefault" class="color-preset-button">Default</button>
-                    <button id="presetNeon" class="color-preset-button">Neon</button>
-                    <button id="presetPastel" class="color-preset-button">Pastel</button>
-                    <button id="presetColorblind" class="color-preset-button">Colorblind</button>
-                </div>
-                <div class="setting-toggle">
-                    <span>Gradient</span>
-                    <label class="switch">
-                        <input type="checkbox" id="gradientToggle">
-                        <span class="slider"></span>
-                    </label>
+
+            <!-- Time Format Settings -->
+            <div id="timeFormatSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Time Format</h3>
+                    <div class="format-buttons">
+                        <button id="format12" class="format-button">12 Hour</button>
+                        <button id="format24" class="format-button">24 Hour</button>
+                    </div>
                 </div>
             </div>
-            <div class="settings-section">
-                <h3>Separators</h3>
-                <div class="setting-toggle">
-                    <span>Date Lines (Month, Day)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="dateLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Time Lines (Hours)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="timeLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Show Week Bar</span>
-                    <label class="switch">
-                        <input type="checkbox" id="weekBarToggle">
-                        <span class="slider"></span>
-                    </label>
+
+            <!-- FIX: Created a new submenu for Display Mode to house the Inverse Mode toggle -->
+            <div id="displayModeSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Display Mode</h3>
+                    <div class="setting-toggle">
+                        <span>Inverse Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="inverseModeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div class="settings-section">
-                <h3>Audio</h3>
-                <div class="setting-toggle">
-                    <span>Volume</span>
-                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+
+
+            <!-- Label Display Settings -->
+            <div id="labelDisplaySettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Label Display</h3>
+                    <div class="display-mode-buttons">
+                        <button id="modeStandard" class="display-mode-button">Standard</button>
+                        <button id="modePercentage" class="display-mode-button">Percentage</button>
+                        <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Scheme Settings -->
+            <div id="colorSchemeSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Color Scheme</h3>
+                    <div class="color-preset-buttons">
+                        <button id="presetDefault" class="color-preset-button">Default</button>
+                        <button id="presetNeon" class="color-preset-button">Neon</button>
+                        <button id="presetPastel" class="color-preset-button">Pastel</button>
+                        <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Gradient</span>
+                        <label class="switch">
+                            <input type="checkbox" id="gradientToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separators Settings -->
+            <div id="separatorsSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Separators</h3>
+                    <div class="setting-toggle">
+                        <span>Date Lines (Month, Day)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dateLinesToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Time Lines (Hours)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="timeLinesToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Show Week Bar</span>
+                        <label class="switch">
+                            <input type="checkbox" id="weekBarToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div id="audioSettings" class="ui-panel settings-submenu" style="display: none;">
+                <button class="back-button back-to-settings">Back</button>
+                <div class="settings-section">
+                    <h3>Audio</h3>
+                    <div class="setting-toggle">
+                        <span>Volume</span>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
+                    </div>
                 </div>
             </div>
         </div>
@@ -719,20 +743,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const toolTabs = {
             timer: document.getElementById('timerTab'),
             pomodoro: document.getElementById('pomodoroTab'),
-            alarm: document.getElementById('alarmTab'),
-            stopwatch: document.getElementById('stopwatchTab'),
             countdown: document.getElementById('countdownTab'),
+            stopwatch: document.getElementById('stopwatchTab'),
         };
         const toolPanels = {
             timer: document.getElementById('timerPanel'),
             pomodoro: document.getElementById('pomodoroPanel'),
-            alarm: document.getElementById('alarmPanel'),
-            stopwatch: document.getElementById('stopwatchPanel'),
             countdown: document.getElementById('countdownPanel'),
+            stopwatch: document.getElementById('stopwatchPanel'),
         };
         const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
         const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
         const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const settingsMenuButtons = document.querySelectorAll('.settings-menu-button');
+        const settingsSubmenus = document.querySelectorAll('.settings-submenu');
+        const backToSettingsButtons = document.querySelectorAll('.back-to-settings');
 
         function showView(viewToShow) {
             const isMainView = viewToShow === views.main;
@@ -764,7 +790,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         App.UI = {
             init: function() {
-                navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
+                navButtons.goToSettings.addEventListener('click', () => {
+                    showView(views.settings);
+                    settingsSubmenus.forEach(submenu => submenu.style.display = 'none');
+                    settingsMenu.style.display = 'flex';
+                });
                 navButtons.goToTools.addEventListener('click', () => showView(views.tools));
                 navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
                 navButtons.backFromTools.addEventListener('click', () => showView(views.main));
@@ -772,12 +802,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
                 toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-                toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
-                toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
                 toolTabs.countdown.addEventListener('click', () => showToolsPanel(toolPanels.countdown, toolTabs.countdown));
+                toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
                 closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+
+                settingsMenuButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetId = button.dataset.target;
+                        const targetSubmenu = document.getElementById(targetId);
+                        settingsMenu.style.display = 'none';
+                        if (targetSubmenu) {
+                            targetSubmenu.style.display = 'flex';
+                        }
+                    });
+                });
+
+                backToSettingsButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        settingsSubmenus.forEach(submenu => submenu.style.display = 'none');
+                        settingsMenu.style.display = 'flex';
+                    });
+                });
             },
             handleActiveButton: handleActiveButton
         };
@@ -915,7 +962,71 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
+        const getArcAngles = (progress) => {
+            if (settings.inverseMode) {
+                return {
+                    startAngle: baseStartAngle + progress * Math.PI * 2,
+                    endAngle: baseStartAngle + Math.PI * 2
+                };
+            } else {
+                return {
+                    startAngle: baseStartAngle,
+                    endAngle: baseStartAngle + progress * Math.PI * 2
+                };
+            }
+        };
+
+        const drawPomodoroClock = () => {
+            if (!settings.currentColors || !globalState.pomodoro) {
+                return;
+            }
+
+            const remainingSeconds = globalState.pomodoro.remainingSeconds;
+            const pomodoroMinutes = Math.floor(remainingSeconds / 60);
+            const pomodoroSeconds = Math.floor(remainingSeconds % 60);
+
+            const minutesProgress = pomodoroMinutes / 60;
+            const secondsProgress = pomodoroSeconds / 60;
+
+            const minutesAngles = getArcAngles(minutesProgress);
+            const secondsAngles = getArcAngles(secondsProgress);
+
+            const arcs = [];
+
+            // We only draw minutes and seconds for the pomodoro timer
+            arcs.push({
+                key: 'minutes',
+                radius: dimensions.minutesRadius,
+                colors: settings.currentColors.minutes,
+                lineWidth: 30,
+                startAngle: minutesAngles.startAngle,
+                endAngle: minutesAngles.endAngle,
+                text: pomodoroMinutes.toString().padStart(2, '0')
+            });
+            arcs.push({
+                key: 'seconds',
+                radius: dimensions.secondsRadius,
+                colors: settings.currentColors.seconds,
+                lineWidth: 30,
+                startAngle: secondsAngles.startAngle,
+                endAngle: secondsAngles.endAngle,
+                text: pomodoroSeconds.toString().padStart(2, '0')
+            });
+
+            arcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawLabel(arc);
+                }
+            });
+        };
+
         const drawClock = () => {
+            if (globalState.mode === 'pomodoro') {
+                drawPomodoroClock();
+                return;
+            }
+
             if (!settings.currentColors || !globalState.timer) {
                 return;
             }
@@ -925,39 +1036,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const daysInMonth = getDaysInMonth(year, month);
             const weekOfYear = getWeekOfYear(now);
 
-            const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
-            const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
-            const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
-            const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-            const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+            const monthProgress = (month + date / daysInMonth) / 12;
+            const dayProgress = (date - 1 + (hours + minutes / 60) / 24) / daysInMonth;
+            const weekProgress = weekOfYear / 52;
+            const hoursProgress = ((hours % 12) + minutes / 60) / 12;
+            const minutesProgress = (minutes + seconds / 60) / 60;
+            const secondsProgress = (seconds + now.getMilliseconds() / 1000) / 60;
+
+            const monthAngles = getArcAngles(monthProgress);
+            const dayAngles = getArcAngles(dayProgress);
+            const weekAngles = getArcAngles(weekProgress);
+            const hoursAngles = getArcAngles(hoursProgress);
+            const minutesAngles = getArcAngles(minutesProgress);
+            const secondsAngles = getArcAngles(secondsProgress);
+
 
             const arcs = [];
 
             if (settings.showWeekBar) {
-                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
+                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, startAngle: weekAngles.startAngle, endAngle: weekAngles.endAngle });
             }
 
-            if (settings.showDateLines) {
-                arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-                arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            }
+            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, startAngle: monthAngles.startAngle, endAngle: monthAngles.endAngle });
+            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, startAngle: dayAngles.startAngle, endAngle: dayAngles.endAngle });
+            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, startAngle: hoursAngles.startAngle, endAngle: hoursAngles.endAngle });
 
-            if (settings.showTimeLines) {
-                arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-            }
-
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, startAngle: minutesAngles.startAngle, endAngle: minutesAngles.endAngle });
+            arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, startAngle: secondsAngles.startAngle, endAngle: secondsAngles.endAngle });
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
                 const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', dimensions.timerLineWidth);
+            }
+            if (globalState.countdown && globalState.countdown.totalSeconds > 0 && dimensions.countdownRadius > 0) {
+                const countdownProgress = globalState.countdown.remainingSeconds / globalState.countdown.totalSeconds;
+                const countdownStartAngle = baseStartAngle + (1 - countdownProgress) * Math.PI * 2;
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.countdownRadius, countdownStartAngle, baseStartAngle + Math.PI * 2, '#80FF8A', '#00D510', dimensions.countdownLineWidth);
             }
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     arc.text = getLabelText(arc.key, now);
                     drawLabel(arc);
                 }
@@ -966,6 +1085,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // --- Draw Separators ---
             if (settings.showTimeLines) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
             }
             if (settings.showDateLines) {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
@@ -1051,11 +1172,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
-                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
-                if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap + hourLineWidth + gap + dayLineWidth + gap + monthLineWidth + gap;
                 if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
+                if (globalState.countdown && globalState.countdown.totalSeconds > 0) totalWidth += 30 + gap; // countdownLineWidth
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
                 const scale = baseRadius / totalWidth;
@@ -1069,21 +1189,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
                 currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
-                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
-                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                dimensions.hoursLineWidth = hourLineWidth * scale;
+                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
+                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
 
-                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
-                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                dimensions.dayLineWidth = dayLineWidth * scale;
+                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
+                currentRadius -= (dimensions.dayLineWidth + gap * scale);
 
-                dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
-                dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
+                dimensions.monthLineWidth = monthLineWidth * scale;
+                dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
+                currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
                 dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
                 dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
                 if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+
+                dimensions.timerLineWidth = (globalState.timer && globalState.timer.totalSeconds > 0) ? timerLineWidth * scale : 0;
+                dimensions.timerRadius = (globalState.timer && globalState.timer.totalSeconds > 0) ? currentRadius - (dimensions.timerLineWidth / 2) : 0;
+                if (globalState.timer && globalState.timer.totalSeconds > 0) currentRadius -= (dimensions.timerLineWidth + gap * scale);
+
+                dimensions.countdownLineWidth = (globalState.countdown && globalState.countdown.totalSeconds > 0) ? 30 * scale : 0;
+                dimensions.countdownRadius = (globalState.countdown && globalState.countdown.totalSeconds > 0) ? currentRadius - (dimensions.countdownLineWidth / 2) : 0;
+                if (globalState.countdown && globalState.countdown.totalSeconds > 0) currentRadius -= (dimensions.countdownLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1111,14 +1239,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const catchUpSecondsInput = document.getElementById('catchUpSeconds');
         const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
 
-        // Countdown elements
+        const toggleCountdownBtn = document.getElementById('toggleCountdownBtn');
+        const resetCountdownBtn = document.getElementById('resetCountdownBtn');
         const countdownDaysInput = document.getElementById('countdownDays');
         const countdownHoursInput = document.getElementById('countdownHours');
         const countdownMinutesInput = document.getElementById('countdownMinutes');
         const countdownSecondsInput = document.getElementById('countdownSeconds');
-        const startCountdownBtn = document.getElementById('startCountdownBtn');
-        const resetCountdownBtn = document.getElementById('resetCountdownBtn');
-
 
         App.Tools = {
             state: null,
@@ -1131,7 +1257,83 @@ document.addEventListener('DOMContentLoaded', function() {
             updateButtonStates: function() {
                 toggleTimerBtn.textContent = this.state.timer.isRunning ? 'Pause' : 'Start';
                 toggleStopwatchBtn.textContent = this.state.stopwatch.isRunning ? 'Pause' : 'Start';
+                toggleCountdownBtn.textContent = this.state.countdown.isRunning ? 'Pause' : 'Start';
             },
+            // Countdown Logic
+            toggleCountdown: function() {
+                this.state.countdown.isRunning ? this.pauseCountdown() : this.startCountdown();
+            },
+            startCountdown: function() {
+                this.normalizeCountdownInputs();
+                if (this.state.countdown.remainingSeconds > 0) {
+                    this.state.countdown.isRunning = true;
+                    this.setCountdownInputsDisabled(true);
+                }
+                this.updateButtonStates();
+            },
+            pauseCountdown: function() {
+                this.state.countdown.isRunning = false;
+                this.updateButtonStates();
+            },
+            resetCountdown: function() {
+                this.state.countdown.isRunning = false;
+                this.state.countdown.totalSeconds = 0;
+                this.state.countdown.remainingSeconds = 0;
+                countdownDaysInput.value = "0";
+                countdownHoursInput.value = "0";
+                countdownMinutesInput.value = "0";
+                countdownSecondsInput.value = "0";
+                this.setCountdownInputsDisabled(false);
+                this.updateButtonStates();
+                document.dispatchEvent(new CustomEvent('statechange'));
+            },
+            updateCountdownFromInput: function() {
+                if (this.state.countdown.isRunning) return;
+
+                const days = parseInt(countdownDaysInput.value) || 0;
+                const hours = parseInt(countdownHoursInput.value) || 0;
+                const minutes = parseInt(countdownMinutesInput.value) || 0;
+                const seconds = parseInt(countdownSecondsInput.value) || 0;
+
+                const totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+
+                this.state.countdown.totalSeconds = totalSeconds;
+                this.state.countdown.remainingSeconds = totalSeconds;
+
+                document.dispatchEvent(new CustomEvent('statechange'));
+            },
+            normalizeCountdownInputs: function() {
+                let days = parseInt(countdownDaysInput.value) || 0;
+                let hours = parseInt(countdownHoursInput.value) || 0;
+                let minutes = parseInt(countdownMinutesInput.value) || 0;
+                let seconds = parseInt(countdownSecondsInput.value) || 0;
+
+                let totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+
+                const d = Math.floor(totalSeconds / 86400);
+                totalSeconds %= 86400;
+                const h = Math.floor(totalSeconds / 3600);
+                totalSeconds %= 3600;
+                const m = Math.floor(totalSeconds / 60);
+                const s = totalSeconds % 60;
+
+                countdownDaysInput.value = d;
+                countdownHoursInput.value = h;
+                countdownMinutesInput.value = m;
+                countdownSecondsInput.value = s;
+
+                const finalTotalSeconds = (d * 86400) + (h * 3600) + (m * 60) + s;
+                this.state.countdown.totalSeconds = finalTotalSeconds;
+                this.state.countdown.remainingSeconds = finalTotalSeconds;
+            },
+            setCountdownInputsDisabled: function(disabled) {
+                countdownDaysInput.disabled = disabled;
+                countdownHoursInput.disabled = disabled;
+                countdownMinutesInput.disabled = disabled;
+                countdownSecondsInput.disabled = disabled;
+            },
+
+            // Timer Logic
             toggleTimer: function() {
                 this.state.timer.isRunning ? this.pauseTimer() : this.startTimer();
             },
@@ -1217,30 +1419,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.dispatchEvent(new CustomEvent('statechange'));
                 }
             },
-            startCountdown: function() {
-                const days = parseInt(countdownDaysInput.value) || 0;
-                const hours = parseInt(countdownHoursInput.value) || 0;
-                const minutes = parseInt(countdownMinutesInput.value) || 0;
-                const seconds = parseInt(countdownSecondsInput.value) || 0;
-
-                const total = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
-
-                if (total > 0) {
-                    this.state.countdown.totalSeconds = total;
-                    this.state.countdown.remainingSeconds = total;
-                    this.state.countdown.isRunning = true;
-                }
-            },
-            resetCountdown: function() {
-                this.state.countdown.totalSeconds = 0;
-                this.state.countdown.remainingSeconds = 0;
-                this.state.countdown.isRunning = false;
-
-                countdownDaysInput.value = '0';
-                countdownHoursInput.value = '0';
-                countdownMinutesInput.value = '0';
-                countdownSecondsInput.value = '0';
-            },
             setupEventListeners: function() {
                 toggleTimerBtn.addEventListener('click', () => this.toggleTimer());
                 resetTimerBtn.addEventListener('click', () => this.resetTimer());
@@ -1250,8 +1428,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 lapStopwatchBtn.addEventListener('click', () => this.lapStopwatch());
                 addCatchUpTimeBtn.addEventListener('click', () => this.addManualCatchUpTime());
 
-                startCountdownBtn.addEventListener('click', () => this.startCountdown());
-                resetCountdownBtn.addEventListener('click', () => this.resetCountdown());
+                if (toggleCountdownBtn) {
+                    toggleCountdownBtn.addEventListener('click', () => this.toggleCountdown());
+                    resetCountdownBtn.addEventListener('click', () => this.resetCountdown());
+                    countdownDaysInput.addEventListener('input', () => this.updateCountdownFromInput());
+                    countdownHoursInput.addEventListener('input', () => this.updateCountdownFromInput());
+                    countdownMinutesInput.addEventListener('input', () => this.updateCountdownFromInput());
+                    countdownSecondsInput.addEventListener('input', () => this.updateCountdownFromInput());
+
+                    // Normalize on blur for better UX
+                    countdownDaysInput.addEventListener('blur', () => this.normalizeCountdownInputs());
+                    countdownHoursInput.addEventListener('blur', () => this.normalizeCountdownInputs());
+                    countdownMinutesInput.addEventListener('blur', () => this.normalizeCountdownInputs());
+                    countdownSecondsInput.addEventListener('blur', () => this.normalizeCountdownInputs());
+                }
 
                 lapTimesContainer.addEventListener('input', (e) => {
                     if (e.target.classList.contains('lap-label-input')) {
@@ -1350,9 +1540,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
+            countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
             pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
-            countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
             lastMinuteChecked: -1
@@ -1373,6 +1563,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.timer.isRunning) {
                 state.timer.remainingSeconds -= deltaTime;
                 if (state.timer.remainingSeconds <= 0) timerFinished();
+            }
+            if (state.countdown.isRunning) {
+                state.countdown.remainingSeconds -= deltaTime;
+                if (state.countdown.remainingSeconds <= 5 && state.countdown.remainingSeconds > 0) {
+                    clockContainer.classList.add('glowing-countdown');
+                } else {
+                    // Remove it if it was added and time is > 5 or timer is paused.
+                    // This handles pausing and resuming correctly.
+                    clockContainer.classList.remove('glowing-countdown');
+                }
+
+                if (state.countdown.remainingSeconds <= 0) {
+                    countdownFinished();
+                }
+            } else if (!state.pomodoro.isRunning) {
+                // If countdown is not running, and pomodoro is not running, remove class.
+                // This is to avoid conflicts. A better system would be a centralized effect manager.
+                clockContainer.classList.remove('glowing-countdown');
             }
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
@@ -1401,6 +1609,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        function countdownFinished() {
+            clockContainer.classList.remove('glowing-countdown');
+            App.Tools.resetCountdown();
+        }
+
         function saveState() { localStorage.setItem('polarClockState', JSON.stringify(state)); }
         function loadState() {
             const savedState = localStorage.getItem('polarClockState');
@@ -1413,9 +1626,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
         function loadSettings() {
+            // FIX: Re-added the missing constant definition for savedSettings
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                inverseMode: false,
                 showWeekBar: false,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
@@ -1437,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('volumeControl').value = settings.volume;
             document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
             document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
+            document.getElementById('inverseModeToggle').checked = settings.inverseMode;
         }
 
         function loadAdvancedAlarms() {
@@ -1489,6 +1705,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
             document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
             document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
+            document.getElementById('inverseModeToggle').addEventListener('change', (e) => { settings.inverseMode = e.target.checked; saveSettings(); });
 
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
             document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
