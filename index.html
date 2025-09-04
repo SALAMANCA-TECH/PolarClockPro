@@ -430,6 +430,7 @@
                 <button id="pomodoroTab" class="tab-button">Pomodoro</button>
                 <button id="alarmTab" class="tab-button">Alarm</button>
                 <button id="stopwatchTab" class="tab-button">Stopwatch</button>
+                <button id="countdownTab" class="tab-button">Countdown</button>
             </div>
             <!-- Timer Panel -->
             <div id="timerPanel" class="ui-panel">
@@ -582,6 +583,34 @@
                 </div>
                 <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
             </div>
+            <!-- Countdown Panel -->
+            <div id="countdownPanel" class="ui-panel" style="display: none;">
+                 <div class="time-inputs">
+                    <div class="input-group">
+                        <input type="number" id="countdownDays" placeholder="0" min="0" value="0">
+                        <label>Days</label>
+                    </div>
+                    <span>:</span>
+                    <div class="input-group">
+                        <input type="number" id="countdownHours" placeholder="0" min="0" max="23" value="0">
+                        <label>Hours</label>
+                    </div>
+                    <span>:</span>
+                    <div class="input-group">
+                        <input type="number" id="countdownMinutes" placeholder="00" min="0" max="59" value="0">
+                        <label>Minutes</label>
+                    </div>
+                    <span>:</span>
+                    <div class="input-group">
+                        <input type="number" id="countdownSeconds" placeholder="00" min="0" max="59" value="0">
+                        <label>Seconds</label>
+                    </div>
+                </div>
+                <div class="control-buttons">
+                    <button id="startCountdownBtn">Start</button>
+                    <button id="resetCountdownBtn">Reset</button>
+                </div>
+            </div>
         </div>
         
         <!-- Settings View -->
@@ -692,12 +721,14 @@ document.addEventListener('DOMContentLoaded', function() {
             pomodoro: document.getElementById('pomodoroTab'),
             alarm: document.getElementById('alarmTab'),
             stopwatch: document.getElementById('stopwatchTab'),
+            countdown: document.getElementById('countdownTab'),
         };
         const toolPanels = {
             timer: document.getElementById('timerPanel'),
             pomodoro: document.getElementById('pomodoroPanel'),
             alarm: document.getElementById('alarmPanel'),
             stopwatch: document.getElementById('stopwatchPanel'),
+            countdown: document.getElementById('countdownPanel'),
         };
         const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
         const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
@@ -743,6 +774,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
                 toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
                 toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
+                toolTabs.countdown.addEventListener('click', () => showToolsPanel(toolPanels.countdown, toolTabs.countdown));
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
                 closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
@@ -1079,6 +1111,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const catchUpSecondsInput = document.getElementById('catchUpSeconds');
         const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
 
+        // Countdown elements
+        const countdownDaysInput = document.getElementById('countdownDays');
+        const countdownHoursInput = document.getElementById('countdownHours');
+        const countdownMinutesInput = document.getElementById('countdownMinutes');
+        const countdownSecondsInput = document.getElementById('countdownSeconds');
+        const startCountdownBtn = document.getElementById('startCountdownBtn');
+        const resetCountdownBtn = document.getElementById('resetCountdownBtn');
+
+
         App.Tools = {
             state: null,
             init: function(appState) {
@@ -1176,6 +1217,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.dispatchEvent(new CustomEvent('statechange'));
                 }
             },
+            startCountdown: function() {
+                const days = parseInt(countdownDaysInput.value) || 0;
+                const hours = parseInt(countdownHoursInput.value) || 0;
+                const minutes = parseInt(countdownMinutesInput.value) || 0;
+                const seconds = parseInt(countdownSecondsInput.value) || 0;
+
+                const total = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+
+                if (total > 0) {
+                    this.state.countdown.totalSeconds = total;
+                    this.state.countdown.remainingSeconds = total;
+                    this.state.countdown.isRunning = true;
+                }
+            },
+            resetCountdown: function() {
+                this.state.countdown.totalSeconds = 0;
+                this.state.countdown.remainingSeconds = 0;
+                this.state.countdown.isRunning = false;
+
+                countdownDaysInput.value = '0';
+                countdownHoursInput.value = '0';
+                countdownMinutesInput.value = '0';
+                countdownSecondsInput.value = '0';
+            },
             setupEventListeners: function() {
                 toggleTimerBtn.addEventListener('click', () => this.toggleTimer());
                 resetTimerBtn.addEventListener('click', () => this.resetTimer());
@@ -1184,6 +1249,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 resetStopwatchBtn.addEventListener('click', () => this.resetStopwatch());
                 lapStopwatchBtn.addEventListener('click', () => this.lapStopwatch());
                 addCatchUpTimeBtn.addEventListener('click', () => this.addManualCatchUpTime());
+
+                startCountdownBtn.addEventListener('click', () => this.startCountdown());
+                resetCountdownBtn.addEventListener('click', () => this.resetCountdown());
+
                 lapTimesContainer.addEventListener('input', (e) => {
                     if (e.target.classList.contains('lap-label-input')) {
                         const index = parseInt(e.target.dataset.index);
@@ -1283,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
             pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
+            countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
             lastMinuteChecked: -1
