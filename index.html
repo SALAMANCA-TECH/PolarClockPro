@@ -842,7 +842,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const baseStartAngle = -Math.PI / 2;
         let lastNow = new Date();
         let isFirstFrameDrawn = false;
-        let animationFrameId = null;
 
         const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
             if (startAngle >= endAngle - 0.01 || radius <= 0) return;
@@ -1168,14 +1167,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        const animate = () => {
+        const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (globalState.mode === 'stopwatch') {
                 drawStopwatch();
             } else {
                 drawClock();
             }
-            animationFrameId = requestAnimationFrame(animate);
         };
 
         App.Clock = {
@@ -1183,20 +1181,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 settings = initialSettings;
                 globalState = initialState;
                 window.addEventListener('resize', () => this.resize());
-                this.resume();
             },
-            pause: function() {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-            },
-            resume: function() {
-                if (!animationFrameId) {
-                    lastNow = new Date();
-                    animate();
-                }
-            },
+            draw: draw,
             resize: function() {
                 if (!canvas) return;
                 canvas.width = canvas.offsetWidth;
@@ -1251,7 +1237,6 @@ document.addEventListener('DOMContentLoaded', function() {
             update: function(newSettings, newState) {
                 settings = newSettings;
                 globalState = newState;
-                this.resume();
             }
         };
     }(App));
@@ -1627,6 +1612,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             checkAdvancedAlarms(now);
             App.Clock.update(settings, state);
+            App.Clock.draw();
             requestAnimationFrame(update);
         }
         let lastFrameTime;
