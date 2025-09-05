@@ -761,14 +761,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const backToSettingsButtons = document.querySelectorAll('.back-to-settings');
 
         function showView(viewToShow) {
-            const isMainView = viewToShow === views.main;
-            if (App.Clock) {
-                if (isMainView) {
-                    App.Clock.resume();
-                } else {
-                    App.Clock.pause();
-                }
-            }
             Object.values(views).forEach(v => v.style.display = 'none');
             viewToShow.style.display = 'flex';
         }
