@@ -1489,16 +1489,22 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             pause: function() {
                 this.state.pomodoro.isRunning = false;
+                stopLastMinuteAudio();
             },
             reset: function() {
                 this.state.pomodoro.isRunning = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+                this.state.pomodoro.lastMinuteAudioPlayed = false;
+                stopLastMinuteAudio();
                 this.updateDisplay();
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
+                stopLastMinuteAudio();
+                this.state.pomodoro.lastMinuteAudioPlayed = false;
+
                 let nextPhase = 'work';
                 let duration = (parseInt(workDurationInput.value) || 25) * 60;
                 if (this.state.pomodoro.phase === 'work') {
@@ -1549,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
             countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, lastMinuteAudioPlayed: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1562,6 +1568,10 @@ document.addEventListener('DOMContentLoaded', function() {
             pastel: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' } },
             colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
         };
+
+        const workEndAudio = new Audio('assets/Music/work_end.mp3');
+        const shortBreakEndAudio = new Audio('assets/Music/short_break_end.mp3');
+        const longBreakEndAudio = new Audio('assets/Music/long_break_end.mp3');
 
         function update(timestamp) {
             const now = new Date();
@@ -1593,6 +1603,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
+
+                // Check for last minute to play warning sound
+                if (state.pomodoro.remainingSeconds <= 60 && !state.pomodoro.lastMinuteAudioPlayed) {
+                    let audioToPlay;
+                    switch (state.pomodoro.phase) {
+                        case 'work':
+                            audioToPlay = workEndAudio;
+                            break;
+                        case 'shortBreak':
+                            audioToPlay = shortBreakEndAudio;
+                            break;
+                        case 'longBreak':
+                            audioToPlay = longBreakEndAudio;
+                            break;
+                    }
+                    if (audioToPlay) {
+                        audioToPlay.volume = settings.volume;
+                        audioToPlay.play().catch(e => console.error("Error playing last minute sound:", e));
+                    }
+                    state.pomodoro.lastMinuteAudioPlayed = true;
+                }
+
                 if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
             }
             if (state.stopwatch.isRunning) {
@@ -1691,10 +1723,32 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
         }
+        function stopLastMinuteAudio() {
+            if (!workEndAudio.paused) {
+                workEndAudio.pause();
+                workEndAudio.currentTime = 0;
+            }
+            if (!shortBreakEndAudio.paused) {
+                shortBreakEndAudio.pause();
+                shortBreakEndAudio.currentTime = 0;
+            }
+            if (!longBreakEndAudio.paused) {
+                longBreakEndAudio.pause();
+                longBreakEndAudio.currentTime = 0;
+            }
+        }
+
         function playSound(soundFile, volume) {
             if (!soundFile) return;
             const audio = new Audio(`assets/Sounds/${soundFile}`);
-            audio.volume = volume;
+
+            // Lower the volume of the bell sound specifically
+            if (soundFile === 'bell01.mp3') {
+                audio.volume = volume * 0.6;
+            } else {
+                audio.volume = volume;
+            }
+
             audio.play().catch(e => console.error("Error playing sound:", e));
         }
 
