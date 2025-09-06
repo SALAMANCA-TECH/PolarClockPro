@@ -1523,7 +1523,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 }
 
-                this.playSound();
                 this.updateDisplay();
             },
             updateDisplay: function() {
@@ -1728,17 +1727,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return hour;
         }
         function stopLastMinuteAudio() {
-            if (!workEndAudio.paused) {
-                workEndAudio.pause();
-                workEndAudio.currentTime = 0;
+            try {
+                if (workEndAudio && !workEndAudio.paused) {
+                    workEndAudio.pause();
+                    workEndAudio.currentTime = 0;
+                }
+            } catch (e) {
+                console.error("Error stopping workEndAudio:", e);
             }
-            if (!shortBreakEndAudio.paused) {
-                shortBreakEndAudio.pause();
-                shortBreakEndAudio.currentTime = 0;
+
+            try {
+                if (shortBreakEndAudio && !shortBreakEndAudio.paused) {
+                    shortBreakEndAudio.pause();
+                    shortBreakEndAudio.currentTime = 0;
+                }
+            } catch (e) {
+                console.error("Error stopping shortBreakEndAudio:", e);
             }
-            if (!longBreakEndAudio.paused) {
-                longBreakEndAudio.pause();
-                longBreakEndAudio.currentTime = 0;
+
+            try {
+                if (longBreakEndAudio && !longBreakEndAudio.paused) {
+                    longBreakEndAudio.pause();
+                    longBreakEndAudio.currentTime = 0;
+                }
+            } catch (e) {
+                console.error("Error stopping longBreakEndAudio:", e);
             }
         }
 
