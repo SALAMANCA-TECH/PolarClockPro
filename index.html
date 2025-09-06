@@ -726,39 +726,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const App = {};
 
-    App.workEndAudio = new Audio('assets/Music/work_end.mp3');
-    App.shortBreakEndAudio = new Audio('assets/Music/short_break_end.mp3');
-    App.longBreakEndAudio = new Audio('assets/Music/long_break_end.mp3');
-
-    App.stopLastMinuteAudio = function() {
-        try {
-            if (App.workEndAudio && !App.workEndAudio.paused) {
-                App.workEndAudio.pause();
-                App.workEndAudio.currentTime = 0;
-            }
-        } catch (e) {
-            console.error("Error stopping workEndAudio:", e);
-        }
-
-        try {
-            if (App.shortBreakEndAudio && !App.shortBreakEndAudio.paused) {
-                App.shortBreakEndAudio.pause();
-                App.shortBreakEndAudio.currentTime = 0;
-            }
-        } catch (e) {
-            console.error("Error stopping shortBreakEndAudio:", e);
-        }
-
-        try {
-            if (App.longBreakEndAudio && !App.longBreakEndAudio.paused) {
-                App.longBreakEndAudio.pause();
-                App.longBreakEndAudio.currentTime = 0;
-            }
-        } catch (e) {
-            console.error("Error stopping longBreakEndAudio:", e);
-        }
-    };
-
     // --- UI Module ---
     (function(App) {
         const views = {
@@ -1039,7 +1006,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    let colorsToUse = arc.colors; // Default to normal colors
+
+                    // Check for the last 3 minutes warning effect
+                    if (globalState.pomodoro.remainingSeconds <= 180 &&
+                        settings.pomodoroGlowEnabled &&
+                        settings.pomodoroPulseEnabled &&
+                        arc.colors.bright) {
+                        colorsToUse = arc.colors.bright; // Decide to use bright colors
+                    }
+
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, colorsToUse.light, colorsToUse.dark, arc.lineWidth);
                     drawLabel(arc);
                 }
             });
@@ -1522,40 +1499,30 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             pause: function() {
                 this.state.pomodoro.isRunning = false;
-                App.stopLastMinuteAudio();
             },
             reset: function() {
                 this.state.pomodoro.isRunning = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
-                this.state.pomodoro.lastMinuteAudioPlayed = false;
-                App.stopLastMinuteAudio();
                 this.updateDisplay();
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
-                App.stopLastMinuteAudio();
-                this.state.pomodoro.lastMinuteAudioPlayed = false;
-
+                let nextPhase = 'work';
+                let duration = (parseInt(workDurationInput.value) || 25) * 60;
                 if (this.state.pomodoro.phase === 'work') {
-                    // It was a work session, now start a break
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
-                        // Long break
-                        this.state.pomodoro.phase = 'longBreak';
-                        this.state.pomodoro.remainingSeconds = (parseInt(longBreakDurationInput.value) || 15) * 60;
+                        nextPhase = 'longBreak';
+                        duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
-                        // Short break
-                        this.state.pomodoro.phase = 'shortBreak';
-                        this.state.pomodoro.remainingSeconds = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                        nextPhase = 'shortBreak';
+                        duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
-                } else {
-                    // It was a break, now start a work session
-                    this.state.pomodoro.phase = 'work';
-                    this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 }
-
+                this.state.pomodoro.phase = nextPhase;
+                this.state.pomodoro.remainingSeconds = duration;
                 this.playSound();
                 this.updateDisplay();
             },
@@ -1592,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
             countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, lastMinuteAudioPlayed: false },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1600,12 +1567,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const colorPalettes = {
-            default: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' } },
-            neon: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' } },
-            pastel: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' } },
-            colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
+            default: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06', bright: { light: '#FFFF00', dark: '#FFD700' } }, seconds: { light: '#81D4FA', dark: '#002E5C', bright: { light: '#4FC3F7', dark: '#039BE5' } } },
+            neon: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000', bright: { light: '#F1F911', dark: '#E2EA0D' } }, seconds: { light: '#00ffff', dark: '#008080', bright: { light: '#11F9F9', dark: '#0DEAE2' } } },
+            pastel: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142', bright: { light: '#FFFACD', dark: '#F0E68C' } }, seconds: { light: '#a8e1f4', dark: '#428aa1', bright: { light: '#B0E0E6', dark: '#87CEEB' } } },
+            colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326', bright: { light: '#FFFF00', dark: '#FFD700' } }, seconds: { light: '#cccccc', dark: '#666666', bright: { light: '#F5F5F5', dark: '#DCDCDC' } } }
         };
-
 
         function update(timestamp) {
             const now = new Date();
@@ -1637,28 +1603,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
-
-                // Check for last minute to play warning sound
-                if (state.pomodoro.remainingSeconds <= 60 && !state.pomodoro.lastMinuteAudioPlayed) {
-                    let audioToPlay;
-                    switch (state.pomodoro.phase) {
-                        case 'work':
-                            audioToPlay = App.workEndAudio;
-                            break;
-                        case 'shortBreak':
-                            audioToPlay = App.shortBreakEndAudio;
-                            break;
-                        case 'longBreak':
-                            audioToPlay = App.longBreakEndAudio;
-                            break;
-                    }
-                    if (audioToPlay) {
-                        audioToPlay.volume = settings.volume;
-                        audioToPlay.play().catch(e => console.error("Error playing last minute sound:", e));
-                    }
-                    state.pomodoro.lastMinuteAudioPlayed = true;
-                }
-
                 if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
             }
             if (state.stopwatch.isRunning) {
@@ -1757,18 +1701,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
         }
-
         function playSound(soundFile, volume) {
             if (!soundFile) return;
             const audio = new Audio(`assets/Sounds/${soundFile}`);
-
-            // Lower the volume of the bell sound specifically
-            if (soundFile === 'bell01.mp3') {
-                audio.volume = volume * 0.6;
-            } else {
-                audio.volume = volume;
-            }
-
+            audio.volume = volume;
             audio.play().catch(e => console.error("Error playing sound:", e));
         }
 
