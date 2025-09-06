@@ -351,6 +351,12 @@
         100% { box-shadow: 0 0 10px rgba(128, 255, 138, 0.2); }
     }
 
+    @keyframes glow-warning {
+        0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
+        100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+    }
+
     /* Animation Classes */
     .pulsing-warning {
         animation: pulse 2s infinite ease-in-out;
@@ -368,6 +374,11 @@
 
     .glowing-countdown {
         animation: glow-countdown 3s infinite ease-in-out;
+        border-radius: 50%; /* Ensures shadow is circular */
+    }
+
+    .glowing-warning {
+        animation: glow-warning 3s infinite ease-in-out;
         border-radius: 50%; /* Ensures shadow is circular */
     }
 
@@ -1006,17 +1017,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
-                    let colorsToUse = arc.colors; // Default to normal colors
-
-                    // Check for the last 3 minutes warning effect
-                    if (globalState.pomodoro.remainingSeconds <= 180 &&
-                        settings.pomodoroGlowEnabled &&
-                        settings.pomodoroPulseEnabled &&
-                        arc.colors.bright) {
-                        colorsToUse = arc.colors.bright; // Decide to use bright colors
-                    }
-
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, colorsToUse.light, colorsToUse.dark, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     drawLabel(arc);
                 }
             });
@@ -1567,10 +1568,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const colorPalettes = {
-            default: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06', bright: { light: '#FFFF00', dark: '#FFD700' } }, seconds: { light: '#81D4FA', dark: '#002E5C', bright: { light: '#4FC3F7', dark: '#039BE5' } } },
-            neon: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000', bright: { light: '#F1F911', dark: '#E2EA0D' } }, seconds: { light: '#00ffff', dark: '#008080', bright: { light: '#11F9F9', dark: '#0DEAE2' } } },
-            pastel: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142', bright: { light: '#FFFACD', dark: '#F0E68C' } }, seconds: { light: '#a8e1f4', dark: '#428aa1', bright: { light: '#B0E0E6', dark: '#87CEEB' } } },
-            colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326', bright: { light: '#FFFF00', dark: '#FFD700' } }, seconds: { light: '#cccccc', dark: '#666666', bright: { light: '#F5F5F5', dark: '#DCDCDC' } } }
+            default: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' } },
+            neon: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' } },
+            pastel: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' } },
+            colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
         };
 
         function update(timestamp) {
@@ -1603,6 +1604,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
+
+                // Check for the last 2 minutes warning effect
+                if (state.pomodoro.remainingSeconds <= 120 && settings.pomodoroGlowEnabled && settings.pomodoroPulseEnabled) {
+                    clockContainer.classList.add('glowing-warning', 'pulsing-warning');
+                } else {
+                    clockContainer.classList.remove('glowing-warning', 'pulsing-warning');
+                }
+
                 if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
             }
             if (state.stopwatch.isRunning) {
