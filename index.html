@@ -1505,20 +1505,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 stopLastMinuteAudio();
                 this.state.pomodoro.lastMinuteAudioPlayed = false;
 
-                let nextPhase = 'work';
-                let duration = (parseInt(workDurationInput.value) || 25) * 60;
                 if (this.state.pomodoro.phase === 'work') {
+                    // It was a work session, now start a break
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
-                        nextPhase = 'longBreak';
-                        duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
+                        // Long break
+                        this.state.pomodoro.phase = 'longBreak';
+                        this.state.pomodoro.remainingSeconds = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
-                        nextPhase = 'shortBreak';
-                        duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                        // Short break
+                        this.state.pomodoro.phase = 'shortBreak';
+                        this.state.pomodoro.remainingSeconds = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
+                } else {
+                    // It was a break, now start a work session
+                    this.state.pomodoro.phase = 'work';
+                    this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 }
-                this.state.pomodoro.phase = nextPhase;
-                this.state.pomodoro.remainingSeconds = duration;
+
                 this.playSound();
                 this.updateDisplay();
             },
