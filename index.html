@@ -726,6 +726,39 @@
 document.addEventListener('DOMContentLoaded', function() {
     const App = {};
 
+    App.workEndAudio = new Audio('assets/Music/work_end.mp3');
+    App.shortBreakEndAudio = new Audio('assets/Music/short_break_end.mp3');
+    App.longBreakEndAudio = new Audio('assets/Music/long_break_end.mp3');
+
+    App.stopLastMinuteAudio = function() {
+        try {
+            if (App.workEndAudio && !App.workEndAudio.paused) {
+                App.workEndAudio.pause();
+                App.workEndAudio.currentTime = 0;
+            }
+        } catch (e) {
+            console.error("Error stopping workEndAudio:", e);
+        }
+
+        try {
+            if (App.shortBreakEndAudio && !App.shortBreakEndAudio.paused) {
+                App.shortBreakEndAudio.pause();
+                App.shortBreakEndAudio.currentTime = 0;
+            }
+        } catch (e) {
+            console.error("Error stopping shortBreakEndAudio:", e);
+        }
+
+        try {
+            if (App.longBreakEndAudio && !App.longBreakEndAudio.paused) {
+                App.longBreakEndAudio.pause();
+                App.longBreakEndAudio.currentTime = 0;
+            }
+        } catch (e) {
+            console.error("Error stopping longBreakEndAudio:", e);
+        }
+    };
+
     // --- UI Module ---
     (function(App) {
         const views = {
@@ -1489,7 +1522,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             pause: function() {
                 this.state.pomodoro.isRunning = false;
-                stopLastMinuteAudio();
+                App.stopLastMinuteAudio();
             },
             reset: function() {
                 this.state.pomodoro.isRunning = false;
@@ -1497,12 +1530,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 this.state.pomodoro.lastMinuteAudioPlayed = false;
-                stopLastMinuteAudio();
+                App.stopLastMinuteAudio();
                 this.updateDisplay();
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
-                stopLastMinuteAudio();
+                App.stopLastMinuteAudio();
                 this.state.pomodoro.lastMinuteAudioPlayed = false;
 
                 if (this.state.pomodoro.phase === 'work') {
@@ -1573,9 +1606,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorblind: { week: { light: '#82aaff', dark: '#2854a8' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' } }
         };
 
-        const workEndAudio = new Audio('assets/Music/work_end.mp3');
-        const shortBreakEndAudio = new Audio('assets/Music/short_break_end.mp3');
-        const longBreakEndAudio = new Audio('assets/Music/long_break_end.mp3');
 
         function update(timestamp) {
             const now = new Date();
@@ -1613,13 +1643,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     let audioToPlay;
                     switch (state.pomodoro.phase) {
                         case 'work':
-                            audioToPlay = workEndAudio;
+                            audioToPlay = App.workEndAudio;
                             break;
                         case 'shortBreak':
-                            audioToPlay = shortBreakEndAudio;
+                            audioToPlay = App.shortBreakEndAudio;
                             break;
                         case 'longBreak':
-                            audioToPlay = longBreakEndAudio;
+                            audioToPlay = App.longBreakEndAudio;
                             break;
                     }
                     if (audioToPlay) {
@@ -1726,20 +1756,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'PM' && hour !== 12) hour += 12;
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
-        }
-        function stopLastMinuteAudio() {
-            if (!workEndAudio.paused) {
-                workEndAudio.pause();
-                workEndAudio.currentTime = 0;
-            }
-            if (!shortBreakEndAudio.paused) {
-                shortBreakEndAudio.pause();
-                shortBreakEndAudio.currentTime = 0;
-            }
-            if (!longBreakEndAudio.paused) {
-                longBreakEndAudio.pause();
-                longBreakEndAudio.currentTime = 0;
-            }
         }
 
         function playSound(soundFile, volume) {
