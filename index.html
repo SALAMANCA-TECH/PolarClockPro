@@ -1258,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.state.pomodoro.currentAudio) {
                     this.state.pomodoro.currentAudio.pause();
                 }
-                this.state.pomodoro.isMutedThisCycle = false;
+                this.state.pomodoro.isMuted = false;
                 this.state.pomodoro.currentAudio = null;
                 this.state.pomodoro.isSnoozing = false;
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
@@ -1300,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Reset for the new cycle
                 this.state.pomodoro.isSnoozing = false;
-                this.state.pomodoro.isMutedThisCycle = false;
+                this.state.pomodoro.isMuted = false;
                 this.state.pomodoro.currentAudio = null;
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
                 document.getElementById('pomodoroMuteBtn').classList.remove('text-red-500');
@@ -1342,7 +1342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMutedThisCycle: false, isSnoozing: false, lastMinuteSoundPlayed: false },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1495,12 +1495,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function mutePomodoroAudio() {
-            if (state.pomodoro.currentAudio) {
-                state.pomodoro.currentAudio.pause();
-                state.pomodoro.currentAudio.currentTime = 0; // Reset audio to the beginning
+            const muteButton = document.getElementById('pomodoroMuteBtn');
+            state.pomodoro.isMuted = !state.pomodoro.isMuted; // Toggle the state
+
+            if (state.pomodoro.isMuted) {
+                if (state.pomodoro.currentAudio) {
+                    state.pomodoro.currentAudio.pause();
+                }
+                muteButton.classList.add('text-red-500');
+            } else {
+                if (state.pomodoro.currentAudio) {
+                    state.pomodoro.currentAudio.play();
+                }
+                muteButton.classList.remove('text-red-500');
             }
-            state.pomodoro.isMutedThisCycle = true;
-            document.getElementById('pomodoroMuteBtn').classList.add('text-red-500');
         }
 
         function snoozePomodoro() {
