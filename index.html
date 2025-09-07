@@ -993,10 +993,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const pomodoro = globalState.pomodoro;
             const progress = pomodoro.remainingSeconds / pomodoro.totalSeconds;
-            const endAngle = baseStartAngle + (1 - progress) * (Math.PI * 2);
+            const startAngle = baseStartAngle + (1 - progress) * (Math.PI * 2);
 
             // Use a distinct color for the pomodoro timer arc
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, baseStartAngle, endAngle, '#ff6347', '#ff4500', 45);
+            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, startAngle, baseStartAngle + Math.PI * 2, '#ff6347', '#ff4500', 45);
         };
 
         const animate = () => {
