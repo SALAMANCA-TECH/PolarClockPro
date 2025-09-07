@@ -988,9 +988,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
+        const drawPomodoroClock = () => {
+            if (!globalState.pomodoro || globalState.pomodoro.totalSeconds <= 0) return;
+
+            const pomodoro = globalState.pomodoro;
+            const progress = pomodoro.remainingSeconds / pomodoro.totalSeconds;
+            const endAngle = baseStartAngle + (1 - progress) * (Math.PI * 2);
+
+            // Use a distinct color for the pomodoro timer arc
+            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, baseStartAngle, endAngle, '#ff6347', '#ff4500', 45);
+        };
+
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (globalState.mode === 'stopwatch') {
+            if (globalState.mode === 'pomodoro') {
+                drawPomodoroClock();
+            } else if (globalState.mode === 'stopwatch') {
                 drawStopwatch();
             } else {
                 drawClock();
@@ -1259,7 +1272,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.isPaused = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
-                this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+                const duration = (parseInt(workDurationInput.value) || 25) * 60;
+                this.state.pomodoro.remainingSeconds = duration;
+                this.state.pomodoro.totalSeconds = duration;
                 this.updateDisplay();
 
                 // Hide buttons on reset
@@ -1313,6 +1328,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
+                this.state.pomodoro.totalSeconds = duration;
 
                 // Sound now plays in the update loop during the last minute.
                 // This block is now only for transitioning state.
@@ -1360,7 +1376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
+            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, totalSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1418,8 +1434,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
 
-            if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
-            if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+            if (state.mode === 'pomodoro') {
+                const minutes = Math.floor(state.pomodoro.remainingSeconds / 60);
+                const seconds = Math.floor(state.pomodoro.remainingSeconds % 60);
+                if (digitalTime) digitalTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (digitalDate) digitalDate.style.display = 'none';
+            } else {
+                if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
+                if (digitalDate) {
+                    digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
+                    digitalDate.style.display = 'block';
+                }
+            }
 
             checkAdvancedAlarms(now);
             App.Clock.update(settings, state);
