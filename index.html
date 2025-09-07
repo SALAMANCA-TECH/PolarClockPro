@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
             const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
             const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + (minutes / 60) * Math.PI * 2;
             const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
 
             const arcs = [];
@@ -992,11 +992,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!globalState.pomodoro || globalState.pomodoro.totalSeconds <= 0) return;
 
             const pomodoro = globalState.pomodoro;
-            const progress = pomodoro.remainingSeconds / pomodoro.totalSeconds;
-            const startAngle = baseStartAngle + (1 - progress) * (Math.PI * 2);
+            const remaining = pomodoro.remainingSeconds;
 
-            // Use a distinct color for the pomodoro timer arc
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, startAngle, baseStartAngle + Math.PI * 2, '#ff6347', '#ff4500', 45);
+            const remainingMinutes = Math.floor(remaining / 60);
+            const remainingSeconds = Math.floor(remaining % 60);
+
+            // Seconds arc - like a normal second hand, showing remaining seconds
+            const secondsEndAngle = baseStartAngle + (remainingSeconds / 60) * Math.PI * 2;
+            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, baseStartAngle, secondsEndAngle, settings.currentColors.seconds.light, settings.currentColors.seconds.dark, 30);
+
+            // Minutes arc - like a normal minute hand, showing remaining minutes
+            const minutesEndAngle = baseStartAngle + (remainingMinutes / 60) * Math.PI * 2;
+            drawArc(dimensions.centerX, dimensions.centerY, dimensions.minutesRadius, baseStartAngle, minutesEndAngle, settings.currentColors.minutes.light, settings.currentColors.minutes.dark, 30);
         };
 
         const animate = () => {
