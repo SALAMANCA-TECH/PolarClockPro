@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polar Clock Pro</title>
-    <!-- DEPENDENCIES: Tailwind CSS for styling and Phosphor Icons for UI icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -421,23 +420,18 @@
     </style>
 </head>
 <body>
-    <!-- Canvas Container for the Clock -->
     <div class="canvas-container">
         <div id="active-clock-name" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 1.5em; color: #fff; z-index: 10;"></div>
         <canvas id="polarClockCanvas"></canvas>
         <div id="digitalDisplay">
             <div id="digitalTime"></div>
-            <!-- FIX: Added the missing ID to this div -->
             <div id="digitalDate"></div>
         </div>
         <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
-            <!-- Miniature clocks will be added here -->
-        </div>
+            </div>
     </div>
 
-    <!-- UI Container for Controls -->
     <div class="ui-container">
-        <!-- Main Navigation View -->
         <div id="mainView" class="ui-content">
             <div class="main-nav-buttons">
                 <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
@@ -446,7 +440,6 @@
             </div>
         </div>
 
-        <!-- Tools View -->
         <div id="toolsView" class="ui-content" style="display: none;">
             <div class="view-header">
                 <button id="backToMainFromTools" class="back-button">Back</button>
@@ -457,51 +450,49 @@
                 <button id="countdownTab" class="tab-button">Countdown</button>
                 <button id="stopwatchTab" class="tab-button">Stopwatch</button>
             </div>
-            <!-- Timer Panel -->
             <div id="timerPanel" class="ui-panel">
                  <div class="time-inputs">
-                    <div class="input-group">
-                        <input type="number" id="timerHours" placeholder="0" min="0" max="23" value="0">
-                        <label>Hours</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="timerMinutes" placeholder="00" min="0" max="59" value="0">
-                        <label>Minutes</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="timerSeconds" placeholder="00" min="0" max="59" value="0">
-                        <label>Seconds</label>
-                    </div>
-                </div>
-                <div class="control-buttons">
-                    <button id="toggleTimerBtn">Start</button>
-                    <button id="resetTimer">Reset</button>
-                </div>
+                     <div class="input-group">
+                         <input type="number" id="timerHours" placeholder="0" min="0" max="23" value="0">
+                         <label>Hours</label>
+                     </div>
+                     <span>:</span>
+                     <div class="input-group">
+                         <input type="number" id="timerMinutes" placeholder="00" min="0" max="59" value="0">
+                         <label>Minutes</label>
+                     </div>
+                     <span>:</span>
+                     <div class="input-group">
+                         <input type="number" id="timerSeconds" placeholder="00" min="0" max="59" value="0">
+                         <label>Seconds</label>
+                     </div>
+                 </div>
+                 <div class="control-buttons">
+                     <button id="toggleTimerBtn">Start</button>
+                     <button id="resetTimer">Reset</button>
+                 </div>
+                  <div class="setting-toggle">
+                      <span>Repeat</span>
+                      <label class="switch">
+                          <input type="checkbox" id="intervalToggle">
+                          <span class="slider"></span>
+                      </label>
+                  </div>
                  <div class="setting-toggle">
-                    <span>Repeat</span>
-                    <label class="switch">
-                        <input type="checkbox" id="intervalToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Sound</span>
-                    <select id="timerSound" class="sound-select">
-                        <option value="Ahooga.wav">Ahooga</option>
-                        <option value="bell01.mp3" selected>Bell 1</option>
-                        <option value="Bwauhm.mp3">Bwauhm</option>
-                        <option value="Lenovo_Error.mp3">Lenovo Error</option>
-                        <option value="nice_digital_watch.mp3">Nice Watch</option>
-                        <option value="rotten_digital_watch.wav">Rotten Watch</option>
-                        <option value="Tick_Tock.wav">Tick Tock 1</option>
-                        <option value="Tick_Tock_Two.wav">Tick Tock 2</option>
-                    </select>
-                    <button class="preview-btn" data-target="timerSound">Preview</button>
-                </div>
+                     <span>Sound</span>
+                     <select id="timerSound" class="sound-select">
+                         <option value="Ahooga.wav">Ahooga</option>
+                         <option value="bell01.mp3" selected>Bell 1</option>
+                         <option value="Bwauhm.mp3">Bwauhm</option>
+                         <option value="Lenovo_Error.mp3">Lenovo Error</option>
+                         <option value="nice_digital_watch.mp3">Nice Watch</option>
+                         <option value="rotten_digital_watch.wav">Rotten Watch</option>
+                         <option value="Tick_Tock.wav">Tick Tock 1</option>
+                         <option value="Tick_Tock_Two.wav">Tick Tock 2</option>
+                     </select>
+                     <button class="preview-btn" data-target="timerSound">Preview</button>
+                 </div>
             </div>
-            <!-- Pomodoro Panel -->
             <div id="pomodoroPanel" class="ui-panel" style="display: none;">
                 <div class="settings-section">
                     <div class="flex items-center gap-2">
@@ -514,6 +505,14 @@
                         </button>
                     </div>
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
+                </div>
+                <div id="pomodoroActions" class="control-buttons" style="display: none;">
+                    <button id="pomodoroMuteBtn" class="control-btn" title="Mute for this cycle">
+                        <i class="ph ph-speaker-slash text-2xl"></i>
+                    </button>
+                    <button id="pomodoroSnoozeBtn" class="control-btn" title="Snooze for 5 minutes">
+                        <i class="ph ph-bell-z text-2xl"></i>
+                    </button>
                 </div>
                 <div class="control-buttons">
                     <button id="startPomodoro">Start</button>
@@ -550,7 +549,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Countdown Panel -->
             <div id="countdownPanel" class="ui-panel" style="display: none;">
                 <div class="time-inputs">
                     <div class="input-group">
@@ -578,7 +576,6 @@
                     <button id="resetCountdownBtn">Reset</button>
                 </div>
             </div>
-            <!-- Stopwatch Panel -->
             <div id="stopwatchPanel" class="ui-panel" style="display: none;">
                 <div class="control-buttons">
                     <button id="toggleStopwatchBtn">Start</button>
@@ -596,13 +593,11 @@
                 <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
             </div>
         </div>
-        
-        <!-- Settings View -->
+       
         <div id="settingsView" class="ui-content" style="display: none;">
             <div class="view-header">
                 <button id="backToMainFromSettings" class="back-button">Back to Main</button>
             </div>
-            <!-- Settings Main Menu -->
             <div id="settingsMenu" class="ui-panel">
                 <h2 class="view-title">Settings</h2>
                 <button class="header-button settings-menu-button" data-target="timeFormatSettings">Time Format</button>
@@ -610,11 +605,9 @@
                 <button class="header-button settings-menu-button" data-target="colorSchemeSettings">Color Scheme</button>
                 <button class="header-button settings-menu-button" data-target="separatorsSettings">Separators</button>
                 <button class="header-button settings-menu-button" data-target="audioSettings">Audio</button>
-                <!-- FIX: Added Inverse Mode to the main settings menu for consistency -->
                 <button class="header-button settings-menu-button" data-target="displayModeSettings">Display Mode</button>
             </div>
 
-            <!-- Time Format Settings -->
             <div id="timeFormatSettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -626,7 +619,6 @@
                 </div>
             </div>
 
-            <!-- FIX: Created a new submenu for Display Mode to house the Inverse Mode toggle -->
             <div id="displayModeSettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -642,7 +634,6 @@
             </div>
 
 
-            <!-- Label Display Settings -->
             <div id="labelDisplaySettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -655,7 +646,6 @@
                 </div>
             </div>
 
-            <!-- Color Scheme Settings -->
             <div id="colorSchemeSettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -676,7 +666,6 @@
                 </div>
             </div>
 
-            <!-- Separators Settings -->
             <div id="separatorsSettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -705,7 +694,6 @@
                 </div>
             </div>
 
-            <!-- Audio Settings -->
             <div id="audioSettings" class="ui-panel settings-submenu" style="display: none;">
                 <button class="back-button back-to-settings">Back</button>
                 <div class="settings-section">
@@ -719,7 +707,6 @@
         </div>
     </div>
 
-    <!-- Pomodoro Info Modal -->
     <div id="pomodoroInfoModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md text-white">
             <h3 class="text-xl font-bold mb-4">The Pomodoro Technique</h3>
@@ -1507,11 +1494,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 this.updateDisplay();
+
+                // Hide buttons on reset
+                const pomodoroActions = document.getElementById('pomodoroActions');
+                if (pomodoroActions) {
+                    pomodoroActions.style.display = 'none';
+                }
+                this.state.pomodoro.actionButtonsVisible = false;
+
+                // Stop any sound and reset mute state
+                if (this.state.pomodoro.currentAudio) {
+                    this.state.pomodoro.currentAudio.pause();
+                }
+                this.state.pomodoro.isMutedThisCycle = false;
+                this.state.pomodoro.currentAudio = null;
+                this.state.pomodoro.isSnoozing = false;
+                this.state.pomodoro.lastMinuteSoundPlayed = false;
+
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
+                // Stop any lingering sound from the previous phase
+                if (this.state.pomodoro.currentAudio) {
+                    this.state.pomodoro.currentAudio.pause();
+                }
+
                 let nextPhase = 'work';
                 let duration = (parseInt(workDurationInput.value) || 25) * 60;
+
+                // The current phase (even if snoozed) determines the next one.
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
@@ -1522,9 +1533,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
                 }
+                // After a break (or a snoozed break), it's always back to work.
+                else {
+                    nextPhase = 'work';
+                    duration = (parseInt(workDurationInput.value) || 25) * 60;
+                }
+
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
-                this.playSound();
+
+                // Only play sound if it wasn't muted in the last minute of the previous cycle.
+                if (!this.state.pomodoro.isMutedThisCycle) {
+                    this.playSound();
+                }
+
+                // Reset for the new cycle
+                this.state.pomodoro.isSnoozing = false;
+                this.state.pomodoro.isMutedThisCycle = false;
+                this.state.pomodoro.currentAudio = null;
+                this.state.pomodoro.lastMinuteSoundPlayed = false;
+
                 this.updateDisplay();
             },
             updateDisplay: function() {
@@ -1532,13 +1560,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                let statusText = "Work Session";
-                if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
-                if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
-                statusDisplay.textContent = statusText;
+                if (this.state.pomodoro.isSnoozing) {
+                    statusDisplay.textContent = "Snoozing";
+                    timerDisplay.classList.add('text-red-500');
+                } else {
+                    let statusText = "Work Session";
+                    if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
+                    if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
+                    statusDisplay.textContent = statusText;
+                    timerDisplay.classList.remove('text-red-500');
+                }
             },
             playSound: function() {
-                const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
+                const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound, module: 'pomodoro' } });
                 document.dispatchEvent(event);
             },
             setupEventListeners: function() {
@@ -1554,13 +1588,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const clockContainer = document.querySelector('.canvas-container');
         const digitalTime = document.getElementById('digitalTime');
         const digitalDate = document.getElementById('digitalDate');
+        const pomodoroActions = document.getElementById('pomodoroActions');
 
         let settings = {};
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
+            // FIX: MERGE CONFLICT RESOLVED - Combined state properties
             countdown: { totalSeconds: 0, remainingSeconds: 0, isRunning: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMutedThisCycle: false, isSnoozing: false, lastMinuteSoundPlayed: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1605,7 +1641,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
 
-                // Check for the last 2 minutes warning effect
+                // FIX: MERGE CONFLICT RESOLVED - Combined logic from both branches
+                // 1. Logic from feature branch: Show buttons and play sound in the last minute
+                const shouldShowButtons = state.pomodoro.remainingSeconds <= 60 && state.pomodoro.remainingSeconds > 0;
+                if (shouldShowButtons !== state.pomodoro.actionButtonsVisible) {
+                    pomodoroActions.style.display = shouldShowButtons ? 'flex' : 'none';
+                    state.pomodoro.actionButtonsVisible = shouldShowButtons;
+
+                    // Play sound once when buttons appear
+                    if (shouldShowButtons && !state.pomodoro.lastMinuteSoundPlayed) {
+                        playSound(settings.timerSound, settings.volume, 'pomodoro');
+                        state.pomodoro.lastMinuteSoundPlayed = true;
+                    }
+                }
+
+                // 2. Logic from main branch: Show warning effect in the last two minutes
                 if (state.pomodoro.remainingSeconds <= 120 && settings.pomodoroGlowEnabled && settings.pomodoroPulseEnabled) {
                     clockContainer.classList.add('glowing-warning', 'pulsing-warning');
                 } else {
@@ -1710,11 +1760,34 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
         }
-        function playSound(soundFile, volume) {
+        function playSound(soundFile, volume, module) {
             if (!soundFile) return;
             const audio = new Audio(`assets/Sounds/${soundFile}`);
             audio.volume = volume;
             audio.play().catch(e => console.error("Error playing sound:", e));
+
+            if (module === 'pomodoro') {
+                state.pomodoro.currentAudio = audio;
+            }
+        }
+
+        function mutePomodoroAudio() {
+            if (state.pomodoro.currentAudio) {
+                state.pomodoro.currentAudio.pause();
+                state.pomodoro.currentAudio.currentTime = 0; // Reset audio to the beginning
+            }
+            state.pomodoro.isMutedThisCycle = true;
+        }
+
+        function snoozePomodoro() {
+            // Stop the current sound without affecting the next cycle's sound
+            if (state.pomodoro.currentAudio) {
+                state.pomodoro.currentAudio.pause();
+                state.pomodoro.currentAudio.currentTime = 0;
+            }
+            state.pomodoro.remainingSeconds += 300; // Add 5 minutes
+            state.pomodoro.isSnoozing = true;
+            App.Pomodoro.updateDisplay(); // Immediately update UI
         }
 
         function setupEventListeners() {
@@ -1735,8 +1808,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
             document.getElementById('inverseModeToggle').addEventListener('change', (e) => { settings.inverseMode = e.target.checked; saveSettings(); });
 
+            // Pomodoro Mute Button
+            document.getElementById('pomodoroMuteBtn').addEventListener('click', mutePomodoroAudio);
+            document.getElementById('pomodoroSnoozeBtn').addEventListener('click', snoozePomodoro);
+
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
-            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
+            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume, e.detail.module));
             document.addEventListener('statechange', saveState);
         }
 
@@ -1774,4 +1851,3 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
-
