@@ -1225,12 +1225,20 @@ document.addEventListener('DOMContentLoaded', function() {
             start: function() {
                 if (this.state.pomodoro.isRunning) return;
                 this.state.pomodoro.isRunning = true;
+
+                if (this.state.pomodoro.currentAudio && this.state.pomodoro.currentAudio.paused) {
+                    this.state.pomodoro.currentAudio.play();
+                }
+
                 if (this.state.pomodoro.remainingSeconds <= 0) {
                     this.startNextPhase();
                 }
             },
             pause: function() {
                 this.state.pomodoro.isRunning = false;
+                if (this.state.pomodoro.currentAudio) {
+                    this.state.pomodoro.currentAudio.pause();
+                }
             },
             reset: function() {
                 this.state.pomodoro.isRunning = false;
