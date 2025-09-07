@@ -1262,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.currentAudio = null;
                 this.state.pomodoro.isSnoozing = false;
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
-                document.getElementById('pomodoroMuteBtn').classList.remove('text-red-500');
+                document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
 
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
@@ -1303,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.isMuted = false;
                 this.state.pomodoro.currentAudio = null;
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
-                document.getElementById('pomodoroMuteBtn').classList.remove('text-red-500');
+                document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
 
                 this.updateDisplay();
             },
@@ -1495,19 +1495,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function mutePomodoroAudio() {
-            const muteButton = document.getElementById('pomodoroMuteBtn');
+            const muteIcon = document.getElementById('pomodoroMuteBtn').querySelector('i');
             state.pomodoro.isMuted = !state.pomodoro.isMuted; // Toggle the state
 
             if (state.pomodoro.isMuted) {
                 if (state.pomodoro.currentAudio) {
                     state.pomodoro.currentAudio.pause();
                 }
-                muteButton.classList.add('text-red-500');
+                muteIcon.style.color = 'red';
             } else {
                 if (state.pomodoro.currentAudio) {
                     state.pomodoro.currentAudio.play();
                 }
-                muteButton.classList.remove('text-red-500');
+                muteIcon.style.color = '';
             }
         }
 
