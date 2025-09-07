@@ -499,8 +499,7 @@
                     </button>
                 </div>
                 <div class="control-buttons">
-                    <button id="startPomodoro">Start</button>
-                    <button id="pausePomodoro">Pause</button>
+                    <button id="pomodoroToggleBtn">Start</button>
                     <button id="resetPomodoro">Reset</button>
                 </div>
                 <div class="settings-section w-full max-w-xs">
@@ -1222,26 +1221,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.setupEventListeners();
                 this.updateDisplay();
             },
-            start: function() {
-                if (this.state.pomodoro.isRunning) return;
-                this.state.pomodoro.isRunning = true;
+            toggle: function() {
+                const toggleButton = document.getElementById('pomodoroToggleBtn');
+                const isRunning = this.state.pomodoro.isRunning;
+                const isPaused = this.state.pomodoro.isPaused;
 
-                if (this.state.pomodoro.currentAudio && this.state.pomodoro.currentAudio.paused) {
-                    this.state.pomodoro.currentAudio.play();
+                // Case 1: Timer is stopped -> Start it
+                if (!isRunning && !isPaused) {
+                    this.state.pomodoro.isRunning = true;
+                    if (this.state.pomodoro.remainingSeconds <= 0) {
+                        this.startNextPhase();
+                    }
+                    toggleButton.textContent = 'Pause';
                 }
-
-                if (this.state.pomodoro.remainingSeconds <= 0) {
-                    this.startNextPhase();
+                // Case 2: Timer is running -> Pause it
+                else if (isRunning && !isPaused) {
+                    this.state.pomodoro.isRunning = false;
+                    this.state.pomodoro.isPaused = true;
+                    if (this.state.pomodoro.currentAudio) {
+                        this.state.pomodoro.currentAudio.pause();
+                    }
+                    toggleButton.style.color = 'red';
                 }
-            },
-            pause: function() {
-                this.state.pomodoro.isRunning = false;
-                if (this.state.pomodoro.currentAudio) {
-                    this.state.pomodoro.currentAudio.pause();
+                // Case 3: Timer is paused -> Resume it
+                else if (!isRunning && isPaused) {
+                    this.state.pomodoro.isRunning = true;
+                    this.state.pomodoro.isPaused = false;
+                    if (this.state.pomodoro.currentAudio && this.state.pomodoro.currentAudio.paused) {
+                        this.state.pomodoro.currentAudio.play();
+                    }
+                    toggleButton.style.color = '';
                 }
             },
             reset: function() {
+                const toggleButton = document.getElementById('pomodoroToggleBtn');
                 this.state.pomodoro.isRunning = false;
+                this.state.pomodoro.isPaused = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
@@ -1263,6 +1278,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.isSnoozing = false;
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
                 document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
+
+                // Reset toggle button
+                toggleButton.textContent = 'Start';
+                toggleButton.style.color = '';
 
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
@@ -1324,8 +1343,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             setupEventListeners: function() {
-                document.getElementById('startPomodoro').addEventListener('click', () => this.start());
-                document.getElementById('pausePomodoro').addEventListener('click', () => this.pause());
+                document.getElementById('pomodoroToggleBtn').addEventListener('click', () => this.toggle());
                 document.getElementById('resetPomodoro').addEventListener('click', () => this.reset());
             }
         };
@@ -1342,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
+            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
