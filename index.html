@@ -1503,6 +1503,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             state.pomodoro.remainingSeconds += 300; // Add 5 minutes
             state.pomodoro.isSnoozing = true;
+            state.pomodoro.lastMinuteSoundPlayed = false; // Allow the sound to play again
             App.Pomodoro.updateDisplay(); // Immediately update UI
         }
 
