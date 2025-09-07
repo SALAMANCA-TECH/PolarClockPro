@@ -1475,10 +1475,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
         }
-        function playSound(soundFile, volume, module, isCustomPath = false) {
+        function playSound(soundFile, volume, module) {
             if (!soundFile) return;
-            const path = isCustomPath ? '/PolarClockPro/assets/Music/' : 'assets/Sounds/';
-            const audio = new Audio(`${path}${soundFile}`);
+            const audio = new Audio(`assets/Sounds/${soundFile}`);
             audio.volume = volume;
             audio.play().catch(e => console.error("Error playing sound:", e));
 
@@ -1529,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pomodoroSnoozeBtn').addEventListener('click', snoozePomodoro);
 
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
-            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume, e.detail.module, e.detail.isCustomPath));
+            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume, e.detail.module));
             document.addEventListener('statechange', saveState);
         }
 
