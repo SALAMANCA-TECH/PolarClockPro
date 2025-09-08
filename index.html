@@ -808,43 +808,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
-                if (mode !== 'pomodoro' && Math.abs(angle - sixOClockAngle) < 0.01) {
+
+                // Skip the 6 o'clock position with a small tolerance
+                if (Math.abs(angle - sixOClockAngle) < 0.01) {
                     continue;
                 }
 
-                const isRulerMode = settings.separatorMode === 'ruler';
-                // CORRECTED LOGIC: Specifically target 'minutes' and 'seconds' for ruler mode
-                const isTimeArcForRuler = arcKey === 'minutes' || arcKey === 'seconds';
+                const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
+                const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
+                const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
+                const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
 
-                let startRadius = innerRadius;
-                let endRadius = outerRadius;
-                let shouldDraw = true;
-
-                if (isTimeArcForRuler) {
-                    if (isRulerMode) {
-                        // In Ruler mode, draw all ticks, but make non-5-minute ticks shorter
-                        if (i > 0 && i % 5 !== 0) {
-                            startRadius = radius; // Half-length tick from center of the arc's width
-                        }
-                    } else {
-                        // In Standard mode, only draw ticks that are multiples of 5
-                        if (i % 5 !== 0) {
-                            shouldDraw = false;
-                        }
-                    }
-                }
-
-                if (shouldDraw) {
-                    const startX = dimensions.centerX + Math.cos(angle) * startRadius;
-                    const startY = dimensions.centerY + Math.sin(angle) * startRadius;
-                    const endX = dimensions.centerX + Math.cos(angle) * endRadius;
-                    const endY = dimensions.centerY + Math.sin(angle) * endRadius;
-
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                }
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
             }
         };
 
@@ -1459,4 +1437,3 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
-
