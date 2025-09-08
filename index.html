@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillText(arc.text, textX, textY);
         };
 
-        const drawSeparators = (radius, count, arcLineWidth, arcKey) => {
+        const drawSeparators = (radius, count, arcLineWidth, arcKey, mode) => {
             if (!radius || radius <= 0) return;
 
             const innerRadius = radius - (arcLineWidth / 2);
@@ -794,8 +794,8 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                // Skip the 6 o'clock position with a small tolerance
-                if (Math.abs(angle - sixOClockAngle) < 0.01) {
+                // Skip the 6 o'clock position with a small tolerance, but not for pomodoro mode
+                if (mode !== 'pomodoro' && Math.abs(angle - sixOClockAngle) < 0.01) {
                     continue;
                 }
 
@@ -929,14 +929,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // --- Draw Separators ---
             if (settings.showIntervals) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
-                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month');
-                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day');
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month', globalState.mode);
+                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day', globalState.mode);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
             }
             if (settings.showWeekBar) {
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week');
+                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week', globalState.mode);
             }
 
             lastNow = now;
@@ -977,9 +977,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Draw separators for the stopwatch
             if (settings.showIntervals) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
             }
         };
 
@@ -1009,10 +1009,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Draw separators for the pomodoro clock
             if (settings.showIntervals) {
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
                 if (globalState.pomodoro.totalSeconds >= 3600) {
-                    drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
+                    drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
                 }
             }
         };
