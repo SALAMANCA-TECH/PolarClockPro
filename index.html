@@ -594,17 +594,21 @@
             </div>
             <div class="settings-section">
                 <h3>Separators</h3>
-
-                <h4 class="text-sm uppercase text-gray-400 mt-4">Intervals</h4>
-                <div class="format-buttons">
-                    <button id="intervalsShow" class="format-button active">Show</button>
-                    <button id="intervalsHide" class="format-button">Hide</button>
-                </div>
-
-                <h4 class="text-sm uppercase text-gray-400 mt-4">Mode</h4>
-                <div class="format-buttons">
-                    <button id="modeStandardSeparator" class="format-button active">Standard</button>
-                    <button id="modeRulerSeparator" class="format-button">Ruler</button>
+                <div class="flex w-full justify-center gap-4">
+                    <div class="flex-1">
+                        <h4 class="text-sm uppercase text-gray-400 mb-2 text-center">Intervals</h4>
+                        <div class="format-buttons">
+                            <button id="intervalsShow" class="format-button">Show</button>
+                            <button id="intervalsHide" class="format-button">Hide</button>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm uppercase text-gray-400 mb-2 text-center">Mode</h4>
+                        <div class="format-buttons">
+                            <button id="modeStandardSeparator" class="format-button">Standard</button>
+                            <button id="modeRulerSeparator" class="format-button">Ruler</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="settings-section">
@@ -1500,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
-                showWeekBar: false,
+                showWeekBar: false, showIntervals: true, separatorMode: 'standard',
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroContinuous: false
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
@@ -1517,6 +1521,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gradientToggle').checked = settings.useGradient;
             document.getElementById('volumeControl').value = settings.volume;
             document.getElementById('pomodoroContinuousToggle').checked = settings.pomodoroContinuous;
+
+            // Update new separators controls
+            document.getElementById('intervalsShow').classList.toggle('active', settings.showIntervals);
+            document.getElementById('intervalsHide').classList.toggle('active', !settings.showIntervals);
+            document.getElementById('modeStandardSeparator').classList.toggle('active', settings.separatorMode === 'standard');
+            document.getElementById('modeRulerSeparator').classList.toggle('active', settings.separatorMode === 'ruler');
         }
 
         function loadAdvancedAlarms() {
@@ -1602,6 +1612,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
             document.getElementById('pomodoroContinuousToggle').addEventListener('change', (e) => { settings.pomodoroContinuous = e.target.checked; saveSettings(); });
+
+            // Event listeners for new separators controls
+            document.getElementById('intervalsShow').addEventListener('click', () => { settings.showIntervals = true; saveSettings(); applySettingsToUI(); });
+            document.getElementById('intervalsHide').addEventListener('click', () => { settings.showIntervals = false; saveSettings(); applySettingsToUI(); });
+            document.getElementById('modeStandardSeparator').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); });
+            document.getElementById('modeRulerSeparator').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); });
 
             // Pomodoro Mute Button
             document.getElementById('pomodoroMuteBtn').addEventListener('click', mutePomodoroAudio);
