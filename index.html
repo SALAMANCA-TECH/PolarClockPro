@@ -835,12 +835,14 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        const getWeekOfYear = (date) => {
-            const start = new Date(date.getFullYear(), 0, 1);
-            const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
-            const oneDay = 1000 * 60 * 60 * 24;
-            const day = Math.floor(diff / oneDay);
-            return Math.ceil(day / 7);
+        
+        // Use a more robust, ISO 8601 compliant week number calculation
+        const getISOWeek = (date) => {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         };
 
         const getLabelText = (unit, now) => {
@@ -857,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
                     if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
                     if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                    if (unit === 'week') percent = (getWeekOfYear(now) / 52) * 100;
+                    if (unit === 'week') percent = (getISOWeek(now) / 52) * 100;
                     return `${Math.floor(percent)}%`;
                 case 'remainder':
                     if (unit === 'seconds') return 59 - seconds;
@@ -865,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (unit === 'hours') return 11 - (hours % 12);
                     if (unit === 'day') return daysInMonth - date;
                     if (unit === 'month') return 11 - month;
-                    if (unit === 'week') return 52 - getWeekOfYear(now);
+                    if (unit === 'week') return 52 - getISOWeek(now);
                     return '';
                 default: // standard
                     if (unit === 'seconds') return seconds.toString().padStart(2, '0');
@@ -879,7 +881,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     if (unit === 'day') return date.toString();
                     if (unit === 'month') return (month + 1).toString().padStart(2, '0');
-                    if (unit === 'week') return getWeekOfYear(now);
+                    if (unit === 'week') return getISOWeek(now);
                     return '';
             }
         };
@@ -892,7 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
             const daysInMonth = getDaysInMonth(year, month);
-            const weekOfYear = getWeekOfYear(now);
+            const weekOfYear = getISOWeek(now);
 
             const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
             const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
@@ -902,15 +904,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
 
             const arcs = [];
-
-            if (settings.showWeekBar) {
-                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
-            }
-
+            
+            // Unconditionally add all arcs to the array for processing
+            arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
             arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
             arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
             arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-
             arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
             arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
@@ -919,6 +918,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
                 drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
             }
+
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
@@ -934,8 +934,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day', globalState.mode);
                 drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
                 drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
-            }
-            if (settings.showWeekBar) {
+                // Always draw week separators when intervals are shown
                 drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week', globalState.mode);
             }
 
@@ -1059,41 +1058,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                const isPomodoroWithHours = globalState.mode === 'pomodoro' && globalState.pomodoro.totalSeconds >= 3600;
-
+                
                 totalWidth += hourLineWidth + gap;
                 totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+                // Always include week bar in width calculation
+                totalWidth += weekLineWidth + gap;
 
-                if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
                 const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
-
-                dimensions.minutesLineWidth = minuteLineWidth * scale;
-                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
-
-                dimensions.hoursLineWidth = hourLineWidth * scale;
-                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
-
-                dimensions.dayLineWidth = dayLineWidth * scale;
-                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-                currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                // Corrected order from Outermost to Innermost
+                dimensions.weekLineWidth = weekLineWidth * scale;
+                dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
+                currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
                 dimensions.monthLineWidth = monthLineWidth * scale;
                 dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
                 currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+                dimensions.dayLineWidth = dayLineWidth * scale;
+                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
+                currentRadius -= (dimensions.dayLineWidth + gap * scale);
+
+                dimensions.hoursLineWidth = hourLineWidth * scale;
+                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
+                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+
+                dimensions.minutesLineWidth = minuteLineWidth * scale;
+                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
+                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
+
+                dimensions.secondsLineWidth = secondLineWidth * scale;
+                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
-                showWeekBar: false, showIntervals: true, separatorMode: 'standard',
+                showIntervals: true, separatorMode: 'standard',
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroContinuous: false
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
@@ -1696,3 +1696,4 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
