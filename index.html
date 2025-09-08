@@ -884,14 +884,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
             }
 
-            if (settings.showDateLines) {
-                arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-                arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            }
-
-            if (settings.showTimeLines) {
-                arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-            }
+            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
+            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
+            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
 
             arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
             arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
@@ -910,12 +905,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // --- Draw Separators ---
-            if (settings.showTimeLines) {
+            if (settings.showIntervals) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-            }
-            if (settings.showDateLines) {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
                 drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
             }
             if (settings.showWeekBar) {
                 drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
@@ -1027,8 +1022,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
                 const isPomodoroWithHours = globalState.mode === 'pomodoro' && globalState.pomodoro.totalSeconds >= 3600;
 
-                if (settings.showTimeLines || isPomodoroWithHours) totalWidth += hourLineWidth + gap;
-                if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+                totalWidth += hourLineWidth + gap;
+                totalWidth += dayLineWidth + gap + monthLineWidth + gap;
+
                 if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
@@ -1044,17 +1040,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
                 currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.hoursLineWidth = (settings.showTimeLines || isPomodoroWithHours) ? hourLineWidth * scale : 0;
-                dimensions.hoursRadius = (settings.showTimeLines || isPomodoroWithHours) ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
-                if (settings.showTimeLines || isPomodoroWithHours) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                dimensions.hoursLineWidth = hourLineWidth * scale;
+                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
+                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
 
-                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
-                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                dimensions.dayLineWidth = dayLineWidth * scale;
+                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
+                currentRadius -= (dimensions.dayLineWidth + gap * scale);
 
-                dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
-                dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
+                dimensions.monthLineWidth = monthLineWidth * scale;
+                dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
+                currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
                 dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
                 dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
@@ -1503,7 +1499,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadSettings() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
-                is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
                 showWeekBar: false, showIntervals: true, separatorMode: 'standard',
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroContinuous: false
             };
