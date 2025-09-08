@@ -1442,16 +1442,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Play sound once when buttons appear
                     if (shouldShowButtons && !state.pomodoro.lastMinuteSoundPlayed) {
                         let soundFile;
+                        const baseUrl = 'https://raw.githubusercontent.com/SALAMANCA-TECH/PolarClockPro/main/assets/Sounds/';
                         // Determine the correct sound based on the *current* phase that is about to end.
                         switch (state.pomodoro.phase) {
                             case 'shortBreak':
-                                soundFile = 'short_break_end.mp3';
+                                soundFile = `${baseUrl}short_break_end.mp3`;
                                 break;
                             case 'longBreak':
-                                soundFile = 'long_break_end.mp3';
+                                soundFile = `${baseUrl}long_break_end.mp3`;
                                 break;
                             default: // 'work'
-                                soundFile = 'work_end.mp3';
+                                soundFile = `${baseUrl}work_end.mp3`;
                                 break;
                         }
                         playSound(soundFile, settings.volume, 'pomodoro', true);
@@ -1559,7 +1560,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         function playSound(soundFile, volume, module) {
             if (!soundFile) return;
-            const audio = new Audio(`assets/Sounds/${soundFile}`);
+
+            const isUrl = soundFile.startsWith('http');
+            const audioSrc = isUrl ? soundFile : `assets/Sounds/${soundFile}`;
+
+            const audio = new Audio(audioSrc);
             audio.volume = volume;
             audio.play().catch(e => console.error("Error playing sound:", e));
 
