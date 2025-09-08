@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillText(arc.text, textX, textY);
         };
 
-        const drawSeparators = (radius, count, arcLineWidth) => {
+        const drawSeparators = (radius, count, arcLineWidth, arcKey) => {
             if (!radius || radius <= 0) return;
 
             const innerRadius = radius - (arcLineWidth / 2);
@@ -799,10 +799,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     continue;
                 }
 
-                const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
-                const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
-                const endX = dimensions.centerX + Math.cos(angle) * outerRadius;
-                const endY = dimensions.centerY + Math.sin(angle) * outerRadius;
+                let startRadius, endRadius;
+
+                const isRulerMode = settings.separatorMode === 'ruler';
+                const isRulerArc = arcKey === 'minutes' || arcKey === 'seconds';
+
+                if (isRulerMode && isRulerArc) {
+                    if (i > 0 && i % 5 === 0) {
+                        // Full-length tick for multiples of 5
+                        startRadius = innerRadius;
+                        endRadius = outerRadius;
+                    } else {
+                        // Half-length tick for others
+                        startRadius = radius; // Start from the center of the arc's path
+                        endRadius = outerRadius;
+                    }
+                } else {
+                    // Default full-length tick for all other cases
+                    startRadius = innerRadius;
+                    endRadius = outerRadius;
+                }
+
+                const startX = dimensions.centerX + Math.cos(angle) * startRadius;
+                const startY = dimensions.centerY + Math.sin(angle) * startRadius;
+                const endX = dimensions.centerX + Math.cos(angle) * endRadius;
+                const endY = dimensions.centerY + Math.sin(angle) * endRadius;
 
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
@@ -906,14 +927,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // --- Draw Separators ---
             if (settings.showIntervals) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month');
+                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day');
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
             }
             if (settings.showWeekBar) {
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
+                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week');
             }
 
             lastNow = now;
