@@ -322,39 +322,6 @@
         border-color: #4CAF50;
     }
 
-    /* Animation Keyframes */
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.03); }
-        100% { transform: scale(1); }
-    }
-
-    @keyframes glow-work {
-        0% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
-        50% { box-shadow: 0 0 25px rgba(0, 150, 255, 0.5); }
-        100% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
-    }
-
-    @keyframes glow-break {
-        0% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
-        50% { box-shadow: 0 0 25px rgba(70, 180, 70, 0.5); }
-        100% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
-    }
-
-    /* Animation Classes */
-    .pulsing-warning {
-        animation: pulse 2s infinite ease-in-out;
-    }
-
-    .glowing-work {
-        animation: glow-work 3s infinite ease-in-out;
-        border-radius: 50%; /* Ensures shadow is circular */
-    }
-
-    .glowing-break {
-        animation: glow-break 3s infinite ease-in-out;
-        border-radius: 50%; /* Ensures shadow is circular */
-    }
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
@@ -517,16 +484,9 @@
                         <input type="number" id="pomodoroLongBreakDuration" class="time-input-small" value="15" min="1">
                     </div>
                     <div class="setting-toggle mt-2">
-                        <span>Glow Effect</span>
+                        <span>Continuous</span>
                         <label class="switch">
-                            <input type="checkbox" id="pomodoroGlowToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Pulse Effect</span>
-                        <label class="switch">
-                            <input type="checkbox" id="pomodoroPulseToggle" checked>
+                            <input type="checkbox" id="pomodoroContinuousToggle">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1485,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
                 showWeekBar: false,
-                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
+                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroContinuous: false
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
             settings.currentColors = colorPalettes[settings.colorPreset];
@@ -1503,8 +1463,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
             document.getElementById('weekBarToggle').checked = settings.showWeekBar;
             document.getElementById('volumeControl').value = settings.volume;
-            document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
-            document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
+            document.getElementById('pomodoroContinuousToggle').checked = settings.pomodoroContinuous;
         }
 
         function loadAdvancedAlarms() {
@@ -1588,8 +1547,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('weekBarToggle').addEventListener('change', (e) => { settings.showWeekBar = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
-            document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
-            document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
+            document.getElementById('pomodoroContinuousToggle').addEventListener('change', (e) => { settings.pomodoroContinuous = e.target.checked; saveSettings(); });
 
             // Pomodoro Mute Button
             document.getElementById('pomodoroMuteBtn').addEventListener('click', mutePomodoroAudio);
