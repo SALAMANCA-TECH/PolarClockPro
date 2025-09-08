@@ -1328,6 +1328,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                showDateLines: true, showTimeLines: true,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
