@@ -637,13 +637,6 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="setting-toggle">
-                    <span>Show Week Bar</span>
-                    <label class="switch">
-                        <input type="checkbox" id="weekBarToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
             </div>
             <div class="settings-section">
                 <h3>Audio</h3>
@@ -834,12 +827,17 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        const getWeekOfYear = (date) => {
-            const start = new Date(date.getFullYear(), 0, 1);
-            const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
-            const oneDay = 1000 * 60 * 60 * 24;
-            const day = Math.floor(diff / oneDay);
-            return Math.ceil(day / 7);
+        const getWeekOfYear = (d) => {
+            // Copy date so don't modify original
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            // Set to nearest Thursday: current date + 4 - current day number
+            // Make Sunday's day number 7
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            // Get first day of year
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            // Calculate full weeks to nearest Thursday
+            var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+            return weekNo;
         };
 
         const getLabelText = (unit, now) => {
@@ -902,9 +900,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const arcs = [];
 
-            if (settings.showWeekBar) {
-                arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
-            }
+            arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
 
             if (settings.showDateLines) {
                 arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
@@ -939,9 +935,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
                 drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
             }
-            if (settings.showWeekBar) {
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
-            }
+            drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
 
             lastNow = now;
 
@@ -1022,36 +1016,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
                 if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
                 if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
-                if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
+                totalWidth += weekLineWidth + gap; // Always show week bar
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
                 if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
                 const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
-
-                dimensions.minutesLineWidth = minuteLineWidth * scale;
-                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
-
-                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
-                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
-                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
-
-                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
-                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
-                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+                dimensions.weekLineWidth = weekLineWidth * scale;
+                dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
+                currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
                 dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
                 dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
                 if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
 
-                dimensions.weekLineWidth = settings.showWeekBar ? weekLineWidth * scale : 0;
-                dimensions.weekRadius = settings.showWeekBar ? currentRadius - (dimensions.weekLineWidth / 2) : 0;
-                if (settings.showWeekBar) currentRadius -= (dimensions.weekLineWidth + gap * scale);
+                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
+                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
+                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+
+                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
+                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
+                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+
+                dimensions.minutesLineWidth = minuteLineWidth * scale;
+                dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
+                currentRadius -= (dimensions.minutesLineWidth + gap * scale);
+
+                dimensions.secondsLineWidth = secondLineWidth * scale;
+                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1346,7 +1340,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
                 is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
-                showWeekBar: false,
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
@@ -1363,7 +1356,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gradientToggle').checked = settings.useGradient;
             document.getElementById('dateLinesToggle').checked = settings.showDateLines;
             document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
-            document.getElementById('weekBarToggle').checked = settings.showWeekBar;
             document.getElementById('volumeControl').value = settings.volume;
             document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
             document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
@@ -1415,7 +1407,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
             document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
-            document.getElementById('weekBarToggle').addEventListener('change', (e) => { settings.showWeekBar = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
             document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
             document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
