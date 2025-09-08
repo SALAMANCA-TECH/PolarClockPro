@@ -799,36 +799,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     continue;
                 }
 
-                let startRadius, endRadius;
-
                 const isRulerMode = settings.separatorMode === 'ruler';
-                const isRulerArc = arcKey === 'minutes' || arcKey === 'seconds';
+                const isTimeArc = arcKey === 'minutes' || arcKey === 'seconds';
 
-                if (isRulerMode && isRulerArc) {
-                    if (i > 0 && i % 5 === 0) {
-                        // Full-length tick for multiples of 5
-                        startRadius = innerRadius;
-                        endRadius = outerRadius;
+                let startRadius = innerRadius;
+                let endRadius = outerRadius;
+                let shouldDraw = true;
+
+                if (isTimeArc) {
+                    if (isRulerMode) {
+                        // In Ruler mode, draw all ticks, but make non-5-minute ticks shorter
+                        if (i > 0 && i % 5 !== 0) {
+                            startRadius = radius; // Half-length tick
+                        }
                     } else {
-                        // Half-length tick for others
-                        startRadius = radius; // Start from the center of the arc's path
-                        endRadius = outerRadius;
+                        // In Standard mode, only draw ticks that are multiples of 5
+                        if (i % 5 !== 0) {
+                            shouldDraw = false;
+                        }
                     }
-                } else {
-                    // Default full-length tick for all other cases
-                    startRadius = innerRadius;
-                    endRadius = outerRadius;
                 }
 
-                const startX = dimensions.centerX + Math.cos(angle) * startRadius;
-                const startY = dimensions.centerY + Math.sin(angle) * startRadius;
-                const endX = dimensions.centerX + Math.cos(angle) * endRadius;
-                const endY = dimensions.centerY + Math.sin(angle) * endRadius;
+                if (shouldDraw) {
+                    const startX = dimensions.centerX + Math.cos(angle) * startRadius;
+                    const startY = dimensions.centerY + Math.sin(angle) * startRadius;
+                    const endX = dimensions.centerX + Math.cos(angle) * endRadius;
+                    const endY = dimensions.centerY + Math.sin(angle) * endRadius;
 
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                }
             }
         };
 
