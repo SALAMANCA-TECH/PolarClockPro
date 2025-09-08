@@ -472,8 +472,11 @@
                 <div class="settings-section w-full max-w-xs">
                     <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
                     <div class="flex justify-between w-full items-center">
-                        <label for="pomodoroWorkDuration">Work (min)</label>
-                        <input type="number" id="pomodoroWorkDuration" class="time-input-small" value="25" min="1">
+                        <label>Work</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="pomodoroWorkHours" class="time-input-small" value="0" min="0" placeholder="H">
+                            <input type="number" id="pomodoroWorkMinutes" class="time-input-small" value="25" min="0" max="59" placeholder="M">
+                        </div>
                     </div>
                     <div class="flex justify-between w-full items-center">
                         <label for="pomodoroShortBreakDuration">Short Break (min)</label>
@@ -954,16 +957,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const pomodoro = globalState.pomodoro;
             const remaining = pomodoro.remainingSeconds;
 
-            const remainingMinutes = Math.floor(remaining / 60);
+            const remainingHours = Math.floor(remaining / 3600);
+            const remainingMinutes = Math.floor((remaining % 3600) / 60);
             const remainingSeconds = Math.floor(remaining % 60);
 
-            // Seconds arc - like a normal second hand, showing remaining seconds
+            // Seconds arc
             const secondsEndAngle = baseStartAngle + (remainingSeconds / 60) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, baseStartAngle, secondsEndAngle, settings.currentColors.seconds.light, settings.currentColors.seconds.dark, 30);
 
-            // Minutes arc - like a normal minute hand, showing remaining minutes
+            // Minutes arc
             const minutesEndAngle = baseStartAngle + (remainingMinutes / 60) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.minutesRadius, baseStartAngle, minutesEndAngle, settings.currentColors.minutes.light, settings.currentColors.minutes.dark, 30);
+
+            // Hours arc (conditional)
+            if (globalState.pomodoro.totalSeconds >= 3600) {
+                const hoursEndAngle = baseStartAngle + (remainingHours / 12) * Math.PI * 2;
+                drawArc(dimensions.centerX, dimensions.centerY, dimensions.hoursRadius, baseStartAngle, hoursEndAngle, settings.currentColors.hours.light, settings.currentColors.hours.dark, 45);
+            }
         };
 
         const animate = () => {
@@ -1008,7 +1018,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
                 let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                if (settings.showTimeLines) totalWidth += hourLineWidth + gap;
+                const isPomodoroWithHours = globalState.mode === 'pomodoro' && globalState.pomodoro.totalSeconds >= 3600;
+
+                if (settings.showTimeLines || isPomodoroWithHours) totalWidth += hourLineWidth + gap;
                 if (settings.showDateLines) totalWidth += dayLineWidth + gap + monthLineWidth + gap;
                 if (settings.showWeekBar) totalWidth += weekLineWidth + gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
@@ -1025,9 +1037,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
                 currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
-                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
-                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                dimensions.hoursLineWidth = (settings.showTimeLines || isPomodoroWithHours) ? hourLineWidth * scale : 0;
+                dimensions.hoursRadius = (settings.showTimeLines || isPomodoroWithHours) ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
+                if (settings.showTimeLines || isPomodoroWithHours) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
 
                 dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
                 dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
@@ -1188,7 +1200,8 @@ document.addEventListener('DOMContentLoaded', function() {
     (function(App) {
         const statusDisplay = document.getElementById('pomodoroStatus');
         const timerDisplay = document.getElementById('pomodoroTimerDisplay');
-        const workDurationInput = document.getElementById('pomodoroWorkDuration');
+        const workHoursInput = document.getElementById('pomodoroWorkHours');
+        const workMinutesInput = document.getElementById('pomodoroWorkMinutes');
         const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
         const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
 
@@ -1239,10 +1252,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.isPaused = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
-                const duration = (parseInt(workDurationInput.value) || 25) * 60;
+                const hours = parseInt(workHoursInput.value) || 0;
+                const minutes = parseInt(workMinutesInput.value) || 25;
+                const duration = (hours * 3600) + (minutes * 60);
                 this.state.pomodoro.remainingSeconds = duration;
                 this.state.pomodoro.totalSeconds = duration;
                 this.updateDisplay();
+                App.Clock.resize();
 
                 // Hide buttons on reset
                 const pomodoroActions = document.getElementById('pomodoroActions');
@@ -1290,7 +1306,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // After a break (or a snoozed break), it's always back to work.
                 else {
                     nextPhase = 'work';
-                    duration = (parseInt(workDurationInput.value) || 25) * 60;
+                    const hours = parseInt(workHoursInput.value) || 0;
+                    const minutes = parseInt(workMinutesInput.value) || 25;
+                    duration = (hours * 3600) + (minutes * 60);
                 }
 
                 this.state.pomodoro.phase = nextPhase;
@@ -1310,9 +1328,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.updateDisplay();
             },
             updateDisplay: function() {
-                const minutes = Math.floor(this.state.pomodoro.remainingSeconds / 60);
-                const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const remaining = Math.max(0, this.state.pomodoro.remainingSeconds);
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = Math.floor(remaining % 60);
+
+                if (this.state.pomodoro.totalSeconds >= 3600) {
+                    timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    const totalMinutes = Math.floor(remaining / 60);
+                    timerDisplay.textContent = `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
 
                 if (this.state.pomodoro.isSnoozing) {
                     statusDisplay.textContent = "Snoozing";
