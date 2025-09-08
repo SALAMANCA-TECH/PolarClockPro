@@ -1006,6 +1006,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const hoursEndAngle = baseStartAngle + (remainingHours / 12) * Math.PI * 2;
                 drawArc(dimensions.centerX, dimensions.centerY, dimensions.hoursRadius, baseStartAngle, hoursEndAngle, settings.currentColors.hours.light, settings.currentColors.hours.dark, 45);
             }
+
+            // Draw separators for the pomodoro clock
+            if (settings.showIntervals) {
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
+                if (globalState.pomodoro.totalSeconds >= 3600) {
+                    drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
+                }
+            }
         };
 
         const animate = () => {
