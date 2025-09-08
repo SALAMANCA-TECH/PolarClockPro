@@ -640,6 +640,18 @@
             <button id="closePomodoroInfoBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg w-full">Got it</button>
         </div>
     </div>
+
+    <!-- Pomodoro Cycle End Modal -->
+    <div id="pomodoroCycleEndModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md text-white text-center">
+            <h3 id="cycleEndTitle" class="text-xl font-bold mb-4">Cycle Complete</h3>
+            <p id="cycleEndText" class="mb-6">What would you like to do next?</p>
+            <div class="flex justify-center gap-4">
+                <button id="startNextCycleBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg w-full">Start Next Cycle</button>
+                <button id="endTimerBtn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg w-full">End Timer</button>
+            </div>
+        </div>
+    </div>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     const App = {};
@@ -1205,12 +1217,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
         const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
 
+        const cycleEndModal = document.getElementById('pomodoroCycleEndModal');
+        const startNextCycleBtn = document.getElementById('startNextCycleBtn');
+        const endTimerBtn = document.getElementById('endTimerBtn');
+        const cycleEndTitle = document.getElementById('cycleEndTitle');
+
+        function _startPhase(phase, duration) {
+            App.Pomodoro.state.pomodoro.phase = phase;
+            App.Pomodoro.state.pomodoro.remainingSeconds = duration;
+            App.Pomodoro.state.pomodoro.totalSeconds = duration;
+            App.Pomodoro.state.pomodoro.isRunning = true;
+            App.Pomodoro.state.pomodoro.isPaused = false;
+
+            App.Pomodoro.state.pomodoro.isSnoozing = false;
+            App.Pomodoro.state.pomodoro.isMuted = false;
+            App.Pomodoro.state.pomodoro.currentAudio = null;
+            App.Pomodoro.state.pomodoro.lastMinuteSoundPlayed = false;
+            document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
+
+            App.Pomodoro.updateDisplay();
+            App.Clock.resize();
+            document.getElementById('pomodoroToggleBtn').textContent = 'Pause';
+        }
+
         App.Pomodoro = {
             state: null,
             settings: null,
             init: function(appState, appSettings) {
                 this.state = appState;
                 this.settings = appSettings;
+
+                startNextCycleBtn.addEventListener('click', () => {
+                    cycleEndModal.classList.add('hidden');
+                    _startPhase(this.state.pomodoro.nextPhase, this.state.pomodoro.nextDuration);
+                });
+
+                endTimerBtn.addEventListener('click', () => {
+                    cycleEndModal.classList.add('hidden');
+                    this.reset();
+                });
+
                 this.setupEventListeners();
                 this.updateDisplay();
             },
@@ -1219,15 +1265,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isRunning = this.state.pomodoro.isRunning;
                 const isPaused = this.state.pomodoro.isPaused;
 
-                // Case 1: Timer is stopped -> Start it
                 if (!isRunning && !isPaused) {
                     this.state.pomodoro.isRunning = true;
                     if (this.state.pomodoro.remainingSeconds <= 0) {
                         this.startNextPhase();
+                    } else {
+                         _startPhase(this.state.pomodoro.phase, this.state.pomodoro.remainingSeconds);
                     }
                     toggleButton.textContent = 'Pause';
                 }
-                // Case 2: Timer is running -> Pause it
                 else if (isRunning && !isPaused) {
                     this.state.pomodoro.isRunning = false;
                     this.state.pomodoro.isPaused = true;
@@ -1236,7 +1282,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     toggleButton.style.color = 'red';
                 }
-                // Case 3: Timer is paused -> Resume it
                 else if (!isRunning && isPaused) {
                     this.state.pomodoro.isRunning = true;
                     this.state.pomodoro.isPaused = false;
@@ -1260,14 +1305,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.updateDisplay();
                 App.Clock.resize();
 
-                // Hide buttons on reset
                 const pomodoroActions = document.getElementById('pomodoroActions');
                 if (pomodoroActions) {
                     pomodoroActions.style.display = 'none';
                 }
                 this.state.pomodoro.actionButtonsVisible = false;
 
-                // Stop any sound and reset mute state
                 if (this.state.pomodoro.currentAudio) {
                     this.state.pomodoro.currentAudio.pause();
                 }
@@ -1277,55 +1320,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.state.pomodoro.lastMinuteSoundPlayed = false;
                 document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
 
-                // Reset toggle button
                 toggleButton.textContent = 'Start';
                 toggleButton.style.color = '';
 
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
-                // Stop any lingering sound from the previous phase
                 if (this.state.pomodoro.currentAudio) {
                     this.state.pomodoro.currentAudio.pause();
                 }
+                this.state.pomodoro.isRunning = false;
 
-                let nextPhase = 'work';
-                let duration = (parseInt(workDurationInput.value) || 25) * 60;
+                let nextPhase, duration;
+                let nextPhaseText = '';
 
-                // The current phase (even if snoozed) determines the next one.
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
                         nextPhase = 'longBreak';
+                        nextPhaseText = 'Long Break';
                         duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
                         nextPhase = 'shortBreak';
+                        nextPhaseText = 'Short Break';
                         duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
-                }
-                // After a break (or a snoozed break), it's always back to work.
-                else {
+                } else {
                     nextPhase = 'work';
+                    nextPhaseText = 'Work Session';
                     const hours = parseInt(workHoursInput.value) || 0;
                     const minutes = parseInt(workMinutesInput.value) || 25;
                     duration = (hours * 3600) + (minutes * 60);
                 }
 
-                this.state.pomodoro.phase = nextPhase;
-                this.state.pomodoro.remainingSeconds = duration;
-                this.state.pomodoro.totalSeconds = duration;
+                if (this.settings.pomodoroContinuous) {
+                    _startPhase(nextPhase, duration);
+                } else {
+                    cycleEndTitle.textContent = `${this.state.pomodoro.phase === 'work' ? 'Work Session' : 'Break'} Complete`;
+                    startNextCycleBtn.textContent = `Start ${nextPhaseText}`;
 
-                // Sound now plays in the update loop during the last minute.
-                // This block is now only for transitioning state.
+                    this.state.pomodoro.nextPhase = nextPhase;
+                    this.state.pomodoro.nextDuration = duration;
 
-                // Reset for the new cycle
-                this.state.pomodoro.isSnoozing = false;
-                this.state.pomodoro.isMuted = false;
-                this.state.pomodoro.currentAudio = null;
-                this.state.pomodoro.lastMinuteSoundPlayed = false;
-                document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
-
-                this.updateDisplay();
+                    cycleEndModal.classList.remove('hidden');
+                }
             },
             updateDisplay: function() {
                 const remaining = Math.max(0, this.state.pomodoro.remainingSeconds);
@@ -1369,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, totalSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false },
+            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, totalSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false, nextPhase: null, nextDuration: null },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
