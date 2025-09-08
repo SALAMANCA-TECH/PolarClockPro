@@ -322,6 +322,39 @@
         border-color: #4CAF50;
     }
 
+    /* Animation Keyframes */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes glow-work {
+        0% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(0, 150, 255, 0.5); }
+        100% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
+    }
+
+    @keyframes glow-break {
+        0% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(70, 180, 70, 0.5); }
+        100% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
+    }
+
+    /* Animation Classes */
+    .pulsing-warning {
+        animation: pulse 2s infinite ease-in-out;
+    }
+
+    .glowing-work {
+        animation: glow-work 3s infinite ease-in-out;
+        border-radius: 50%; /* Ensures shadow is circular */
+    }
+
+    .glowing-break {
+        animation: glow-break 3s infinite ease-in-out;
+        border-radius: 50%; /* Ensures shadow is circular */
+    }
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
@@ -456,27 +489,16 @@
                     </div>
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
                 </div>
-                <!-- Mute and Snooze buttons container -->
-                <div id="pomodoroActions" class="control-buttons" style="display: none;">
-                    <button id="pomodoroMuteBtn" class="control-btn" title="Mute for this cycle">
-                        <i class="ph ph-speaker-slash text-2xl"></i>
-                    </button>
-                    <button id="pomodoroSnoozeBtn" class="control-btn" title="Snooze for 5 minutes">
-                        <i class="ph ph-bell-z text-2xl"></i>
-                    </button>
-                </div>
                 <div class="control-buttons">
-                    <button id="pomodoroToggleBtn">Start</button>
+                    <button id="startPomodoro">Start</button>
+                    <button id="pausePomodoro">Pause</button>
                     <button id="resetPomodoro">Reset</button>
                 </div>
                 <div class="settings-section w-full max-w-xs">
                     <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
                     <div class="flex justify-between w-full items-center">
-                        <label>Work</label>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="pomodoroWorkHours" class="time-input-small" value="0" min="0" placeholder="H">
-                            <input type="number" id="pomodoroWorkMinutes" class="time-input-small" value="25" min="0" max="59" placeholder="M">
-                        </div>
+                        <label for="pomodoroWorkDuration">Work (min)</label>
+                        <input type="number" id="pomodoroWorkDuration" class="time-input-small" value="25" min="1">
                     </div>
                     <div class="flex justify-between w-full items-center">
                         <label for="pomodoroShortBreakDuration">Short Break (min)</label>
@@ -487,9 +509,16 @@
                         <input type="number" id="pomodoroLongBreakDuration" class="time-input-small" value="15" min="1">
                     </div>
                     <div class="setting-toggle mt-2">
-                        <span>Continuous</span>
+                        <span>Glow Effect</span>
                         <label class="switch">
-                            <input type="checkbox" id="pomodoroContinuousToggle">
+                            <input type="checkbox" id="pomodoroGlowToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Pulse Effect</span>
+                        <label class="switch">
+                            <input type="checkbox" id="pomodoroPulseToggle" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -594,21 +623,19 @@
             </div>
             <div class="settings-section">
                 <h3>Separators</h3>
-                <div class="flex w-full justify-center gap-4">
-                    <div class="flex-1">
-                        <h4 class="text-sm uppercase text-gray-400 mb-2 text-center">Intervals</h4>
-                        <div class="format-buttons">
-                            <button id="intervalsShow" class="format-button">Show</button>
-                            <button id="intervalsHide" class="format-button">Hide</button>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-sm uppercase text-gray-400 mb-2 text-center">Mode</h4>
-                        <div class="format-buttons">
-                            <button id="modeStandardSeparator" class="format-button">Standard</button>
-                            <button id="modeRulerSeparator" class="format-button">Ruler</button>
-                        </div>
-                    </div>
+                <div class="setting-toggle">
+                    <span>Date Lines (Month, Day)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="dateLinesToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <span>Time Lines (Hours)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="timeLinesToggle">
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
             <div class="settings-section">
@@ -633,18 +660,6 @@
                 <li>After four sessions, take a longer break (e.g., 15 mins).</li>
             </ul>
             <button id="closePomodoroInfoBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg w-full">Got it</button>
-        </div>
-    </div>
-
-    <!-- Pomodoro Cycle End Modal -->
-    <div id="pomodoroCycleEndModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md text-white text-center">
-            <h3 id="cycleEndTitle" class="text-xl font-bold mb-4">Cycle Complete</h3>
-            <p id="cycleEndText" class="mb-6">What would you like to do next?</p>
-            <div class="flex justify-center gap-4">
-                <button id="startNextCycleBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg w-full">Start Next Cycle</button>
-                <button id="endTimerBtn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg w-full">End Timer</button>
-            </div>
         </div>
     </div>
     <script>
@@ -781,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillText(arc.text, textX, textY);
         };
 
-        const drawSeparators = (radius, count, arcLineWidth, arcKey, mode) => {
+        const drawSeparators = (radius, count, arcLineWidth) => {
             if (!radius || radius <= 0) return;
 
             const innerRadius = radius - (arcLineWidth / 2);
@@ -793,15 +808,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
-
-                if (mode !== 'pomodoro' && Math.abs(angle - sixOClockAngle) < 0.01) {
-                    continue;
-                }
-
-                const isRulerMode = settings.separatorMode === 'ruler';
-                // CORRECTED LOGIC: Specifically target 'minutes' and 'seconds' for ruler mode
-                const isTimeArcForRuler = arcKey === 'minutes' || arcKey === 'seconds';
-
 
                 // Skip the 6 o'clock position with a small tolerance
                 if (Math.abs(angle - sixOClockAngle) < 0.01) {
@@ -821,14 +827,12 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        
-        // Use a more robust, ISO 8601 compliant week number calculation
-        const getISOWeek = (date) => {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            const dayNum = d.getUTCDay() || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        const getWeekOfYear = (d) => {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            return weekNo;
         };
 
         const getLabelText = (unit, now) => {
@@ -845,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
                     if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
                     if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                    if (unit === 'week') percent = (getISOWeek(now) / 52) * 100;
+                    if (unit === 'week') percent = (getWeekOfYear(now) / 52) * 100;
                     return `${Math.floor(percent)}%`;
                 case 'remainder':
                     if (unit === 'seconds') return 59 - seconds;
@@ -853,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (unit === 'hours') return 11 - (hours % 12);
                     if (unit === 'day') return daysInMonth - date;
                     if (unit === 'month') return 11 - month;
-                    if (unit === 'week') return 52 - getISOWeek(now);
+                    if (unit === 'week') return 52 - getWeekOfYear(now);
                     return '';
                 default: // standard
                     if (unit === 'seconds') return seconds.toString().padStart(2, '0');
@@ -867,7 +871,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     if (unit === 'day') return date.toString();
                     if (unit === 'month') return (month + 1).toString().padStart(2, '0');
-                    if (unit === 'week') return getISOWeek(now);
+                    if (unit === 'week') return getWeekOfYear(now);
                     return '';
             }
         };
@@ -880,31 +884,33 @@ document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
             const daysInMonth = getDaysInMonth(year, month);
-            const weekOfYear = getISOWeek(now);
+            const weekOfYear = getWeekOfYear(now);
 
             const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
             const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
             const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
             const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-            const minutesEndAngle = baseStartAngle + (minutes / 60) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
             const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
 
             const arcs = [];
-            
-            // Unconditionally add all arcs to the array for processing
+
             arcs.push({ key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: 15, endAngle: weekEndAngle });
-            arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
-            arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
-            arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
-            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
             arcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+            arcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
+            if (settings.showTimeLines) {
+                arcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+            }
+            if (settings.showDateLines) {
+                arcs.push({ key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: 30, endAngle: dayEndAngle });
+                arcs.push({ key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: 20, endAngle: monthEndAngle });
+            }
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
                 const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
                 const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
                 drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
             }
-
             arcs.forEach(arc => {
                 if (arc.radius > 0 && settings.currentColors) {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
@@ -914,15 +920,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // --- Draw Separators ---
-            if (settings.showIntervals) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
-                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth, 'month', globalState.mode);
-                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth, 'day', globalState.mode);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
-                // Always draw week separators when intervals are shown
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth, 'week', globalState.mode);
+            if (settings.showTimeLines) {
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
             }
+            if (settings.showDateLines) {
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+                drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
+            }
+            drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
 
             lastNow = now;
 
@@ -959,54 +964,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     drawLabel(arc);
                 }
             });
-
-            // Draw separators for the stopwatch
-            if (settings.showIntervals) {
-                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
-            }
-        };
-
-        const drawPomodoroClock = () => {
-            if (!globalState.pomodoro || globalState.pomodoro.totalSeconds <= 0) return;
-
-            const pomodoro = globalState.pomodoro;
-            const remaining = pomodoro.remainingSeconds;
-
-            const remainingHours = Math.floor(remaining / 3600);
-            const remainingMinutes = Math.floor((remaining % 3600) / 60);
-            const remainingSeconds = Math.floor(remaining % 60);
-
-            // Seconds arc
-            const secondsEndAngle = baseStartAngle + (remainingSeconds / 60) * Math.PI * 2;
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.secondsRadius, baseStartAngle, secondsEndAngle, settings.currentColors.seconds.light, settings.currentColors.seconds.dark, 30);
-
-            // Minutes arc
-            const minutesEndAngle = baseStartAngle + (remainingMinutes / 60) * Math.PI * 2;
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.minutesRadius, baseStartAngle, minutesEndAngle, settings.currentColors.minutes.light, settings.currentColors.minutes.dark, 30);
-
-            // Hours arc (conditional)
-            if (globalState.pomodoro.totalSeconds >= 3600) {
-                const hoursEndAngle = baseStartAngle + (remainingHours / 12) * Math.PI * 2;
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.hoursRadius, baseStartAngle, hoursEndAngle, settings.currentColors.hours.light, settings.currentColors.hours.dark, 45);
-            }
-
-            // Draw separators for the pomodoro clock
-            if (settings.showIntervals) {
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds', globalState.mode);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes', globalState.mode);
-                if (globalState.pomodoro.totalSeconds >= 3600) {
-                    drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours', globalState.mode);
-                }
-            }
         };
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (globalState.mode === 'pomodoro') {
-                drawPomodoroClock();
-            } else if (globalState.mode === 'stopwatch') {
+            if (globalState.mode === 'stopwatch') {
                 drawStopwatch();
             } else {
                 drawClock();
@@ -1043,43 +1005,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
-                let totalWidth = secondLineWidth / 2 + minuteLineWidth + gap;
-                
-                totalWidth += hourLineWidth + gap;
-                totalWidth += dayLineWidth + gap + monthLineWidth + gap;
-                // Always include week bar in width calculation
-                totalWidth += weekLineWidth + gap;
-
+                let totalWidth = weekLineWidth + secondLineWidth + minuteLineWidth + (settings.showTimeLines ? hourLineWidth : 0) + (settings.showDateLines ? dayLineWidth + monthLineWidth : 0) + 5 * gap;
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-                if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
                 const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
 
-                // Corrected order from Outermost to Innermost
                 dimensions.weekLineWidth = weekLineWidth * scale;
                 dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
                 currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
-                dimensions.monthLineWidth = monthLineWidth * scale;
-                dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
-                currentRadius -= (dimensions.monthLineWidth + gap * scale);
-
-                dimensions.dayLineWidth = dayLineWidth * scale;
-                dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-                currentRadius -= (dimensions.dayLineWidth + gap * scale);
-
-                dimensions.hoursLineWidth = hourLineWidth * scale;
-                dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-                currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+                dimensions.secondsLineWidth = secondLineWidth * scale;
+                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
+                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
 
                 dimensions.minutesLineWidth = minuteLineWidth * scale;
                 dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
                 currentRadius -= (dimensions.minutesLineWidth + gap * scale);
 
-                dimensions.secondsLineWidth = secondLineWidth * scale;
-                dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-                currentRadius -= (dimensions.secondsLineWidth + gap * scale);
+                dimensions.hoursLineWidth = settings.showTimeLines ? hourLineWidth * scale : 0;
+                dimensions.hoursRadius = settings.showTimeLines ? currentRadius - (dimensions.hoursLineWidth / 2) : 0;
+                if (settings.showTimeLines) currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+
+                dimensions.dayLineWidth = settings.showDateLines ? dayLineWidth * scale : 0;
+                dimensions.dayRadius = settings.showDateLines ? currentRadius - (dimensions.dayLineWidth / 2) : 0;
+                if (settings.showDateLines) currentRadius -= (dimensions.dayLineWidth + gap * scale);
+
+                dimensions.monthLineWidth = settings.showDateLines ? monthLineWidth * scale : 0;
+                dimensions.monthRadius = settings.showDateLines ? currentRadius - (dimensions.monthLineWidth / 2) : 0;
+                if (settings.showDateLines) currentRadius -= (dimensions.monthLineWidth + gap * scale);
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1228,33 +1182,9 @@ document.addEventListener('DOMContentLoaded', function() {
     (function(App) {
         const statusDisplay = document.getElementById('pomodoroStatus');
         const timerDisplay = document.getElementById('pomodoroTimerDisplay');
-        const workHoursInput = document.getElementById('pomodoroWorkHours');
-        const workMinutesInput = document.getElementById('pomodoroWorkMinutes');
+        const workDurationInput = document.getElementById('pomodoroWorkDuration');
         const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
         const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
-
-        const cycleEndModal = document.getElementById('pomodoroCycleEndModal');
-        const startNextCycleBtn = document.getElementById('startNextCycleBtn');
-        const endTimerBtn = document.getElementById('endTimerBtn');
-        const cycleEndTitle = document.getElementById('cycleEndTitle');
-
-        function _startPhase(phase, duration) {
-            App.Pomodoro.state.pomodoro.phase = phase;
-            App.Pomodoro.state.pomodoro.remainingSeconds = duration;
-            App.Pomodoro.state.pomodoro.totalSeconds = duration;
-            App.Pomodoro.state.pomodoro.isRunning = true;
-            App.Pomodoro.state.pomodoro.isPaused = false;
-
-            App.Pomodoro.state.pomodoro.isSnoozing = false;
-            App.Pomodoro.state.pomodoro.isMuted = false;
-            App.Pomodoro.state.pomodoro.currentAudio = null;
-            App.Pomodoro.state.pomodoro.lastMinuteSoundPlayed = false;
-            document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
-
-            App.Pomodoro.updateDisplay();
-            App.Clock.resize();
-            document.getElementById('pomodoroToggleBtn').textContent = 'Pause';
-        }
 
         App.Pomodoro = {
             state: null,
@@ -1262,151 +1192,62 @@ document.addEventListener('DOMContentLoaded', function() {
             init: function(appState, appSettings) {
                 this.state = appState;
                 this.settings = appSettings;
-
-                startNextCycleBtn.addEventListener('click', () => {
-                    cycleEndModal.classList.add('hidden');
-                    _startPhase(this.state.pomodoro.nextPhase, this.state.pomodoro.nextDuration);
-                });
-
-                endTimerBtn.addEventListener('click', () => {
-                    cycleEndModal.classList.add('hidden');
-                    this.reset();
-                });
-
                 this.setupEventListeners();
                 this.updateDisplay();
             },
-            toggle: function() {
-                const toggleButton = document.getElementById('pomodoroToggleBtn');
-                const isRunning = this.state.pomodoro.isRunning;
-                const isPaused = this.state.pomodoro.isPaused;
-
-                if (!isRunning && !isPaused) {
-                    this.state.pomodoro.isRunning = true;
-                    if (this.state.pomodoro.remainingSeconds <= 0) {
-                        this.startNextPhase();
-                    } else {
-                         _startPhase(this.state.pomodoro.phase, this.state.pomodoro.remainingSeconds);
-                    }
-                    toggleButton.textContent = 'Pause';
-                }
-                else if (isRunning && !isPaused) {
-                    this.state.pomodoro.isRunning = false;
-                    this.state.pomodoro.isPaused = true;
-                    if (this.state.pomodoro.currentAudio) {
-                        this.state.pomodoro.currentAudio.pause();
-                    }
-                    toggleButton.style.color = 'red';
-                }
-                else if (!isRunning && isPaused) {
-                    this.state.pomodoro.isRunning = true;
-                    this.state.pomodoro.isPaused = false;
-                    if (this.state.pomodoro.currentAudio && this.state.pomodoro.currentAudio.paused) {
-                        this.state.pomodoro.currentAudio.play();
-                    }
-                    toggleButton.style.color = '';
+            start: function() {
+                if (this.state.pomodoro.isRunning) return;
+                this.state.pomodoro.isRunning = true;
+                if (this.state.pomodoro.remainingSeconds <= 0) {
+                    this.startNextPhase();
                 }
             },
-            reset: function() {
-                const toggleButton = document.getElementById('pomodoroToggleBtn');
+            pause: function() {
                 this.state.pomodoro.isRunning = false;
-                this.state.pomodoro.isPaused = false;
+            },
+            reset: function() {
+                this.state.pomodoro.isRunning = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
-                const hours = parseInt(workHoursInput.value) || 0;
-                const minutes = parseInt(workMinutesInput.value) || 25;
-                const duration = (hours * 3600) + (minutes * 60);
-                this.state.pomodoro.remainingSeconds = duration;
-                this.state.pomodoro.totalSeconds = duration;
+                this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
                 this.updateDisplay();
-                App.Clock.resize();
-
-                const pomodoroActions = document.getElementById('pomodoroActions');
-                if (pomodoroActions) {
-                    pomodoroActions.style.display = 'none';
-                }
-                this.state.pomodoro.actionButtonsVisible = false;
-
-                if (this.state.pomodoro.currentAudio) {
-                    this.state.pomodoro.currentAudio.pause();
-                }
-                this.state.pomodoro.isMuted = false;
-                this.state.pomodoro.currentAudio = null;
-                this.state.pomodoro.isSnoozing = false;
-                this.state.pomodoro.lastMinuteSoundPlayed = false;
-                document.getElementById('pomodoroMuteBtn').querySelector('i').style.color = '';
-
-                toggleButton.textContent = 'Start';
-                toggleButton.style.color = '';
-
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
-                if (this.state.pomodoro.currentAudio) {
-                    this.state.pomodoro.currentAudio.pause();
-                }
-                this.state.pomodoro.isRunning = false;
-
-                let nextPhase, duration;
-                let nextPhaseText = '';
-
+                let nextPhase = 'work';
+                let duration = (parseInt(workDurationInput.value) || 25) * 60;
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
                     if (this.state.pomodoro.cycles % 4 === 0) {
                         nextPhase = 'longBreak';
-                        nextPhaseText = 'Long Break';
                         duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
                         nextPhase = 'shortBreak';
-                        nextPhaseText = 'Short Break';
                         duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
-                } else {
-                    nextPhase = 'work';
-                    nextPhaseText = 'Work Session';
-                    const hours = parseInt(workHoursInput.value) || 0;
-                    const minutes = parseInt(workMinutesInput.value) || 25;
-                    duration = (hours * 3600) + (minutes * 60);
                 }
-
-                if (this.settings.pomodoroContinuous) {
-                    _startPhase(nextPhase, duration);
-                } else {
-                    cycleEndTitle.textContent = `${this.state.pomodoro.phase === 'work' ? 'Work Session' : 'Break'} Complete`;
-                    startNextCycleBtn.textContent = `Start ${nextPhaseText}`;
-
-                    this.state.pomodoro.nextPhase = nextPhase;
-                    this.state.pomodoro.nextDuration = duration;
-
-                    cycleEndModal.classList.remove('hidden');
-                }
+                this.state.pomodoro.phase = nextPhase;
+                this.state.pomodoro.remainingSeconds = duration;
+                this.playSound();
+                this.updateDisplay();
             },
             updateDisplay: function() {
-                const remaining = Math.max(0, this.state.pomodoro.remainingSeconds);
-                const hours = Math.floor(remaining / 3600);
-                const minutes = Math.floor((remaining % 3600) / 60);
-                const seconds = Math.floor(remaining % 60);
+                const minutes = Math.floor(this.state.pomodoro.remainingSeconds / 60);
+                const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                if (this.state.pomodoro.totalSeconds >= 3600) {
-                    timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                } else {
-                    const totalMinutes = Math.floor(remaining / 60);
-                    timerDisplay.textContent = `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }
-
-                if (this.state.pomodoro.isSnoozing) {
-                    statusDisplay.textContent = "Snoozing";
-                    timerDisplay.classList.add('text-red-500');
-                } else {
-                    let statusText = "Work Session";
-                    if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
-                    if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
-                    statusDisplay.textContent = statusText;
-                    timerDisplay.classList.remove('text-red-500');
-                }
+                let statusText = "Work Session";
+                if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
+                if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
+                statusDisplay.textContent = statusText;
+            },
+            playSound: function() {
+                const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
+                document.dispatchEvent(event);
             },
             setupEventListeners: function() {
-                document.getElementById('pomodoroToggleBtn').addEventListener('click', () => this.toggle());
+                document.getElementById('startPomodoro').addEventListener('click', () => this.start());
+                document.getElementById('pausePomodoro').addEventListener('click', () => this.pause());
                 document.getElementById('resetPomodoro').addEventListener('click', () => this.reset());
             }
         };
@@ -1417,13 +1258,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const clockContainer = document.querySelector('.canvas-container');
         const digitalTime = document.getElementById('digitalTime');
         const digitalDate = document.getElementById('digitalDate');
-        const pomodoroActions = document.getElementById('pomodoroActions');
 
         let settings = {};
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, isPaused: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, totalSeconds: 25 * 60, actionButtonsVisible: false, currentAudio: null, isMuted: false, isSnoozing: false, lastMinuteSoundPlayed: false, nextPhase: null, nextDuration: null },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1449,51 +1289,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
-
-                const shouldShowButtons = state.pomodoro.remainingSeconds <= 60 && state.pomodoro.remainingSeconds > 0;
-                if (shouldShowButtons !== state.pomodoro.actionButtonsVisible) {
-                    pomodoroActions.style.display = shouldShowButtons ? 'flex' : 'none';
-                    state.pomodoro.actionButtonsVisible = shouldShowButtons;
-
-                    // Play sound once when buttons appear
-                    if (shouldShowButtons && !state.pomodoro.lastMinuteSoundPlayed) {
-                        let soundFile;
-                        const baseUrl = 'https://raw.githubusercontent.com/SALAMANCA-TECH/PolarClockPro/main/assets/Sounds/';
-                        // Determine the correct sound based on the *current* phase that is about to end.
-                        switch (state.pomodoro.phase) {
-                            case 'shortBreak':
-                                soundFile = `${baseUrl}short_break_end.mp3`;
-                                break;
-                            case 'longBreak':
-                                soundFile = `${baseUrl}long_break_end.mp3`;
-                                break;
-                            default: // 'work'
-                                soundFile = `${baseUrl}work_end.mp3`;
-                                break;
-                        }
-                        playSound(soundFile, settings.volume, 'pomodoro', true);
-                        state.pomodoro.lastMinuteSoundPlayed = true;
-                    }
-                }
-
                 if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
             }
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
 
-            if (state.mode === 'pomodoro') {
-                const minutes = Math.floor(state.pomodoro.remainingSeconds / 60);
-                const seconds = Math.floor(state.pomodoro.remainingSeconds % 60);
-                if (digitalTime) digitalTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                if (digitalDate) digitalDate.style.display = 'none';
-            } else {
-                if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
-                if (digitalDate) {
-                    digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
-                    digitalDate.style.display = 'block';
-                }
-            }
+            if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
+            if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
 
             checkAdvancedAlarms(now);
             App.Clock.update(settings, state);
@@ -1524,9 +1327,8 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadSettings() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
-                is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
-                showIntervals: true, separatorMode: 'standard',
-                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroContinuous: false
+                is24HourFormat: false, labelDisplayMode: 'standard', showDateLines: true, showTimeLines: true, useGradient: true, colorPreset: 'default',
+                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
             settings.currentColors = colorPalettes[settings.colorPreset];
@@ -1540,14 +1342,11 @@ document.addEventListener('DOMContentLoaded', function() {
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
             document.getElementById('gradientToggle').checked = settings.useGradient;
+            document.getElementById('dateLinesToggle').checked = settings.showDateLines;
+            document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
             document.getElementById('volumeControl').value = settings.volume;
-            document.getElementById('pomodoroContinuousToggle').checked = settings.pomodoroContinuous;
-
-            // Update new separators controls
-            document.getElementById('intervalsShow').classList.toggle('active', settings.showIntervals);
-            document.getElementById('intervalsHide').classList.toggle('active', !settings.showIntervals);
-            document.getElementById('modeStandardSeparator').classList.toggle('active', settings.separatorMode === 'standard');
-            document.getElementById('modeRulerSeparator').classList.toggle('active', settings.separatorMode === 'ruler');
+            document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
+            document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
         }
 
         function loadAdvancedAlarms() {
@@ -1577,48 +1376,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ampm === 'AM' && hour === 12) hour = 0;
             return hour;
         }
-        function playSound(soundFile, volume, module) {
+        function playSound(soundFile, volume) {
             if (!soundFile) return;
-
-            const isUrl = soundFile.startsWith('http');
-            const audioSrc = isUrl ? soundFile : `assets/Sounds/${soundFile}`;
-
-            const audio = new Audio(audioSrc);
+            const audio = new Audio(`assets/Sounds/${soundFile}`);
             audio.volume = volume;
             audio.play().catch(e => console.error("Error playing sound:", e));
-
-            if (module === 'pomodoro') {
-                state.pomodoro.currentAudio = audio;
-            }
-        }
-
-        function mutePomodoroAudio() {
-            const muteIcon = document.getElementById('pomodoroMuteBtn').querySelector('i');
-            state.pomodoro.isMuted = !state.pomodoro.isMuted; // Toggle the state
-
-            if (state.pomodoro.isMuted) {
-                if (state.pomodoro.currentAudio) {
-                    state.pomodoro.currentAudio.pause();
-                }
-                muteIcon.style.color = 'red';
-            } else {
-                if (state.pomodoro.currentAudio) {
-                    state.pomodoro.currentAudio.play();
-                }
-                muteIcon.style.color = '';
-            }
-        }
-
-        function snoozePomodoro() {
-            // Stop the current sound without affecting the next cycle's sound
-            if (state.pomodoro.currentAudio) {
-                state.pomodoro.currentAudio.pause();
-                state.pomodoro.currentAudio.currentTime = 0;
-            }
-            state.pomodoro.remainingSeconds += 300; // Add 5 minutes
-            state.pomodoro.isSnoozing = true;
-            state.pomodoro.lastMinuteSoundPlayed = false; // Allow the sound to play again
-            App.Pomodoro.updateDisplay(); // Immediately update UI
         }
 
         function setupEventListeners() {
@@ -1631,21 +1393,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
             });
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
+            document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
+            document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
-            document.getElementById('pomodoroContinuousToggle').addEventListener('change', (e) => { settings.pomodoroContinuous = e.target.checked; saveSettings(); });
-
-            // Event listeners for new separators controls
-            document.getElementById('intervalsShow').addEventListener('click', () => { settings.showIntervals = true; saveSettings(); applySettingsToUI(); });
-            document.getElementById('intervalsHide').addEventListener('click', () => { settings.showIntervals = false; saveSettings(); applySettingsToUI(); });
-            document.getElementById('modeStandardSeparator').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); });
-            document.getElementById('modeRulerSeparator').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); });
-
-            // Pomodoro Mute Button
-            document.getElementById('pomodoroMuteBtn').addEventListener('click', mutePomodoroAudio);
-            document.getElementById('pomodoroSnoozeBtn').addEventListener('click', snoozePomodoro);
+            document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
+            document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
 
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
-            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume, e.detail.module));
+            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
             document.addEventListener('statechange', saveState);
         }
 
