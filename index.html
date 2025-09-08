@@ -594,26 +594,17 @@
             </div>
             <div class="settings-section">
                 <h3>Separators</h3>
-                <div class="setting-toggle">
-                    <span>Date Lines (Month, Day)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="dateLinesToggle">
-                        <span class="slider"></span>
-                    </label>
+
+                <h4 class="text-sm uppercase text-gray-400 mt-4">Intervals</h4>
+                <div class="format-buttons">
+                    <button id="intervalsShow" class="format-button active">Show</button>
+                    <button id="intervalsHide" class="format-button">Hide</button>
                 </div>
-                <div class="setting-toggle">
-                    <span>Time Lines (Hours)</span>
-                    <label class="switch">
-                        <input type="checkbox" id="timeLinesToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-toggle">
-                    <span>Show Week Bar</span>
-                    <label class="switch">
-                        <input type="checkbox" id="weekBarToggle">
-                        <span class="slider"></span>
-                    </label>
+
+                <h4 class="text-sm uppercase text-gray-400 mt-4">Mode</h4>
+                <div class="format-buttons">
+                    <button id="modeStandardSeparator" class="format-button active">Standard</button>
+                    <button id="modeRulerSeparator" class="format-button">Ruler</button>
                 </div>
             </div>
             <div class="settings-section">
@@ -1524,9 +1515,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
             document.getElementById('gradientToggle').checked = settings.useGradient;
-            document.getElementById('dateLinesToggle').checked = settings.showDateLines;
-            document.getElementById('timeLinesToggle').checked = settings.showTimeLines;
-            document.getElementById('weekBarToggle').checked = settings.showWeekBar;
             document.getElementById('volumeControl').value = settings.volume;
             document.getElementById('pomodoroContinuousToggle').checked = settings.pomodoroContinuous;
         }
@@ -1612,9 +1600,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
             });
             document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
-            document.getElementById('dateLinesToggle').addEventListener('change', (e) => { settings.showDateLines = e.target.checked; saveSettings(); App.Clock.resize(); });
-            document.getElementById('timeLinesToggle').addEventListener('change', (e) => { settings.showTimeLines = e.target.checked; saveSettings(); App.Clock.resize(); });
-            document.getElementById('weekBarToggle').addEventListener('change', (e) => { settings.showWeekBar = e.target.checked; saveSettings(); App.Clock.resize(); });
             document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
             document.getElementById('pomodoroContinuousToggle').addEventListener('change', (e) => { settings.pomodoroContinuous = e.target.checked; saveSettings(); });
 
