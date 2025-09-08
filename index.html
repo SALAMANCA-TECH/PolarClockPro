@@ -794,23 +794,23 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                // Skip the 6 o'clock position with a small tolerance, but not for pomodoro mode
                 if (mode !== 'pomodoro' && Math.abs(angle - sixOClockAngle) < 0.01) {
                     continue;
                 }
 
                 const isRulerMode = settings.separatorMode === 'ruler';
-                const isTimeArc = arcKey === 'minutes' || arcKey === 'seconds';
+                // CORRECTED LOGIC: Specifically target 'minutes' and 'seconds' for ruler mode
+                const isTimeArcForRuler = arcKey === 'minutes' || arcKey === 'seconds';
 
                 let startRadius = innerRadius;
                 let endRadius = outerRadius;
                 let shouldDraw = true;
 
-                if (isTimeArc) {
+                if (isTimeArcForRuler) {
                     if (isRulerMode) {
                         // In Ruler mode, draw all ticks, but make non-5-minute ticks shorter
                         if (i > 0 && i % 5 !== 0) {
-                            startRadius = radius; // Half-length tick
+                            startRadius = radius; // Half-length tick from center of the arc's width
                         }
                     } else {
                         // In Standard mode, only draw ticks that are multiples of 5
@@ -1696,4 +1696,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
