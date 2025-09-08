@@ -974,6 +974,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     drawLabel(arc);
                 }
             });
+
+            // Draw separators for the stopwatch
+            if (settings.showIntervals) {
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth, 'hours');
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth, 'minutes');
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth, 'seconds');
+            }
         };
 
         const drawPomodoroClock = () => {
