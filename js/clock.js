@@ -359,6 +359,7 @@ const Clock = (function() {
             }
             drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
             drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+
         }
     };
 
