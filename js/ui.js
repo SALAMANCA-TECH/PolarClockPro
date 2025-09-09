@@ -70,7 +70,6 @@ const UI = (function() {
                 showView(views.main);
                 document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
             });
-
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
