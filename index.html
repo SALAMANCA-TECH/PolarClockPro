@@ -831,8 +831,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const drawRulerSeparators = (radius, count, arcLineWidth) => {
             if (!radius || radius <= 0) return;
 
-            const baseInnerRadius = radius - (arcLineWidth / 2);
-            const baseOuterRadius = radius + (arcLineWidth / 2);
+            const centerlineRadius = radius;
+            const fullInnerRadius = radius - (arcLineWidth / 2);
+            const fullOuterRadius = radius + (arcLineWidth / 2);
             const sixOClockAngle = baseStartAngle + Math.PI;
 
             ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
@@ -845,8 +846,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const isMajorTick = i % 5 === 0;
-                const innerRadius = baseInnerRadius - (isMajorTick ? arcLineWidth * 0.1 : 0);
-                const outerRadius = baseOuterRadius + (isMajorTick ? arcLineWidth * 0.1 : 0);
+
+                // For minor ticks, start from the centerline. For major ticks, use the full inner radius.
+                const innerRadius = isMajorTick ? fullInnerRadius : centerlineRadius;
+                // All ticks extend to the full outer radius.
+                const outerRadius = fullOuterRadius;
+
                 ctx.lineWidth = isMajorTick ? 2.5 : 1.5;
 
                 const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
