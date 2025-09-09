@@ -1015,9 +1015,65 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
+        const drawPomodoro = () => {
+            if (!settings.currentColors || !globalState.pomodoro) {
+                return;
+            }
+
+            const now = new Date();
+            const hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+
+            // Draw time arcs
+            const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
+            const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
+            const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+
+            const timeArcs = [];
+            if (settings.showTimeLines) {
+                timeArcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+            }
+            timeArcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
+            timeArcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
+
+            timeArcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    arc.text = getLabelText(arc.key, now);
+                    drawLabel(arc);
+                }
+            });
+
+            // Draw pomodoro arc
+            if (globalState.pomodoro.isRunning && dimensions.timerRadius > 0) {
+                const { phase, remainingSeconds } = globalState.pomodoro;
+                const workDuration = (parseInt(document.getElementById('pomodoroWorkDuration').value) || 25) * 60;
+                const shortBreakDuration = (parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5) * 60;
+                const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
+
+                let totalDuration;
+                if (phase === 'work') totalDuration = workDuration;
+                else if (phase === 'shortBreak') totalDuration = shortBreakDuration;
+                else totalDuration = longBreakDuration;
+
+                if (totalDuration > 0) {
+                    const progress = Math.max(0, remainingSeconds) / totalDuration;
+                    const pomodoroStartAngle = baseStartAngle + (1 - progress) * Math.PI * 2;
+                    const color = (phase === 'work') ? '#82aaff' : '#81C784';
+                    drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, pomodoroStartAngle, baseStartAngle + Math.PI * 2, color, color, dimensions.timerLineWidth || 30);
+                }
+            }
+
+             // --- Draw Separators for time arcs ---
+            if (settings.showTimeLines) {
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+            }
+        };
+
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (globalState.mode === 'stopwatch') {
+            if (globalState.mode === 'pomodoro') {
+                drawPomodoro();
+            } else if (globalState.mode === 'stopwatch') {
                 drawStopwatch();
             } else {
                 drawClock();
@@ -1053,6 +1109,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
+                const isPomodoro = globalState.mode === 'pomodoro';
 
                 // All arcs are now always visible, so we calculate total width unconditionally
                 let totalWidth = (secondLineWidth / 2) + minuteLineWidth + hourLineWidth + dayLineWidth + monthLineWidth + (gap * 4);
