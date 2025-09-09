@@ -62,8 +62,15 @@ const UI = (function() {
             Clock = clockModule; // Store the reference
             navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
             navButtons.goToTools.addEventListener('click', () => showView(views.tools));
-            navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
-            navButtons.backFromTools.addEventListener('click', () => showView(views.main));
+            navButtons.backFromSettings.addEventListener('click', () => {
+                showView(views.main);
+                document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
+            });
+            navButtons.backFromTools.addEventListener('click', () => {
+                showView(views.main);
+                document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
+            });
+
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));

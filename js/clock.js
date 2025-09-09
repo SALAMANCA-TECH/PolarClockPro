@@ -271,52 +271,95 @@ const Clock = (function() {
             return;
         }
 
-        const now = new Date();
-        const hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+        const { phase, remainingSeconds } = globalState.pomodoro;
 
-        // Draw time arcs
-        const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
-        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-        const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+        // Determine total duration for the current phase to calculate progress
+        const workDuration = (parseInt(document.getElementById('pomodoroWorkDuration').value) || 25) * 60;
+        const shortBreakDuration = (parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5) * 60;
+        const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
 
-        const timeArcs = [];
-        if (settings.showTimeLines) {
-            timeArcs.push({ key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: 45, endAngle: hoursEndAngle });
+        let totalDuration;
+        let arcColor;
+        if (phase === 'work') {
+            totalDuration = workDuration;
+            arcColor = '#82aaff'; // Blue for work
+        } else if (phase === 'shortBreak') {
+            totalDuration = shortBreakDuration;
+            arcColor = '#81C784'; // Green for break
+        } else { // longBreak
+            totalDuration = longBreakDuration;
+            arcColor = '#81C784'; // Green for break
         }
-        timeArcs.push({ key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: 30, endAngle: minutesEndAngle });
-        timeArcs.push({ key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: 30, endAngle: secondsEndAngle });
 
-        timeArcs.forEach(arc => {
+        // Calculate remaining time components
+        const remaining = Math.max(0, remainingSeconds);
+        const hours = Math.floor(remaining / 3600);
+        const minutes = Math.floor((remaining % 3600) / 60);
+        const seconds = Math.floor(remaining % 60);
+        const milliseconds = (remaining - Math.floor(remaining));
+
+        const fullCircleEndAngle = baseStartAngle + Math.PI * 2;
+
+        // Define arcs based on remaining time
+        const arcs = [];
+
+        // Only show hours arc if total duration is an hour or more
+        if (totalDuration >= 3600) {
+            const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / 12; // Assuming 12h display
+            const hoursStartAngle = baseStartAngle + (1 - hoursProgress) * Math.PI * 2;
+            arcs.push({
+                key: 'hours',
+                radius: dimensions.hoursRadius,
+                colors: { light: arcColor, dark: arcColor },
+                lineWidth: dimensions.hoursLineWidth,
+                startAngle: hoursStartAngle,
+                endAngle: fullCircleEndAngle,
+                text: hours.toString().padStart(2, '0')
+            });
+        }
+
+        const minutesProgress = (minutes + (seconds / 60) + (milliseconds / 60)) / 60;
+        const minutesStartAngle = baseStartAngle + (1 - minutesProgress) * Math.PI * 2;
+        arcs.push({
+            key: 'minutes',
+            radius: dimensions.minutesRadius,
+            colors: { light: arcColor, dark: arcColor },
+            lineWidth: dimensions.minutesLineWidth,
+            startAngle: minutesStartAngle,
+            endAngle: fullCircleEndAngle,
+            text: minutes.toString().padStart(2, '0')
+        });
+
+        const secondsProgress = (seconds + milliseconds) / 60;
+        const secondsStartAngle = baseStartAngle + (1 - secondsProgress) * Math.PI * 2;
+        arcs.push({
+            key: 'seconds',
+            radius: dimensions.secondsRadius,
+            colors: { light: arcColor, dark: arcColor },
+            lineWidth: dimensions.secondsLineWidth,
+            startAngle: secondsStartAngle,
+            endAngle: fullCircleEndAngle,
+            text: seconds.toString().padStart(2, '0')
+        });
+
+        // Draw the arcs and their labels
+        arcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                arc.text = getLabelText(arc.key, now);
-                drawLabel(arc);
+                // Use the single color for both light and dark to avoid gradient
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                // Draw label manually as getLabelText is for wall-clock time
+                drawLabel({ ...arc, text: arc.text });
             }
         });
 
-        // Draw pomodoro arc
-        if (globalState.pomodoro.isRunning && dimensions.timerRadius > 0) {
-            const { phase, remainingSeconds } = globalState.pomodoro;
-            const workDuration = (parseInt(document.getElementById('pomodoroWorkDuration').value) || 25) * 60;
-            const shortBreakDuration = (parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5) * 60;
-            const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
-
-            let totalDuration;
-            if (phase === 'work') totalDuration = workDuration;
-            else if (phase === 'shortBreak') totalDuration = shortBreakDuration;
-            else totalDuration = longBreakDuration;
-
-            if (totalDuration > 0) {
-                const progress = Math.max(0, remainingSeconds) / totalDuration;
-                const pomodoroStartAngle = baseStartAngle + (1 - progress) * Math.PI * 2;
-                const color = (phase === 'work') ? '#82aaff' : '#81C784';
-                drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, pomodoroStartAngle, baseStartAngle + Math.PI * 2, color, color, dimensions.timerLineWidth || 30);
+        // Draw separators if enabled
+        if (settings.showSeparators) {
+             if (totalDuration >= 3600) {
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
             }
-        }
+            drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+            drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
 
-         // --- Draw Separators for time arcs ---
-        if (settings.showTimeLines) {
-            drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
         }
     };
 
