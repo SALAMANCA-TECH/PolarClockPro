@@ -1,83 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const App = {};
 
-    // --- UI Module ---
-    (function(App) {
-        const views = {
-            main: document.getElementById('mainView'),
-            settings: document.getElementById('settingsView'),
-            tools: document.getElementById('toolsView'),
-        };
-        const navButtons = {
-            goToSettings: document.getElementById('goToSettingsBtn'),
-            goToTools: document.getElementById('goToToolsBtn'),
-            goToAlarms: document.getElementById('goToAlarmsBtn'),
-            backFromSettings: document.getElementById('backToMainFromSettings'),
-            backFromTools: document.getElementById('backToMainFromTools'),
-        };
-        const toolTabs = {
-            timer: document.getElementById('timerTab'),
-            pomodoro: document.getElementById('pomodoroTab'),
-            alarm: document.getElementById('alarmTab'),
-            stopwatch: document.getElementById('stopwatchTab'),
-        };
-        const toolPanels = {
-            timer: document.getElementById('timerPanel'),
-            pomodoro: document.getElementById('pomodoroPanel'),
-            alarm: document.getElementById('alarmPanel'),
-            stopwatch: document.getElementById('stopwatchPanel'),
-        };
-        const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
-        const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
-        const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
-
-        function showView(viewToShow) {
-            const isMainView = viewToShow === views.main;
-            if (App.Clock) {
-                if (isMainView) {
-                    App.Clock.resume();
-                } else {
-                    App.Clock.pause();
-                }
-            }
-            Object.values(views).forEach(v => v.style.display = 'none');
-            viewToShow.style.display = 'flex';
-        }
-
-        function handleActiveButton(clickedButton, buttonGroup) {
-            buttonGroup.forEach(button => button.classList.remove('active'));
-            clickedButton.classList.add('active');
-        }
-
-        function showToolsPanel(panelToShow, tabToActivate) {
-            Object.values(toolPanels).forEach(p => p.style.display = 'none');
-            panelToShow.style.display = 'flex';
-            handleActiveButton(tabToActivate, Object.values(toolTabs));
-            const event = new CustomEvent('modechange', {
-                detail: { mode: panelToShow.id.replace('Panel', '').toLowerCase() }
-            });
-            document.dispatchEvent(event);
-        }
-
-        App.UI = {
-            init: function() {
-                navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
-                navButtons.goToTools.addEventListener('click', () => showView(views.tools));
-                navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
-                navButtons.backFromTools.addEventListener('click', () => showView(views.main));
-                navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
-
-                toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
-                toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-                toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
-                toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
-
-                pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
-                closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
-            },
-            handleActiveButton: handleActiveButton
-        };
-    }(App));
 
 
     // --- Tools Module ---
@@ -452,9 +375,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadSettings();
             loadAdvancedAlarms();
 
-            App.UI.init();
-            App.Clock = Clock; // Connect the new Clock module
-            App.Clock.init(settings, state);
+            App.Clock = Clock; // Make Clock available on the App namespace
+            UI.init(Clock);      // Initialize the new UI module
+            App.Clock.init(settings, state); // Initialize the clock
             App.Tools.init(state);
             App.Pomodoro.init(state, settings);
 
