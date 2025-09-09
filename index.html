@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const outerRadius = radius + (arcLineWidth / 2);
             const sixOClockAngle = baseStartAngle + Math.PI;
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Use a semi-transparent white for visibility
+            ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
             ctx.lineWidth = 2; // Separator line width
 
             for (let i = 0; i < count; i++) {
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseOuterRadius = radius + (arcLineWidth / 2);
             const sixOClockAngle = baseStartAngle + Math.PI;
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Use a semi-transparent white for visibility
+            ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
 
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
