@@ -808,8 +808,12 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
             ctx.lineWidth = 2; // Separator line width
 
-            for (let i = 0; i < count; i++) {
-                const angle = baseStartAngle + (i / count) * Math.PI * 2;
+            const divisions = (count === 60) ? 12 : count;
+            const step = (count === 60) ? 5 : 1;
+
+            for (let i = 0; i < divisions; i++) {
+                const index = i * step;
+                const angle = baseStartAngle + (index / count) * Math.PI * 2;
 
                 // Skip the 6 o'clock position with a small tolerance
                 if (Math.abs(angle - sixOClockAngle) < 0.01) {
