@@ -3,216 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    // --- Tools Module ---
-    (function(App) {
-        const toggleTimerBtn = document.getElementById('toggleTimerBtn');
-        const resetTimerBtn = document.getElementById('resetTimer');
-        const timerHoursInput = document.getElementById('timerHours');
-        const timerMinutesInput = document.getElementById('timerMinutes');
-        const timerSecondsInput = document.getElementById('timerSeconds');
-        const intervalToggle = document.getElementById('intervalToggle');
-
-        const toggleStopwatchBtn = document.getElementById('toggleStopwatchBtn');
-        const lapStopwatchBtn = document.getElementById('lapStopwatch');
-        const resetStopwatchBtn = document.getElementById('resetStopwatch');
-        const lapTimesContainer = document.getElementById('lapTimes');
-
-        const catchUpMinutesInput = document.getElementById('catchUpMinutes');
-        const catchUpSecondsInput = document.getElementById('catchUpSeconds');
-        const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
-
-        App.Tools = {
-            state: null,
-            init: function(appState) {
-                this.state = appState;
-                this.setupEventListeners();
-                this.updateLapDisplay();
-                this.updateButtonStates();
-            },
-            updateButtonStates: function() {
-                toggleTimerBtn.textContent = this.state.timer.isRunning ? 'Pause' : 'Start';
-                toggleStopwatchBtn.textContent = this.state.stopwatch.isRunning ? 'Pause' : 'Start';
-            },
-            toggleTimer: function() {
-                this.state.timer.isRunning ? this.pauseTimer() : this.startTimer();
-            },
-            startTimer: function() {
-                if (this.state.timer.remainingSeconds <= 0) {
-                    this.state.timer.totalSeconds = (parseInt(timerHoursInput.value) || 0) * 3600 + (parseInt(timerMinutesInput.value) || 0) * 60 + (parseInt(timerSecondsInput.value) || 0);
-                    this.state.timer.remainingSeconds = this.state.timer.totalSeconds;
-                }
-                if (this.state.timer.remainingSeconds > 0) {
-                    this.state.timer.isRunning = true;
-                }
-                this.updateButtonStates();
-            },
-            pauseTimer: function() {
-                this.state.timer.isRunning = false;
-                this.updateButtonStates();
-            },
-            resetTimer: function() {
-                this.state.timer.isRunning = false;
-                this.state.timer.totalSeconds = 0;
-                this.state.timer.remainingSeconds = 0;
-                timerHoursInput.value = "0";
-                timerMinutesInput.value = "0";
-                timerSecondsInput.value = "0";
-                this.updateButtonStates();
-            },
-            toggleStopwatch: function() {
-                this.state.stopwatch.isRunning ? this.pauseStopwatch() : this.startStopwatch();
-            },
-            startStopwatch: function() {
-                this.state.stopwatch.isRunning = true;
-                this.state.stopwatch.startTime = Date.now() - this.state.stopwatch.elapsedTime;
-                this.updateButtonStates();
-            },
-            pauseStopwatch: function() {
-                this.state.stopwatch.isRunning = false;
-                this.updateButtonStates();
-            },
-            resetStopwatch: function() {
-                this.state.stopwatch.isRunning = false;
-                this.state.stopwatch.elapsedTime = 0;
-                this.state.stopwatch.laps = [];
-                this.updateLapDisplay();
-                catchUpMinutesInput.value = '';
-                catchUpSecondsInput.value = '';
-                this.updateButtonStates();
-                document.dispatchEvent(new CustomEvent('statechange'));
-            },
-            lapStopwatch: function() {
-                if (!this.state.stopwatch.isRunning && this.state.stopwatch.elapsedTime === 0) return;
-                this.state.stopwatch.laps.push({ time: this.state.stopwatch.elapsedTime, label: '' });
-                this.updateLapDisplay();
-                document.dispatchEvent(new CustomEvent('statechange'));
-            },
-            updateLapDisplay: function() {
-                lapTimesContainer.innerHTML = '';
-                this.state.stopwatch.laps.forEach((lap, index) => {
-                    const lapElement = document.createElement('li');
-                    lapElement.classList.add('lap-item');
-                    lapElement.innerHTML = `
-                        <span class="lap-number">Lap ${index + 1}</span>
-                        <span class="lap-time">${this.formatTime(lap.time)}</span>
-                        <input type="text" class="lap-label-input" value="${lap.label}" data-index="${index}" placeholder="Add label...">
-                    `;
-                    lapTimesContainer.prepend(lapElement);
-                });
-            },
-            formatTime: function(ms) {
-                const d = new Date(ms);
-                return `${d.getUTCMinutes().toString().padStart(2, '0')}:${d.getUTCSeconds().toString().padStart(2, '0')}.${d.getUTCMilliseconds().toString().padStart(3, '0')}`;
-            },
-            addManualCatchUpTime: function() {
-                const minutes = parseInt(catchUpMinutesInput.value) || 0;
-                const seconds = parseInt(catchUpSecondsInput.value) || 0;
-                const timeToAddMs = (minutes * 60 + seconds) * 1000;
-                if (timeToAddMs > 0) {
-                    this.state.stopwatch.elapsedTime += timeToAddMs;
-                    if (this.state.stopwatch.isRunning) {
-                        this.state.stopwatch.startTime -= timeToAddMs;
-                    }
-                    catchUpMinutesInput.value = '';
-                    catchUpSecondsInput.value = '';
-                    document.dispatchEvent(new CustomEvent('statechange'));
-                }
-            },
-            setupEventListeners: function() {
-                toggleTimerBtn.addEventListener('click', () => this.toggleTimer());
-                resetTimerBtn.addEventListener('click', () => this.resetTimer());
-                intervalToggle.addEventListener('change', (e) => this.state.timer.isInterval = e.target.checked);
-                toggleStopwatchBtn.addEventListener('click', () => this.toggleStopwatch());
-                resetStopwatchBtn.addEventListener('click', () => this.resetStopwatch());
-                lapStopwatchBtn.addEventListener('click', () => this.lapStopwatch());
-                addCatchUpTimeBtn.addEventListener('click', () => this.addManualCatchUpTime());
-                lapTimesContainer.addEventListener('input', (e) => {
-                    if (e.target.classList.contains('lap-label-input')) {
-                        const index = parseInt(e.target.dataset.index);
-                        const arrayIndex = this.state.stopwatch.laps.length - 1 - index;
-                        this.state.stopwatch.laps[arrayIndex].label = e.target.value;
-                        document.dispatchEvent(new CustomEvent('statechange'));
-                    }
-                });
-            }
-        };
-    }(App));
-
-    // --- Pomodoro Module ---
-    (function(App) {
-        const statusDisplay = document.getElementById('pomodoroStatus');
-        const timerDisplay = document.getElementById('pomodoroTimerDisplay');
-        const workDurationInput = document.getElementById('pomodoroWorkDuration');
-        const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
-        const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
-
-        App.Pomodoro = {
-            state: null,
-            settings: null,
-            init: function(appState, appSettings) {
-                this.state = appState;
-                this.settings = appSettings;
-                this.setupEventListeners();
-                this.updateDisplay();
-            },
-            start: function() {
-                if (this.state.pomodoro.isRunning) return;
-                this.state.pomodoro.isRunning = true;
-                if (this.state.pomodoro.remainingSeconds <= 0) {
-                    this.startNextPhase();
-                }
-            },
-            pause: function() {
-                this.state.pomodoro.isRunning = false;
-            },
-            reset: function() {
-                this.state.pomodoro.isRunning = false;
-                this.state.pomodoro.phase = 'work';
-                this.state.pomodoro.cycles = 0;
-                this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
-                this.updateDisplay();
-                document.dispatchEvent(new CustomEvent('pomodoro-reset'));
-            },
-            startNextPhase: function() {
-                let nextPhase = 'work';
-                let duration = (parseInt(workDurationInput.value) || 25) * 60;
-                if (this.state.pomodoro.phase === 'work') {
-                    this.state.pomodoro.cycles++;
-                    if (this.state.pomodoro.cycles % 4 === 0) {
-                        nextPhase = 'longBreak';
-                        duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
-                    } else {
-                        nextPhase = 'shortBreak';
-                        duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
-                    }
-                }
-                this.state.pomodoro.phase = nextPhase;
-                this.state.pomodoro.remainingSeconds = duration;
-                this.playSound();
-                this.updateDisplay();
-            },
-            updateDisplay: function() {
-                const minutes = Math.floor(this.state.pomodoro.remainingSeconds / 60);
-                const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-                let statusText = "Work Session";
-                if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
-                if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
-                statusDisplay.textContent = statusText;
-            },
-            playSound: function() {
-                const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
-                document.dispatchEvent(event);
-            },
-            setupEventListeners: function() {
-                document.getElementById('startPomodoro').addEventListener('click', () => this.start());
-                document.getElementById('pausePomodoro').addEventListener('click', () => this.pause());
-                document.getElementById('resetPomodoro').addEventListener('click', () => this.reset());
-            }
-        };
-    }(App));
-
     // --- Main Application ---
     (function(App) {
         const clockContainer = document.querySelector('.canvas-container');
@@ -222,9 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let settings = {};
         let state = {
             mode: 'clock',
-            timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
-            stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
             lastMinuteChecked: -1
@@ -242,36 +29,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const deltaTime = (timestamp - (lastFrameTime || timestamp)) / 1000;
             lastFrameTime = timestamp;
 
-            if (state.timer.isRunning) {
-                state.timer.remainingSeconds -= deltaTime;
-                if (state.timer.remainingSeconds <= 0) timerFinished();
-            }
-            if (state.pomodoro.isRunning) {
-                state.pomodoro.remainingSeconds -= deltaTime;
-                App.Pomodoro.updateDisplay();
-                if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
-            }
-            if (state.stopwatch.isRunning) {
-                state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
-            }
+            Tools.update(deltaTime);
 
             if (digitalTime) digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
             if (digitalDate) digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
 
             checkAdvancedAlarms(now);
-            App.Clock.update(settings, state);
+            const toolState = Tools.getState();
+            App.Clock.update(settings, { ...state, ...toolState });
             requestAnimationFrame(update);
         }
         let lastFrameTime;
-
-        function timerFinished() {
-            playSound(settings.timerSound, settings.volume);
-            if (state.timer.isInterval) {
-                state.timer.remainingSeconds = state.timer.totalSeconds;
-            } else {
-                App.Tools.resetTimer();
-            }
-        }
 
         function saveState() { localStorage.setItem('polarClockState', JSON.stringify(state)); }
         function loadState() {
@@ -376,10 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadAdvancedAlarms();
 
             App.Clock = Clock; // Make Clock available on the App namespace
+            Clock.init(settings, state); // Initialize the Clock
             UI.init(Clock);      // Initialize the new UI module
-            App.Clock.init(settings, state); // Initialize the clock
-            App.Tools.init(state);
-            App.Pomodoro.init(state, settings);
+            Tools.init(settings); // Initialize the new Tools module
 
             setupEventListeners();
             requestAnimationFrame(update);
