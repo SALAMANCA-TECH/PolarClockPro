@@ -1324,11 +1324,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
             startNextPhase: function() {
+                const completedPhase = this.state.pomodoro.phase;
+                // Only play a sound if the timer was actually running and finished a phase.
+                if (this.state.pomodoro.isRunning) {
+                    let soundToPlay;
+                    switch (completedPhase) {
+                        case 'work':
+                            soundToPlay = 'work_end.mp3';
+                            break;
+                        case 'shortBreak':
+                            soundToPlay = 'short_break_end.mp3';
+                            break;
+                        case 'longBreak':
+                            soundToPlay = 'long_break_end.mp3';
+                            break;
+                    }
+                    if (soundToPlay) {
+                        // Call the global playSound function defined in the main app scope
+                        playSound(soundToPlay, settings.volume);
+                    }
+                }
+
                 let nextPhase = 'work';
                 let duration = (parseInt(workDurationInput.value) || 25) * 60;
+
+                // This logic determines the *next* phase based on the *current* one.
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
-                    if (this.state.pomodoro.cycles % 4 === 0) {
+                    if (this.state.pomodoro.cycles > 0 && this.state.pomodoro.cycles % 4 === 0) {
                         nextPhase = 'longBreak';
                         duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
@@ -1336,9 +1359,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
                     }
                 }
+                // If the phase was a break, the next phase is always 'work'.
+                // The duration for 'work' is already set as the default.
+
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
-                this.playSound();
                 this.updateDisplay();
             },
             updateDisplay: function() {
