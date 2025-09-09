@@ -279,16 +279,12 @@ const Clock = (function() {
         const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
 
         let totalDuration;
-        let arcColor;
         if (phase === 'work') {
             totalDuration = workDuration;
-            arcColor = '#82aaff'; // Blue for work
         } else if (phase === 'shortBreak') {
             totalDuration = shortBreakDuration;
-            arcColor = '#81C784'; // Green for break
         } else { // longBreak
             totalDuration = longBreakDuration;
-            arcColor = '#81C784'; // Green for break
         }
 
         // Calculate remaining time components
@@ -308,7 +304,7 @@ const Clock = (function() {
             arcs.push({
                 key: 'hours',
                 radius: dimensions.hoursRadius,
-                colors: { light: arcColor, dark: arcColor },
+                colors: settings.currentColors.hours,
                 lineWidth: dimensions.hoursLineWidth,
                 startAngle: baseStartAngle,
                 endAngle: hoursEndAngle,
@@ -321,7 +317,7 @@ const Clock = (function() {
         arcs.push({
             key: 'minutes',
             radius: dimensions.minutesRadius,
-            colors: { light: arcColor, dark: arcColor },
+            colors: settings.currentColors.minutes,
             lineWidth: dimensions.minutesLineWidth,
             startAngle: baseStartAngle,
             endAngle: minutesEndAngle,
@@ -333,7 +329,7 @@ const Clock = (function() {
         arcs.push({
             key: 'seconds',
             radius: dimensions.secondsRadius,
-            colors: { light: arcColor, dark: arcColor },
+            colors: settings.currentColors.seconds,
             lineWidth: dimensions.secondsLineWidth,
             startAngle: baseStartAngle,
             endAngle: secondsEndAngle,
