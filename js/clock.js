@@ -298,56 +298,52 @@ const Clock = (function() {
         const seconds = Math.floor(remaining % 60);
         const milliseconds = (remaining - Math.floor(remaining));
 
-        const fullCircleEndAngle = baseStartAngle + Math.PI * 2;
-
         // Define arcs based on remaining time
         const arcs = [];
 
         // Only show hours arc if total duration is an hour or more
         if (totalDuration >= 3600) {
-            const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / 12; // Assuming 12h display
-            const hoursStartAngle = baseStartAngle + (1 - hoursProgress) * Math.PI * 2;
+            const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / 12; // Progress for a 12h clock
+            const hoursEndAngle = baseStartAngle + hoursProgress * Math.PI * 2;
             arcs.push({
                 key: 'hours',
                 radius: dimensions.hoursRadius,
                 colors: { light: arcColor, dark: arcColor },
                 lineWidth: dimensions.hoursLineWidth,
-                startAngle: hoursStartAngle,
-                endAngle: fullCircleEndAngle,
+                startAngle: baseStartAngle,
+                endAngle: hoursEndAngle,
                 text: hours.toString().padStart(2, '0')
             });
         }
 
         const minutesProgress = (minutes + (seconds / 60) + (milliseconds / 60)) / 60;
-        const minutesStartAngle = baseStartAngle + (1 - minutesProgress) * Math.PI * 2;
+        const minutesEndAngle = baseStartAngle + minutesProgress * Math.PI * 2;
         arcs.push({
             key: 'minutes',
             radius: dimensions.minutesRadius,
             colors: { light: arcColor, dark: arcColor },
             lineWidth: dimensions.minutesLineWidth,
-            startAngle: minutesStartAngle,
-            endAngle: fullCircleEndAngle,
+            startAngle: baseStartAngle,
+            endAngle: minutesEndAngle,
             text: minutes.toString().padStart(2, '0')
         });
 
         const secondsProgress = (seconds + milliseconds) / 60;
-        const secondsStartAngle = baseStartAngle + (1 - secondsProgress) * Math.PI * 2;
+        const secondsEndAngle = baseStartAngle + secondsProgress * Math.PI * 2;
         arcs.push({
             key: 'seconds',
             radius: dimensions.secondsRadius,
             colors: { light: arcColor, dark: arcColor },
             lineWidth: dimensions.secondsLineWidth,
-            startAngle: secondsStartAngle,
-            endAngle: fullCircleEndAngle,
+            startAngle: baseStartAngle,
+            endAngle: secondsEndAngle,
             text: seconds.toString().padStart(2, '0')
         });
 
         // Draw the arcs and their labels
         arcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                // Use the single color for both light and dark to avoid gradient
                 drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                // Draw label manually as getLabelText is for wall-clock time
                 drawLabel({ ...arc, text: arc.text });
             }
         });
@@ -359,7 +355,6 @@ const Clock = (function() {
             }
             drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
             drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
-
         }
     };
 
