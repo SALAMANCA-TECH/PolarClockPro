@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const outerRadius = radius + (arcLineWidth / 2);
             const sixOClockAngle = baseStartAngle + Math.PI;
 
-            ctx.strokeStyle = '#121212'; // Background color for "cutout" effect
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Use a semi-transparent white for visibility
             ctx.lineWidth = 2; // Separator line width
 
             for (let i = 0; i < count; i++) {
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseOuterRadius = radius + (arcLineWidth / 2);
             const sixOClockAngle = baseStartAngle + Math.PI;
 
-            ctx.strokeStyle = '#121212';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Use a semi-transparent white for visibility
 
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
@@ -862,12 +862,12 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        const getWeekOfYear = (d) => {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-            return weekNo;
+        const getWeekOfYear = (date) => {
+            const start = new Date(date.getFullYear(), 0, 1);
+            const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
+            const oneDay = 1000 * 60 * 60 * 24;
+            const day = Math.floor(diff / oneDay);
+            return Math.ceil(day / 7);
         };
 
         const getLabelText = (unit, now) => {
@@ -934,8 +934,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
                 { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
                 { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, endAngle: minutesEndAngle },
-                { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle },
-                { key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: dimensions.weekLineWidth, endAngle: weekEndAngle }
+                { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle }
             ];
 
             if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
@@ -968,7 +967,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
                 drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-                drawSeparators(dimensions.weekRadius, 52, dimensions.weekLineWidth);
             }
 
             lastNow = now;
@@ -1048,17 +1046,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
 
                 // All arcs are now always visible, so we calculate total width unconditionally
-                let totalWidth = (secondLineWidth / 2) + minuteLineWidth + hourLineWidth + dayLineWidth + monthLineWidth + weekLineWidth + (gap * 5);
+                let totalWidth = (secondLineWidth / 2) + minuteLineWidth + hourLineWidth + dayLineWidth + monthLineWidth + (gap * 4);
 
                 // Add widths for optional timer/alarm arcs if they are active
                 if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
+                if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
 
                 const scale = baseRadius / totalWidth;
                 let currentRadius = baseRadius;
-
-                dimensions.weekLineWidth = weekLineWidth * scale;
-                dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
-                currentRadius -= (dimensions.weekLineWidth + gap * scale);
 
                 dimensions.secondsLineWidth = secondLineWidth * scale;
                 dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
@@ -1079,6 +1074,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 dimensions.monthLineWidth = monthLineWidth * scale;
                 dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
                 currentRadius -= (dimensions.monthLineWidth + gap * scale);
+
+                // Week arc is disabled, so set its dimensions to 0
+                dimensions.weekLineWidth = 0;
+                dimensions.weekRadius = 0;
             },
             update: function(newSettings, newState) {
                 settings = newSettings;
@@ -1488,7 +1487,3 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
-
-
-}
-
