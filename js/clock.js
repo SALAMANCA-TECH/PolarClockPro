@@ -350,11 +350,21 @@ const Clock = (function() {
 
         // Draw separators if enabled
         if (settings.showSeparators) {
-             if (totalDuration >= 3600) {
+            const isRulerMode = settings.separatorMode === 'ruler';
+
+            // Hour separators are always standard
+            if (totalDuration >= 3600) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
             }
-            drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-            drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+
+            // Apply ruler mode only to minutes and seconds
+            if (isRulerMode) {
+                drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+            } else {
+                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+            }
         }
     };
 
