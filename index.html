@@ -139,6 +139,17 @@
         border-color: #666;
     }
 
+    .control-buttons button.active-red {
+        background-color: #ef4444; /* Red-500 from Tailwind */
+        border-color: #ef4444;
+        color: white;
+    }
+
+    .control-buttons button.active-red:hover {
+        background-color: #dc2626; /* Red-600 from Tailwind */
+        border-color: #dc2626;
+    }
+
     .tab-button, .format-button, .display-mode-button, .color-preset-button {
         padding: 10px;
         border: none;
@@ -490,9 +501,12 @@
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
                 </div>
                 <div class="control-buttons">
-                    <button id="startPomodoro">Start</button>
-                    <button id="pausePomodoro">Pause</button>
-                    <button id="resetPomodoro">Reset</button>
+                    <button id="togglePomodoroBtn">Start</button>
+                    <button id="resetPomodoro" style="display: none;">Reset</button>
+                </div>
+                <div class="control-buttons" id="pomodoroAlarmControls" style="display: none; margin-top: 1rem;">
+                    <button id="mutePomodoroBtn">Mute</button>
+                    <button id="snoozePomodoroBtn">Snooze</button>
                 </div>
                 <div class="settings-section w-full max-w-xs">
                     <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
@@ -1295,6 +1309,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const workDurationInput = document.getElementById('pomodoroWorkDuration');
         const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
         const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
+        const togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
+        const resetPomodoroBtn = document.getElementById('resetPomodoro');
+        const mutePomodoroBtn = document.getElementById('mutePomodoroBtn');
+        const snoozePomodoroBtn = document.getElementById('snoozePomodoroBtn');
+        const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
 
         App.Pomodoro = {
             state: null,
@@ -1305,30 +1324,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.setupEventListeners();
                 this.updateDisplay();
             },
+            toggle: function() {
+                if (this.state.pomodoro.isRunning) {
+                    this.pause();
+                } else {
+                    // If we are starting from an alarm state, set up the next phase.
+                    if (this.state.pomodoro.alarmSounding) {
+                        this.state.pomodoro.alarmSounding = false;
+                        this.prepareNextPhase();
+                    }
+                    this.start();
+                }
+            },
             start: function() {
                 if (this.state.pomodoro.isRunning) return;
                 this.state.pomodoro.isRunning = true;
-                if (this.state.pomodoro.remainingSeconds <= 0) {
-                    this.startNextPhase();
-                }
+                this.updateDisplay();
+                this.updateButtonStates();
             },
             pause: function() {
                 this.state.pomodoro.isRunning = false;
+                this.updateButtonStates();
             },
             reset: function() {
                 this.state.pomodoro.isRunning = false;
+                this.state.pomodoro.alarmSounding = false;
                 this.state.pomodoro.phase = 'work';
                 this.state.pomodoro.cycles = 0;
                 this.state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+                this.state.pomodoro.isMuted = false;
+                this.state.pomodoro.snoozeActive = false;
                 this.updateDisplay();
+                this.updateButtonStates();
                 document.dispatchEvent(new CustomEvent('pomodoro-reset'));
             },
-            startNextPhase: function() {
+            toggleMute: function() {
+                this.state.pomodoro.isMuted = !this.state.pomodoro.isMuted;
+                this.updateButtonStates();
+            },
+            handleSnoozeOrEndCycle: function() {
+                if (this.state.pomodoro.snoozeActive) {
+                    this.endCycle();
+                } else {
+                    this.snooze();
+                }
+            },
+            snooze: function() {
+                this.state.pomodoro.alarmSounding = false;
+                this.state.pomodoro.remainingSeconds += 5 * 60;
+                this.state.pomodoro.snoozeActive = true;
+                if (this.state.pomodoro.isMuted) {
+                    this.state.pomodoro.isMuted = false;
+                }
+                this.start(); // Explicitly start the timer again
+            },
+            endCycle: function() {
+                this.state.pomodoro.snoozeActive = false;
+                this.state.pomodoro.isRunning = false;
+                this.prepareNextPhase();
+                this.updateDisplay();
+                this.updateButtonStates();
+            },
+            timeIsUp: function() {
+                this.state.pomodoro.isRunning = false;
+                this.state.pomodoro.alarmSounding = true;
+                this.playSound();
+                this.updateDisplay();
+                this.updateButtonStates();
+            },
+            prepareNextPhase: function() {
                 let nextPhase = 'work';
                 let duration = (parseInt(workDurationInput.value) || 25) * 60;
                 if (this.state.pomodoro.phase === 'work') {
                     this.state.pomodoro.cycles++;
-                    if (this.state.pomodoro.cycles % 4 === 0) {
+                    if (this.state.pomodoro.cycles > 0 && this.state.pomodoro.cycles % 4 === 0) {
                         nextPhase = 'longBreak';
                         duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
                     } else {
@@ -1338,27 +1407,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
-                this.playSound();
-                this.updateDisplay();
             },
             updateDisplay: function() {
-                const minutes = Math.floor(this.state.pomodoro.remainingSeconds / 60);
-                const seconds = Math.floor(this.state.pomodoro.remainingSeconds % 60);
+                const displaySeconds = Math.max(0, this.state.pomodoro.remainingSeconds);
+                const minutes = Math.floor(displaySeconds / 60);
+                const seconds = Math.floor(displaySeconds % 60);
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
                 let statusText = "Work Session";
                 if (this.state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
                 if (this.state.pomodoro.phase === 'longBreak') statusText = "Long Break";
                 statusDisplay.textContent = statusText;
             },
+            updateButtonStates: function() {
+                const { isRunning, isMuted, snoozeActive, alarmSounding, phase, remainingSeconds } = this.state.pomodoro;
+
+                let currentPhaseDuration;
+                if (phase === 'work') {
+                    currentPhaseDuration = (parseInt(workDurationInput.value) || 25) * 60;
+                } else if (phase === 'shortBreak') {
+                    currentPhaseDuration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                } else { // longBreak
+                    currentPhaseDuration = (parseInt(longBreakDurationInput.value) || 15) * 60;
+                }
+
+                const isPristine = remainingSeconds >= currentPhaseDuration && !isRunning && !alarmSounding;
+                const isPaused = !isRunning && !isPristine && !alarmSounding;
+
+                togglePomodoroBtn.textContent = isRunning ? 'Pause' : 'Start';
+                resetPomodoroBtn.style.display = (isRunning || isPaused || alarmSounding) ? 'flex' : 'none';
+
+                // Show alarm controls if alarm is sounding OR if snooze is active
+                pomodoroAlarmControls.style.display = (alarmSounding || snoozeActive) ? 'flex' : 'none';
+
+                mutePomodoroBtn.classList.toggle('active-red', isMuted);
+
+                if (snoozeActive) {
+                    snoozePomodoroBtn.textContent = 'End Cycle';
+                    snoozePomodoroBtn.classList.add('active-red');
+                } else {
+                    snoozePomodoroBtn.textContent = 'Snooze';
+                    snoozePomodoroBtn.classList.remove('active-red');
+                }
+            },
             playSound: function() {
-                const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
-                document.dispatchEvent(event);
+                if (!this.state.pomodoro.isMuted) {
+                    const event = new CustomEvent('play-sound', { detail: { soundFile: this.settings.timerSound } });
+                    document.dispatchEvent(event);
+                }
             },
             setupEventListeners: function() {
-                document.getElementById('startPomodoro').addEventListener('click', () => this.start());
-                document.getElementById('pausePomodoro').addEventListener('click', () => this.pause());
-                document.getElementById('resetPomodoro').addEventListener('click', () => this.reset());
+                togglePomodoroBtn.addEventListener('click', () => this.toggle());
+                resetPomodoroBtn.addEventListener('click', () => this.reset());
+                mutePomodoroBtn.addEventListener('click', () => this.toggleMute());
+                snoozePomodoroBtn.addEventListener('click', () => this.handleSnoozeOrEndCycle());
             }
         };
     }(App));
@@ -1373,7 +1474,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = {
             mode: 'clock',
             timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+            pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60, isMuted: false, snoozeActive: false, alarmSounding: false },
             stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] },
             trackedAlarm: { id: null, nextAlarmTime: null },
             advancedAlarms: [],
@@ -1399,7 +1500,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
-                if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
+                if (state.pomodoro.remainingSeconds <= 0) {
+                    App.Pomodoro.timeIsUp();
+                }
             }
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
@@ -1549,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         initializeApp();
     }(App));
+    window.App = App; // Expose for testing
 });
     </script>
 </body>
