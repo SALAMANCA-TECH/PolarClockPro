@@ -139,17 +139,6 @@
         border-color: #666;
     }
 
-    .control-buttons button.active-red {
-        background-color: #ef4444; /* Red-500 from Tailwind */
-        border-color: #ef4444;
-        color: white;
-    }
-
-    .control-buttons button.active-red:hover {
-        background-color: #dc2626; /* Red-600 from Tailwind */
-        border-color: #dc2626;
-    }
-
     .tab-button, .format-button, .display-mode-button, .color-preset-button {
         padding: 10px;
         border: none;
@@ -501,12 +490,9 @@
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
                 </div>
                 <div class="control-buttons">
-                    <button id="togglePomodoroBtn">Start</button>
-                    <button id="resetPomodoro" style="display: none;">Reset</button>
-                </div>
-                <div class="control-buttons" id="pomodoroAlarmControls" style="display: none; margin-top: 1rem;">
-                    <button id="mutePomodoroBtn">Mute</button>
-                    <button id="snoozePomodoroBtn">Snooze</button>
+                    <button id="startPomodoro">Start</button>
+                    <button id="pausePomodoro">Pause</button>
+                    <button id="resetPomodoro">Reset</button>
                 </div>
                 <div class="settings-section w-full max-w-xs">
                     <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
@@ -678,6 +664,7 @@
             <button id="closePomodoroInfoBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg w-full">Got it</button>
         </div>
     </div>
+
 <script src="js/clock.js" defer></script>
     <script src="js/ui.js" defer></script>
     <script src="js/tools.js" defer></script>
