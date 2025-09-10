@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polar Clock Pro</title>
     <!-- DEPENDENCIES: Tailwind CSS for styling and Phosphor Icons for UI icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -307,6 +310,39 @@
         border-color: #4CAF50;
     }
 
+    .pomodoro-display-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: #2a2a2a;
+        border-radius: 8px;
+    }
+
+    .pomodoro-display-label {
+        font-size: 1.1rem;
+        font-weight: 300;
+        color: #ccc;
+    }
+
+    .pomodoro-display-time {
+        font-family: 'Oswald', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 400;
+        color: #ffffff; /* Default/inactive color */
+        transition: color 0.3s ease;
+    }
+    #pomodoroDashboard .pomodoro-display-time.active {
+        color: #4CAF50 !important; /* Green */
+    }
+    #pomodoroDashboard .pomodoro-display-time.paused {
+        color: #F44336 !important; /* Red */
+    }
+    #pomodoroDashboard .pomodoro-display-time.snoozed {
+        color: #FFDB58 !important; /* Mustard Yellow */
+    }
+
     .time-input-small {
         width: 60px;
         background: #2a2a2a;
@@ -440,7 +476,20 @@
                             </svg>
                         </button>
                     </div>
-                    <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
+                    <div id="pomodoroDashboard" class="flex flex-col items-center gap-2 w-full max-w-xs">
+                        <div class="pomodoro-display-item">
+                            <span class="pomodoro-display-label">Work</span>
+                            <span id="pomodoroWorkDisplay" class="pomodoro-display-time">00:25:00</span>
+                        </div>
+                        <div class="pomodoro-display-item">
+                            <span class="pomodoro-display-label">Short Break</span>
+                            <span id="pomodoroShortBreakDisplay" class="pomodoro-display-time">00:05:00</span>
+                        </div>
+                        <div class="pomodoro-display-item">
+                            <span class="pomodoro-display-label">Long Break</span>
+                            <span id="pomodoroLongBreakDisplay" class="pomodoro-display-time">00:15:00</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="control-buttons" id="pomodoro-main-controls">
                     <button id="togglePomodoroBtn">Start</button>

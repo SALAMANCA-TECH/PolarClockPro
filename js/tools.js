@@ -17,7 +17,9 @@ const Tools = (function() {
     const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
 
     const statusDisplay = document.getElementById('pomodoroStatus');
-    const timerDisplay = document.getElementById('pomodoroTimerDisplay');
+    const pomodoroWorkDisplay = document.getElementById('pomodoroWorkDisplay');
+    const pomodoroShortBreakDisplay = document.getElementById('pomodoroShortBreakDisplay');
+    const pomodoroLongBreakDisplay = document.getElementById('pomodoroLongBreakDisplay');
     const togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
     const resetPomodoroBtn = document.getElementById('resetPomodoro');
     const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
@@ -195,8 +197,7 @@ const Tools = (function() {
         state.pomodoro.isMuted = false;
         state.pomodoro.isSnoozed = false;
         state.pomodoro.hasStarted = false;
-        timerDisplay.style.color = ''; // Reset color
-        updatePomodoroDisplay();
+        updatePomodoroDashboard();
         updatePomodoroUI();
         document.dispatchEvent(new CustomEvent('pomodoro-reset'));
     }
@@ -218,16 +219,15 @@ const Tools = (function() {
         state.pomodoro.remainingSeconds += 5 * 60; // Add 5 minutes
         state.pomodoro.alarmPlaying = false;
         state.pomodoro.isMuted = false; // Ensure next alarm is not muted
-        timerDisplay.style.color = '#FFDB58'; // Mustard yellow for snooze
-        updatePomodoroDisplay();
+        updatePomodoroDashboard();
         updatePomodoroUI();
     }
 
     function endCycle() {
         state.pomodoro.isSnoozed = false;
         state.pomodoro.alarmPlaying = false;
-        timerDisplay.style.color = ''; // Reset color
         startNextPomodoroPhase(true);
+        updatePomodoroDashboard();
         updatePomodoroUI();
     }
 
@@ -262,14 +262,40 @@ const Tools = (function() {
         state.pomodoro.isRunning = true; // Auto-start the next cycle
     }
 
-    function updatePomodoroDisplay() {
-        const minutes = Math.floor(state.pomodoro.remainingSeconds / 60);
-        const seconds = Math.floor(state.pomodoro.remainingSeconds % 60);
-        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    function formatToHHMMSS(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
 
+    function updatePomodoroDashboard() {
+        const { phase, remainingSeconds, workDuration, shortBreakDuration, longBreakDuration, isRunning, hasStarted, isSnoozed } = state.pomodoro;
+
+        // Update the time for all three displays
+        pomodoroWorkDisplay.textContent = formatToHHMMSS(phase === 'work' ? remainingSeconds : workDuration * 60);
+        pomodoroShortBreakDisplay.textContent = formatToHHMMSS(phase === 'shortBreak' ? remainingSeconds : shortBreakDuration * 60);
+        pomodoroLongBreakDisplay.textContent = formatToHHMMSS(phase === 'longBreak' ? remainingSeconds : longBreakDuration * 60);
+
+        // Reset all classes
+        const allDisplays = [pomodoroWorkDisplay, pomodoroShortBreakDisplay, pomodoroLongBreakDisplay];
+        allDisplays.forEach(display => display.classList.remove('active', 'paused', 'snoozed'));
+
+        // Set class for the active phase
+        const activeDisplay = phase === 'work' ? pomodoroWorkDisplay : (phase === 'shortBreak' ? pomodoroShortBreakDisplay : pomodoroLongBreakDisplay);
+
+        if (isSnoozed) {
+            activeDisplay.classList.add('snoozed');
+        } else if (isRunning) {
+            activeDisplay.classList.add('active');
+        } else if (hasStarted) {
+            activeDisplay.classList.add('paused');
+        }
+
+        // Update the main status title
         let statusText = "Work Session";
-        if (state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
-        if (state.pomodoro.phase === 'longBreak') statusText = "Long Break";
+        if (phase === 'shortBreak') statusText = "Short Break";
+        if (phase === 'longBreak') statusText = "Long Break";
         statusDisplay.textContent = statusText;
     }
 
@@ -383,7 +409,7 @@ const Tools = (function() {
             setupAllEventListeners();
             updateLapDisplay();
             updateButtonStates();
-            updatePomodoroDisplay();
+            updatePomodoroDashboard();
             updatePomodoroUI();
         },
         update: function(deltaTime) {
@@ -407,7 +433,7 @@ const Tools = (function() {
                     }
                 }
             }
-            updatePomodoroDisplay(); // Keep display updated regardless of running state
+            updatePomodoroDashboard(); // Keep display updated regardless of running state
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
