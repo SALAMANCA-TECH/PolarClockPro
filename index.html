@@ -322,39 +322,6 @@
         border-color: #4CAF50;
     }
 
-    /* Animation Keyframes */
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.03); }
-        100% { transform: scale(1); }
-    }
-
-    @keyframes glow-work {
-        0% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
-        50% { box-shadow: 0 0 25px rgba(0, 150, 255, 0.5); }
-        100% { box-shadow: 0 0 10px rgba(0, 150, 255, 0.2); }
-    }
-
-    @keyframes glow-break {
-        0% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
-        50% { box-shadow: 0 0 25px rgba(70, 180, 70, 0.5); }
-        100% { box-shadow: 0 0 10px rgba(70, 180, 70, 0.2); }
-    }
-
-    /* Animation Classes */
-    .pulsing-warning {
-        animation: pulse 2s infinite ease-in-out;
-    }
-
-    .glowing-work {
-        animation: glow-work 3s infinite ease-in-out;
-        border-radius: 50%; /* Ensures shadow is circular */
-    }
-
-    .glowing-break {
-        animation: glow-break 3s infinite ease-in-out;
-        border-radius: 50%; /* Ensures shadow is circular */
-    }
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
@@ -506,20 +473,6 @@
                     <div class="flex justify-between w-full items-center">
                         <label for="pomodoroLongBreakDuration">Long Break (min)</label>
                         <input type="number" id="pomodoroLongBreakDuration" class="time-input-small" value="15" min="1">
-                    </div>
-                    <div class="setting-toggle mt-2">
-                        <span>Glow Effect</span>
-                        <label class="switch">
-                            <input type="checkbox" id="pomodoroGlowToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Pulse Effect</span>
-                        <label class="switch">
-                            <input type="checkbox" id="pomodoroPulseToggle" checked>
-                            <span class="slider"></span>
-                        </label>
                     </div>
                 </div>
             </div>
