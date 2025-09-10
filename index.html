@@ -442,10 +442,13 @@
                     </div>
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
                 </div>
-                <div class="control-buttons">
-                    <button id="startPomodoro">Start</button>
-                    <button id="pausePomodoro">Pause</button>
-                    <button id="resetPomodoro">Reset</button>
+                <div class="control-buttons" id="pomodoro-main-controls">
+                    <button id="togglePomodoroBtn">Start</button>
+                    <button id="resetPomodoro" style="display: none;">Reset</button>
+                </div>
+                <div class="control-buttons" id="pomodoroAlarmControls" style="display: none;">
+                    <button id="mutePomodoroBtn">Mute</button>
+                    <button id="snoozePomodoroBtn">Snooze</button>
                 </div>
                 <div class="settings-section w-full max-w-xs">
                     <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
