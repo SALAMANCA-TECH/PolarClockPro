@@ -28,8 +28,8 @@ const Clock = (function() {
         const textX = dimensions.centerX;
         const textY = dimensions.centerY + arc.radius;
 
-        let fontSizeMultiplier = (arc.key === 'month' || arc.key === 'week') ? 0.8 : 0.6;
-        let circleSizeMultiplier = (arc.key === 'month' || arc.key === 'week') ? 0.85 : 0.7;
+        let fontSizeMultiplier = 0.4;
+        let circleSizeMultiplier = 0.5;
         if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
 
         const circleRadius = arc.lineWidth * circleSizeMultiplier;
@@ -403,7 +403,7 @@ const Clock = (function() {
             dimensions.centerY = canvas.height / 2;
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-            const monthLineWidth = 20, dayLineWidth = 30, hourLineWidth = 45, minuteLineWidth = 30, secondLineWidth = 30, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 15;
+            const monthLineWidth = 6, dayLineWidth = 6, hourLineWidth = 6, minuteLineWidth = 6, secondLineWidth = 6, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 7.5;
             const isPomodoro = globalState.mode === 'pomodoro';
 
             // All arcs are now always visible, so we calculate total width unconditionally
