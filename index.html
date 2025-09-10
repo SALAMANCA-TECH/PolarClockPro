@@ -326,6 +326,31 @@
         display: none;
     }
 
+    .pomodoro-displays {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .pomodoro-display {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 2.5rem;
+    }
+
+    .text-green {
+        color: #4CAF50;
+    }
+
+    .text-red {
+        color: #F44336;
+    }
+
+    .text-white {
+        color: #FFFFFF;
+    }
+
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
@@ -444,7 +469,11 @@
                             </svg>
                         </button>
                     </div>
-                    <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
+                    <div id="pomodoroDisplays" class="pomodoro-displays">
+                        <div id="pomodoroWorkDisplay" class="pomodoro-display">25:00</div>
+                        <div id="pomodoroShortBreakDisplay" class="pomodoro-display">05:00</div>
+                        <div id="pomodoroLongBreakDisplay" class="pomodoro-display">15:00</div>
+                    </div>
                 </div>
                 <div class="control-buttons" id="pomodoro-main-controls">
                     <button id="togglePomodoroBtn">Start</button>
