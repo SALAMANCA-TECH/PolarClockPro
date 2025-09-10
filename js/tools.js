@@ -21,12 +21,26 @@ const Tools = (function() {
     const workDurationInput = document.getElementById('pomodoroWorkDuration');
     const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
     const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
+    const togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
+    const resetPomodoroBtn = document.getElementById('resetPomodoro');
+    const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
+    const mutePomodoroBtn = document.getElementById('mutePomodoroBtn');
+    const snoozePomodoroBtn = document.getElementById('snoozePomodoroBtn');
 
     // --- Module State ---
     let settings = {};
     const state = {
         timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
-        pomodoro: { isRunning: false, phase: 'work', cycles: 0, remainingSeconds: 25 * 60 },
+        pomodoro: {
+            isRunning: false,
+            phase: 'work',
+            cycles: 0,
+            remainingSeconds: 25 * 60,
+            alarmPlaying: false,
+            isMuted: false,
+            isSnoozed: false,
+            hasStarted: false
+        },
         stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] }
     };
 
@@ -141,43 +155,96 @@ const Tools = (function() {
     }
 
     // Pomodoro Functions
-    function startPomodoro() {
-        if (state.pomodoro.isRunning) return;
-        state.pomodoro.isRunning = true;
-        if (state.pomodoro.remainingSeconds <= 0) {
-            startNextPomodoroPhase();
+    function togglePomodoro() {
+        // If alarm is playing, any action should stop it and start the next phase.
+        if (state.pomodoro.alarmPlaying) {
+            endCycle();
+            return;
         }
+
+        state.pomodoro.isRunning = !state.pomodoro.isRunning;
+
+        if (state.pomodoro.isRunning && !state.pomodoro.hasStarted) {
+            state.pomodoro.hasStarted = true;
+        }
+
+        // If we are starting a completed timer, start the next phase.
+        if (state.pomodoro.isRunning && state.pomodoro.remainingSeconds <= 0) {
+            startNextPomodoroPhase(false); // Don't play sound on manual start.
+        }
+        updatePomodoroUI();
     }
 
-    function pausePomodoro() {
-        state.pomodoro.isRunning = false;
-    }
 
     function resetPomodoro() {
         state.pomodoro.isRunning = false;
         state.pomodoro.phase = 'work';
         state.pomodoro.cycles = 0;
         state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+        state.pomodoro.alarmPlaying = false;
+        state.pomodoro.isMuted = false;
+        state.pomodoro.isSnoozed = false;
+        state.pomodoro.hasStarted = false;
         updatePomodoroDisplay();
+        updatePomodoroUI();
         document.dispatchEvent(new CustomEvent('pomodoro-reset'));
     }
 
-    function startNextPomodoroPhase() {
+    function muteAlarm() {
+        state.pomodoro.isMuted = !state.pomodoro.isMuted;
+        // Here you would add logic to mute/unmute the actual sound
+        updatePomodoroUI();
+    }
+
+    function snoozeAlarm() {
+        // If this button is clicked while in a snoozed state, it means "End Cycle"
+        if (state.pomodoro.isSnoozed) {
+            endCycle();
+            return;
+        }
+
+        state.pomodoro.isSnoozed = true;
+        state.pomodoro.remainingSeconds += 5 * 60; // Add 5 minutes
+        state.pomodoro.alarmPlaying = false;
+        state.pomodoro.isMuted = false; // Ensure next alarm is not muted
+        updatePomodoroDisplay();
+        updatePomodoroUI();
+    }
+
+    function endCycle() {
+        state.pomodoro.isSnoozed = false;
+        state.pomodoro.alarmPlaying = false;
+        startNextPomodoroPhase(true);
+        updatePomodoroUI();
+    }
+
+    function startNextPomodoroPhase(playSoundOnStart = true) {
         let nextPhase = 'work';
         let duration = (parseInt(workDurationInput.value) || 25) * 60;
-        if (state.pomodoro.phase === 'work') {
-            state.pomodoro.cycles++;
-            if (state.pomodoro.cycles % 4 === 0) {
-                nextPhase = 'longBreak';
-                duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
+
+        // Determine next phase only if not snoozing
+        if (!state.pomodoro.isSnoozed) {
+            if (state.pomodoro.phase === 'work') {
+                state.pomodoro.cycles++;
+                if (state.pomodoro.cycles > 0 && state.pomodoro.cycles % 4 === 0) {
+                    nextPhase = 'longBreak';
+                    duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
+                } else {
+                    nextPhase = 'shortBreak';
+                    duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                }
             } else {
-                nextPhase = 'shortBreak';
-                duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                nextPhase = 'work';
+                duration = (parseInt(workDurationInput.value) || 25) * 60;
             }
+            state.pomodoro.phase = nextPhase;
         }
-        state.pomodoro.phase = nextPhase;
+
         state.pomodoro.remainingSeconds = duration;
-        playSound(settings.timerSound);
+
+        if (playSoundOnStart && !state.pomodoro.isMuted) {
+            playSound(settings.timerSound);
+        }
         updatePomodoroDisplay();
     }
 
@@ -190,6 +257,35 @@ const Tools = (function() {
         if (state.pomodoro.phase === 'shortBreak') statusText = "Short Break";
         if (state.pomodoro.phase === 'longBreak') statusText = "Long Break";
         statusDisplay.textContent = statusText;
+    }
+
+    function updatePomodoroUI() {
+        const mainControls = document.getElementById('pomodoro-main-controls');
+        const alarmControls = document.getElementById('pomodoroAlarmControls');
+        const toggleBtn = document.getElementById('togglePomodoroBtn');
+        const resetBtn = document.getElementById('resetPomodoro');
+        const muteBtn = document.getElementById('mutePomodoroBtn');
+        const snoozeBtn = document.getElementById('snoozePomodoroBtn');
+
+        if (!mainControls) return; // Exit if the elements are not on the page
+
+        // Main toggle button text
+        toggleBtn.textContent = state.pomodoro.isRunning ? 'Pause' : 'Start';
+
+        // Reset button visibility
+        resetBtn.style.display = state.pomodoro.hasStarted ? 'inline-block' : 'none';
+
+        // Control sets visibility
+        mainControls.style.display = state.pomodoro.alarmPlaying ? 'none' : 'flex';
+        alarmControls.style.display = state.pomodoro.alarmPlaying ? 'flex' : 'none';
+
+        // Mute button state
+        muteBtn.textContent = state.pomodoro.isMuted ? 'Unmute' : 'Mute';
+        muteBtn.style.backgroundColor = state.pomodoro.isMuted ? '#4CAF50' : 'transparent';
+        muteBtn.style.borderColor = state.pomodoro.isMuted ? '#4CAF50' : '#444';
+
+        // Snooze button state
+        snoozeBtn.textContent = state.pomodoro.isSnoozed ? 'End Cycle' : 'Snooze';
     }
 
     // Shared Functions
@@ -226,9 +322,10 @@ const Tools = (function() {
         });
 
         // Pomodoro
-        document.getElementById('startPomodoro').addEventListener('click', startPomodoro);
-        document.getElementById('pausePomodoro').addEventListener('click', pausePomodoro);
-        document.getElementById('resetPomodoro').addEventListener('click', resetPomodoro);
+        togglePomodoroBtn.addEventListener('click', togglePomodoro);
+        resetPomodoroBtn.addEventListener('click', resetPomodoro);
+        mutePomodoroBtn.addEventListener('click', muteAlarm);
+        snoozePomodoroBtn.addEventListener('click', snoozeAlarm);
     }
 
 
@@ -240,17 +337,26 @@ const Tools = (function() {
             updateLapDisplay();
             updateButtonStates();
             updatePomodoroDisplay();
+            updatePomodoroUI();
         },
         update: function(deltaTime) {
             if (state.timer.isRunning) {
                 state.timer.remainingSeconds -= deltaTime;
                 if (state.timer.remainingSeconds <= 0) timerFinished();
             }
-            if (state.pomodoro.isRunning) {
+            if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;
-                updatePomodoroDisplay();
-                if (state.pomodoro.remainingSeconds <= 0) startNextPomodoroPhase();
+                if (state.pomodoro.remainingSeconds <= 0) {
+                    state.pomodoro.remainingSeconds = 0;
+                    state.pomodoro.isRunning = false;
+                    state.pomodoro.alarmPlaying = true;
+                    if (!state.pomodoro.isMuted) {
+                        playSound(settings.timerSound || 'bell01.mp3');
+                    }
+                    updatePomodoroUI();
+                }
             }
+            updatePomodoroDisplay(); // Keep display updated regardless of running state
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
