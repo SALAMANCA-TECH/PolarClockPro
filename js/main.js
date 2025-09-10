@@ -5,6 +5,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Main Application ---
     (function(App) {
+        function formatMinutesToHHMMSS(minutes) {
+            const totalSeconds = Math.floor(minutes * 60);
+            const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function parseHHMMSSToMinutes(timeString) {
+            if (typeof timeString !== 'string') {
+                return parseFloat(timeString) || 0;
+            }
+            const parts = timeString.split(':');
+            if (parts.length === 3) {
+                const h = parseInt(parts[0], 10) || 0;
+                const m = parseInt(parts[1], 10) || 0;
+                const s = parseInt(parts[2], 10) || 0;
+                return (h * 60) + m + (s / 60);
+            }
+            return parseFloat(timeString) || 0;
+        }
+
         const clockContainer = document.querySelector('.canvas-container');
         const digitalTime = document.getElementById('digitalTime');
         const digitalDate = document.getElementById('digitalDate');
@@ -58,13 +80,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
                 showSeparators: true,
                 separatorMode: 'standard',
-                alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
+                alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav',
+                pomodoroWorkDuration: 25,
+                pomodoroShortBreakDuration: 5,
+                pomodoroLongBreakDuration: 15
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
             settings.currentColors = colorPalettes[settings.colorPreset];
             applySettingsToUI();
         }
         function applySettingsToUI() {
+            document.getElementById('pomodoroWorkDuration').value = formatMinutesToHHMMSS(settings.pomodoroWorkDuration);
+            document.getElementById('pomodoroShortBreakDuration').value = formatMinutesToHHMMSS(settings.pomodoroShortBreakDuration);
+            document.getElementById('pomodoroLongBreakDuration').value = formatMinutesToHHMMSS(settings.pomodoroLongBreakDuration);
+
             document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
             document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
             ['modeStandard', 'modePercentage', 'modeRemainder'].forEach(id => document.getElementById(id).classList.remove('active'));
@@ -130,6 +159,48 @@ document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
             document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, 1.0));
             document.addEventListener('statechange', saveState);
+
+            setupPomodoroEventListeners();
+        }
+
+        function setupPomodoroEventListeners() {
+            const pomodoroSettingsModal = document.getElementById('pomodoroSettingsModal');
+            const pomodoroSettingsBtn = document.getElementById('pomodoroSettingsBtn');
+            const closePomodoroSettingsBtn = document.getElementById('closePomodoroSettingsBtn');
+            const workDurationInput = document.getElementById('pomodoroWorkDuration');
+            const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
+            const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
+
+            pomodoroSettingsBtn.addEventListener('click', () => {
+                pomodoroSettingsModal.classList.remove('hidden');
+            });
+
+            closePomodoroSettingsBtn.addEventListener('click', () => {
+                pomodoroSettingsModal.classList.add('hidden');
+            });
+
+            function handleFocus(input, settingName) {
+                input.value = parseHHMMSSToMinutes(input.value);
+            }
+
+            function handleChange(input, settingName) {
+                let value = parseFloat(input.value);
+                if (isNaN(value) || value < 0) {
+                    value = settings[settingName]; // revert to old value
+                }
+                settings[settingName] = value;
+                saveSettings();
+                input.value = formatMinutesToHHMMSS(value);
+            }
+
+            workDurationInput.addEventListener('focus', () => handleFocus(workDurationInput, 'pomodoroWorkDuration'));
+            workDurationInput.addEventListener('change', () => handleChange(workDurationInput, 'pomodoroWorkDuration'));
+
+            shortBreakDurationInput.addEventListener('focus', () => handleFocus(shortBreakDurationInput, 'pomodoroShortBreakDuration'));
+            shortBreakDurationInput.addEventListener('change', () => handleChange(shortBreakDurationInput, 'pomodoroShortBreakDuration'));
+
+            longBreakDurationInput.addEventListener('focus', () => handleFocus(longBreakDurationInput, 'pomodoroLongBreakDuration'));
+            longBreakDurationInput.addEventListener('change', () => handleChange(longBreakDurationInput, 'pomodoroLongBreakDuration'));
         }
 
         function initializeApp() {
