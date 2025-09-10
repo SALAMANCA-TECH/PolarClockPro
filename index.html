@@ -428,7 +428,6 @@
             <div class="tab-buttons">
                 <button id="timerTab" class="tab-button active">Timer</button>
                 <button id="pomodoroTab" class="tab-button">Pomodoro</button>
-                <button id="alarmTab" class="tab-button">Alarm</button>
                 <button id="stopwatchTab" class="tab-button">Stopwatch</button>
             </div>
             <!-- Timer Panel -->
@@ -521,47 +520,6 @@
                             <input type="checkbox" id="pomodoroPulseToggle" checked>
                             <span class="slider"></span>
                         </label>
-                    </div>
-                </div>
-            </div>
-            <!-- Alarm Panel -->
-            <div id="alarmPanel" class="ui-panel" style="display: none;">
-                <div class="time-inputs">
-                    <div class="input-group">
-                        <input type="number" id="alarmHours" placeholder="0" min="1" max="12" value="8">
-                        <label>Hours</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="alarmMinutes" placeholder="00" min="0" max="59" value="0">
-                        <label>Minutes</label>
-                    </div>
-                </div>
-                <div class="alarm-controls">
-                    <div id="amPmContainer" class="am-pm-toggle">
-                        <button id="amButton" class="format-button am-pm-button active">AM</button>
-                        <button id="pmButton" class="format-button am-pm-button">PM</button>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Alarm Off/On</span>
-                        <label class="switch">
-                            <input type="checkbox" id="alarmToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Sound</span>
-                        <select id="alarmSound" class="sound-select">
-                            <option value="Ahooga.wav">Ahooga</option>
-                            <option value="bell01.mp3" selected>Bell 1</option>
-                            <option value="Bwauhm.mp3">Bwauhm</option>
-                            <option value="Lenovo_Error.mp3">Lenovo Error</option>
-                            <option value="nice_digital_watch.mp3">Nice Watch</option>
-                            <option value="rotten_digital_watch.wav">Rotten Watch</option>
-                            <option value="Tick_Tock.wav">Tick Tock 1</option>
-                            <option value="Tick_Tock_Two.wav">Tick Tock 2</option>
-                        </select>
-                        <button class="preview-btn" data-target="alarmSound">Preview</button>
                     </div>
                 </div>
             </div>
@@ -685,13 +643,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const toolTabs = {
             timer: document.getElementById('timerTab'),
             pomodoro: document.getElementById('pomodoroTab'),
-            alarm: document.getElementById('alarmTab'),
             stopwatch: document.getElementById('stopwatchTab'),
         };
         const toolPanels = {
             timer: document.getElementById('timerPanel'),
             pomodoro: document.getElementById('pomodoroPanel'),
-            alarm: document.getElementById('alarmPanel'),
             stopwatch: document.getElementById('stopwatchPanel'),
         };
         const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
@@ -736,7 +692,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
                 toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-                toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
                 toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
 
                 pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
