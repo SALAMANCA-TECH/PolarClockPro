@@ -15,7 +15,7 @@ const Settings = (function() {
             is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
             showSeparators: true,
             separatorMode: 'standard',
-            volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
+            volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
         };
         Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
         settings.currentColors = colorPalettes[settings.colorPreset];
@@ -34,8 +34,6 @@ const Settings = (function() {
         document.getElementById('modeStandardSeparators').classList.toggle('active', settings.separatorMode === 'standard');
         document.getElementById('modeRuler').classList.toggle('active', settings.separatorMode === 'ruler');
         document.getElementById('volumeControl').value = settings.volume;
-        document.getElementById('pomodoroGlowToggle').checked = settings.pomodoroGlowEnabled;
-        document.getElementById('pomodoroPulseToggle').checked = settings.pomodoroPulseEnabled;
     }
 
     function setupEventListeners() {
@@ -53,8 +51,6 @@ const Settings = (function() {
         document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); document.dispatchEvent(new CustomEvent('settings-requires-resize')); });
         document.getElementById('modeRuler').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); document.dispatchEvent(new CustomEvent('settings-requires-resize')); });
         document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
-        document.getElementById('pomodoroGlowToggle').addEventListener('change', (e) => { settings.pomodoroGlowEnabled = e.target.checked; saveSettings(); });
-        document.getElementById('pomodoroPulseToggle').addEventListener('change', (e) => { settings.pomodoroPulseEnabled = e.target.checked; saveSettings(); });
     }
 
     return {
