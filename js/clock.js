@@ -273,18 +273,16 @@ const Clock = (function() {
 
         const { phase, remainingSeconds } = globalState.pomodoro;
 
-        // Determine total duration for the current phase to calculate progress
-        const workDuration = (parseInt(document.getElementById('pomodoroWorkDuration').value) || 25) * 60;
-        const shortBreakDuration = (parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5) * 60;
-        const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
+        // Determine total duration for the current phase from the state object
+        const { workDuration, shortBreakDuration, longBreakDuration } = globalState.pomodoro;
 
         let totalDuration;
         if (phase === 'work') {
-            totalDuration = workDuration;
+            totalDuration = workDuration * 60;
         } else if (phase === 'shortBreak') {
-            totalDuration = shortBreakDuration;
+            totalDuration = shortBreakDuration * 60;
         } else { // longBreak
-            totalDuration = longBreakDuration;
+            totalDuration = longBreakDuration * 60;
         }
 
         // Calculate remaining time components
