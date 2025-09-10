@@ -403,38 +403,38 @@ const Clock = (function() {
             dimensions.centerY = canvas.height / 2;
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-            const monthLineWidth = 6, dayLineWidth = 6, hourLineWidth = 6, minuteLineWidth = 6, secondLineWidth = 6, timerLineWidth = 30, alarmLineWidth = 20, weekLineWidth = 15, gap = 7.5;
-            const isPomodoro = globalState.mode === 'pomodoro';
 
-            // All arcs are now always visible, so we calculate total width unconditionally
-            let totalWidth = (secondLineWidth / 2) + minuteLineWidth + hourLineWidth + dayLineWidth + monthLineWidth + (gap * 4);
+            // Define the final, rendered line width and gap size as a fraction of baseRadius.
+            // These fractions are calculated from the previous state to maintain consistency
+            // and implement the requested changes.
+            // Desired rendered line width = (6/57) * baseRadius
+            // Desired rendered gap = (7.5/57) * 0.25 * baseRadius = (1.875/57) * baseRadius
+            const renderedLineWidth = (6 / 57) * baseRadius;
+            const renderedGap = (1.875 / 57) * baseRadius;
 
-            // Add widths for optional timer/alarm arcs if they are active
-            if (globalState.timer && globalState.timer.totalSeconds > 0) totalWidth += timerLineWidth + gap;
-            if (globalState.trackedAlarm && globalState.trackedAlarm.nextAlarmTime) totalWidth += alarmLineWidth + gap;
-
-            const scale = baseRadius / totalWidth;
             let currentRadius = baseRadius;
 
-            dimensions.secondsLineWidth = secondLineWidth * scale;
+            // For each arc, we use the pre-calculated rendered sizes.
+            // The `dimensions` object will store these final pixel values.
+            dimensions.secondsLineWidth = renderedLineWidth;
             dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-            currentRadius -= (dimensions.secondsLineWidth + gap * scale);
+            currentRadius -= (dimensions.secondsLineWidth + renderedGap);
 
-            dimensions.minutesLineWidth = minuteLineWidth * scale;
+            dimensions.minutesLineWidth = renderedLineWidth;
             dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-            currentRadius -= (dimensions.minutesLineWidth + gap * scale);
+            currentRadius -= (dimensions.minutesLineWidth + renderedGap);
 
-            dimensions.hoursLineWidth = hourLineWidth * scale;
+            dimensions.hoursLineWidth = renderedLineWidth;
             dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-            currentRadius -= (dimensions.hoursLineWidth + gap * scale);
+            currentRadius -= (dimensions.hoursLineWidth + renderedGap);
 
-            dimensions.dayLineWidth = dayLineWidth * scale;
+            dimensions.dayLineWidth = renderedLineWidth;
             dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-            currentRadius -= (dimensions.dayLineWidth + gap * scale);
+            currentRadius -= (dimensions.dayLineWidth + renderedGap);
 
-            dimensions.monthLineWidth = monthLineWidth * scale;
+            dimensions.monthLineWidth = renderedLineWidth;
             dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
-            currentRadius -= (dimensions.monthLineWidth + gap * scale);
+            currentRadius -= (dimensions.monthLineWidth + renderedGap);
 
             // Week arc is disabled, so set its dimensions to 0
             dimensions.weekLineWidth = 0;
