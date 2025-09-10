@@ -1338,7 +1338,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 this.state.pomodoro.phase = nextPhase;
                 this.state.pomodoro.remainingSeconds = duration;
-                this.playSound();
                 this.updateDisplay();
             },
             updateDisplay: function() {
@@ -1399,7 +1398,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.remainingSeconds -= deltaTime;
                 App.Pomodoro.updateDisplay();
-                if (state.pomodoro.remainingSeconds <= 0) App.Pomodoro.startNextPhase();
+                if (state.pomodoro.remainingSeconds <= 0) {
+                    let soundFile;
+                    if (state.pomodoro.phase === 'work') {
+                        soundFile = 'work_end.mp3';
+                    } else if (state.pomodoro.phase === 'shortBreak') {
+                        soundFile = 'short_break_end.mp3';
+                    } else if (state.pomodoro.phase === 'longBreak') {
+                        soundFile = 'long_break_end.mp3';
+                    }
+                    if (soundFile) {
+                        playSound(soundFile, settings.volume);
+                    }
+                    App.Pomodoro.startNextPhase();
+                }
             }
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
