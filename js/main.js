@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             closePomodoroSettingsBtn.addEventListener('click', () => {
                 pomodoroSettingsModal.classList.add('hidden');
+                document.getElementById('resetPomodoro').click();
             });
 
             function handleFocus(input, settingName) {
