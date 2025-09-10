@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
                 showSeparators: true,
                 separatorMode: 'standard',
-                volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
+                alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
             settings.currentColors = colorPalettes[settings.colorPreset];
@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('separatorsHide').classList.toggle('active', !settings.showSeparators);
             document.getElementById('modeStandardSeparators').classList.toggle('active', settings.separatorMode === 'standard');
             document.getElementById('modeRuler').classList.toggle('active', settings.separatorMode === 'ruler');
-            document.getElementById('volumeControl').value = settings.volume;
         }
 
         function loadAdvancedAlarms() {
@@ -91,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentHour = now.getHours();
             state.advancedAlarms.forEach(alarm => {
                 if (alarm.enabled && convertTo24Hour(alarm.hour, alarm.ampm) === currentHour && parseInt(alarm.minute) === currentMinute && (alarm.days.length === 0 || alarm.days.includes(currentDay))) {
-                    playSound(alarm.sound, settings.volume);
+                    playSound(alarm.sound, 1.0);
                     if (alarm.isTemporary) {
                         alarm.enabled = false;
                         localStorage.setItem('polarAlarms', JSON.stringify(state.advancedAlarms));
@@ -127,10 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('separatorsHide').addEventListener('click', () => { settings.showSeparators = false; saveSettings(); applySettingsToUI(); App.Clock.resize(); });
             document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); App.Clock.resize(); });
             document.getElementById('modeRuler').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); App.Clock.resize(); });
-            document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
 
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
-            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, settings.volume));
+            document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, 1.0));
             document.addEventListener('statechange', saveState);
         }
 
