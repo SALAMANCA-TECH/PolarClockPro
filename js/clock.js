@@ -274,9 +274,9 @@ const Clock = (function() {
         const { phase, remainingSeconds } = globalState.pomodoro;
 
         // Determine total duration for the current phase to calculate progress
-        const workDuration = (parseInt(document.getElementById('pomodoroWorkDuration').value) || 25) * 60;
-        const shortBreakDuration = (parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5) * 60;
-        const longBreakDuration = (parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15) * 60;
+        const workDuration = (settings.pomodoroWorkDuration || 25) * 60;
+        const shortBreakDuration = (settings.pomodoroShortBreakDuration || 5) * 60;
+        const longBreakDuration = (settings.pomodoroLongBreakDuration || 15) * 60;
 
         let totalDuration;
         if (phase === 'work') {
@@ -299,7 +299,7 @@ const Clock = (function() {
 
         // Only show hours arc if total duration is an hour or more
         if (totalDuration >= 3600) {
-            const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / 12; // Progress for a 12h clock
+            const hoursProgress = ((hours % 12) + (minutes / 60) + (seconds / 3600)) / 12; // Progress for a 12h clock
             const hoursEndAngle = baseStartAngle + hoursProgress * Math.PI * 2;
             arcs.push({
                 key: 'hours',
