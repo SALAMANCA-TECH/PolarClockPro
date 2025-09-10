@@ -322,6 +322,10 @@
         border-color: #4CAF50;
     }
 
+    .hidden {
+        display: none;
+    }
+
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
@@ -439,6 +443,9 @@
                                 <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V5.31c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zm1.328 1.41a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V6.92c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zM8 4a.5.5 0 0 1 .5.5v1.25a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zm0 4.5a.5.5 0 0 1 .5-.5v2.25a.5.5 0 0 1-1 0V9a.5.5 0 0 1 .5-.5z"/>
                             </svg>
                         </button>
+                        <button id="pomodoroSettingsBtn" class="bg-transparent border-none text-gray-400 hover:text-white transition-colors">
+                            <i class="ph ph-gear"></i>
+                        </button>
                     </div>
                     <div id="pomodoroTimerDisplay" class="text-6xl font-mono">25:00</div>
                 </div>
@@ -449,21 +456,6 @@
                 <div class="control-buttons" id="pomodoroAlarmControls" style="display: none;">
                     <button id="mutePomodoroBtn">Mute</button>
                     <button id="snoozePomodoroBtn">Snooze</button>
-                </div>
-                <div class="settings-section w-full max-w-xs">
-                    <h3 class="text-sm uppercase text-gray-400 mt-4">Settings</h3>
-                    <div class="flex justify-between w-full items-center">
-                        <label for="pomodoroWorkDuration">Work (min)</label>
-                        <input type="number" id="pomodoroWorkDuration" class="time-input-small" value="25" min="1">
-                    </div>
-                    <div class="flex justify-between w-full items-center">
-                        <label for="pomodoroShortBreakDuration">Short Break (min)</label>
-                        <input type="number" id="pomodoroShortBreakDuration" class="time-input-small" value="5" min="1">
-                    </div>
-                    <div class="flex justify-between w-full items-center">
-                        <label for="pomodoroLongBreakDuration">Long Break (min)</label>
-                        <input type="number" id="pomodoroLongBreakDuration" class="time-input-small" value="15" min="1">
-                    </div>
                 </div>
             </div>
             <!-- Stopwatch Panel -->
@@ -539,6 +531,30 @@
                             <button id="modeRuler" class="format-button">Ruler</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pomodoro Settings Modal -->
+    <div id="pomodoroSettingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md text-white relative">
+            <button id="closePomodoroSettingsBtn" class="absolute top-2 right-2 text-gray-400 hover:text-white">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-4">Pomodoro Settings</h3>
+            <div class="settings-section w-full max-w-xs mx-auto">
+                <div class="flex justify-between w-full items-center mb-4">
+                    <label for="pomodoroWorkDuration">Work Duration</label>
+                    <input type="text" id="pomodoroWorkDuration" class="time-input-small" value="25">
+                </div>
+                <div class="flex justify-between w-full items-center mb-4">
+                    <label for="pomodoroShortBreakDuration">Short Break Duration</label>
+                    <input type="text" id="pomodoroShortBreakDuration" class="time-input-small" value="5">
+                </div>
+                <div class="flex justify-between w-full items-center">
+                    <label for="pomodoroLongBreakDuration">Long Break Duration</label>
+                    <input type="text" id="pomodoroLongBreakDuration" class="time-input-small" value="15">
                 </div>
             </div>
         </div>

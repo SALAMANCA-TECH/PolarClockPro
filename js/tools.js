@@ -18,9 +18,6 @@ const Tools = (function() {
 
     const statusDisplay = document.getElementById('pomodoroStatus');
     const timerDisplay = document.getElementById('pomodoroTimerDisplay');
-    const workDurationInput = document.getElementById('pomodoroWorkDuration');
-    const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
-    const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
     const togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
     const resetPomodoroBtn = document.getElementById('resetPomodoro');
     const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
@@ -180,7 +177,7 @@ const Tools = (function() {
         state.pomodoro.isRunning = false;
         state.pomodoro.phase = 'work';
         state.pomodoro.cycles = 0;
-        state.pomodoro.remainingSeconds = (parseInt(workDurationInput.value) || 25) * 60;
+        state.pomodoro.remainingSeconds = (settings.pomodoroWorkDuration || 25) * 60;
         state.pomodoro.alarmPlaying = false;
         state.pomodoro.isMuted = false;
         state.pomodoro.isSnoozed = false;
@@ -220,7 +217,7 @@ const Tools = (function() {
 
     function startNextPomodoroPhase(playSoundOnStart = true) {
         let nextPhase = 'work';
-        let duration = (parseInt(workDurationInput.value) || 25) * 60;
+        let duration = (settings.pomodoroWorkDuration || 25) * 60;
 
         // Determine next phase only if not snoozing
         if (!state.pomodoro.isSnoozed) {
@@ -228,14 +225,14 @@ const Tools = (function() {
                 state.pomodoro.cycles++;
                 if (state.pomodoro.cycles > 0 && state.pomodoro.cycles % 4 === 0) {
                     nextPhase = 'longBreak';
-                    duration = (parseInt(longBreakDurationInput.value) || 15) * 60;
+                    duration = (settings.pomodoroLongBreakDuration || 15) * 60;
                 } else {
                     nextPhase = 'shortBreak';
-                    duration = (parseInt(shortBreakDurationInput.value) || 5) * 60;
+                    duration = (settings.pomodoroShortBreakDuration || 5) * 60;
                 }
             } else {
                 nextPhase = 'work';
-                duration = (parseInt(workDurationInput.value) || 25) * 60;
+                duration = (settings.pomodoroWorkDuration || 25) * 60;
             }
             state.pomodoro.phase = nextPhase;
         }
