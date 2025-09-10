@@ -25,6 +25,7 @@ const Tools = (function() {
     const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
     const mutePomodoroBtn = document.getElementById('mutePomodoroBtn');
     const snoozePomodoroBtn = document.getElementById('snoozePomodoroBtn');
+    const nextCyclePomodoroBtn = document.getElementById('nextCyclePomodoroBtn');
     const customPomodoroBtn = document.getElementById('customPomodoroBtn');
     const pomodoroSettingsModal = document.getElementById('pomodoroSettingsModal');
     const closePomodoroSettingsBtn = document.getElementById('closePomodoroSettingsBtn');
@@ -258,7 +259,7 @@ const Tools = (function() {
         if (playSoundOnStart && !state.pomodoro.isMuted) {
             playSound(settings.timerSound);
         }
-        updatePomodoroDisplay();
+        updatePomodoroDashboard();
         state.pomodoro.isRunning = true; // Auto-start the next cycle
     }
 
@@ -366,6 +367,7 @@ const Tools = (function() {
         resetPomodoroBtn.addEventListener('click', resetPomodoro);
         mutePomodoroBtn.addEventListener('click', muteAlarm);
         snoozePomodoroBtn.addEventListener('click', snoozeAlarm);
+        nextCyclePomodoroBtn.addEventListener('click', endCycle);
         // This listener is for the modal's toggle.
         continuousToggleModalInput.addEventListener('change', (e) => {
             state.pomodoro.continuous = e.target.checked;
