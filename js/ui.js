@@ -14,13 +14,11 @@ const UI = (function() {
     const toolTabs = {
         timer: document.getElementById('timerTab'),
         pomodoro: document.getElementById('pomodoroTab'),
-        alarm: document.getElementById('alarmTab'),
         stopwatch: document.getElementById('stopwatchTab'),
     };
     const toolPanels = {
         timer: document.getElementById('timerPanel'),
         pomodoro: document.getElementById('pomodoroPanel'),
-        alarm: document.getElementById('alarmPanel'),
         stopwatch: document.getElementById('stopwatchPanel'),
     };
     const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
@@ -71,7 +69,6 @@ const UI = (function() {
 
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
             toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-            toolTabs.alarm.addEventListener('click', () => showToolsPanel(toolPanels.alarm, toolTabs.alarm));
             toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
