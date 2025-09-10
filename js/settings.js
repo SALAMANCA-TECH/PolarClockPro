@@ -15,7 +15,7 @@ const Settings = (function() {
             is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
             showSeparators: true,
             separatorMode: 'standard',
-            volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
+            alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
         };
         Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
         settings.currentColors = colorPalettes[settings.colorPreset];
@@ -33,7 +33,6 @@ const Settings = (function() {
         document.getElementById('separatorsHide').classList.toggle('active', !settings.showSeparators);
         document.getElementById('modeStandardSeparators').classList.toggle('active', settings.separatorMode === 'standard');
         document.getElementById('modeRuler').classList.toggle('active', settings.separatorMode === 'ruler');
-        document.getElementById('volumeControl').value = settings.volume;
     }
 
     function setupEventListeners() {
@@ -50,7 +49,6 @@ const Settings = (function() {
         document.getElementById('separatorsHide').addEventListener('click', () => { settings.showSeparators = false; saveSettings(); applySettingsToUI(); document.dispatchEvent(new CustomEvent('settings-requires-resize')); });
         document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); document.dispatchEvent(new CustomEvent('settings-requires-resize')); });
         document.getElementById('modeRuler').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); document.dispatchEvent(new CustomEvent('settings-requires-resize')); });
-        document.getElementById('volumeControl').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
     }
 
     return {
