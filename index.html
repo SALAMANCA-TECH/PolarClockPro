@@ -67,8 +67,8 @@
     /* --- UI STYLES --- */
     .ui-container {
         height: 100vh;
-        width: auto; /* Let content define width */
-        min-width: 340px;
+        flex-basis: 380px; /* Set a stable, fixed width */
+        flex-shrink: 0;   /* Prevent the panel from shrinking */
         padding: 2rem;
         overflow-y: auto;
         background-color: #1a1a1a;
