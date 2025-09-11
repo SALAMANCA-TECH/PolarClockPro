@@ -55,10 +55,23 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadSettings() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
-                is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
+                is24HourFormat: false,
+                labelDisplayMode: 'standard',
+                useGradient: true,
+                colorPreset: 'default',
                 showSeparators: true,
                 separatorMode: 'standard',
-                alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav'
+                alarmSound: 'bell01.mp3',
+                stopwatchSound: 'Tick_Tock.wav',
+                arcVisibility: {
+                    dayOfWeek: false,
+                    month: true,
+                    day: true,
+                    hours: true,
+                    minutes: true,
+                    seconds: true,
+                    weekOfYear: false
+                }
             };
             Object.assign(settings, defaultSettings, JSON.parse(savedSettings || '{}'));
             settings.currentColors = colorPalettes[settings.colorPreset];
@@ -80,6 +93,16 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('separatorsHide').classList.toggle('active', !settings.showSeparators);
             document.getElementById('modeStandardSeparators').classList.toggle('active', settings.separatorMode === 'standard');
             document.getElementById('modeRuler').classList.toggle('active', settings.separatorMode === 'ruler');
+
+            if (settings.arcVisibility) {
+                for (const arcKey in settings.arcVisibility) {
+                    const toggleId = `toggleArc${arcKey.charAt(0).toUpperCase() + arcKey.slice(1)}`;
+                    const toggle = document.getElementById(toggleId);
+                    if (toggle) {
+                        toggle.checked = settings.arcVisibility[arcKey];
+                    }
+                }
+            }
         }
 
         function loadAdvancedAlarms() {
@@ -137,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('modechange', (e) => { state.mode = e.detail.mode; });
             document.addEventListener('play-sound', (e) => playSound(e.detail.soundFile, 1.0));
             document.addEventListener('statechange', saveState);
+            document.addEventListener('settingschange', saveSettings);
         }
 
         function initializeApp() {
@@ -146,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             App.Clock = Clock; // Make Clock available on the App namespace
             Clock.init(settings, state); // Initialize the Clock
-            UI.init(Clock);      // Initialize the new UI module
+            UI.init(Clock, settings);      // Initialize the new UI module
             Tools.init(settings); // Initialize the new Tools module
 
             setupEventListeners();
