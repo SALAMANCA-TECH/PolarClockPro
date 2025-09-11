@@ -144,10 +144,15 @@ const Settings = (function() {
             document.getElementById(toggleId).addEventListener('change', (e) => {
                 settings.separatorVisibility[key] = e.target.checked;
 
-                // If all individual toggles are off, turn off the global toggle
-                const allSeparatorsHidden = arcKeys.every(k => !settings.separatorVisibility[k]);
-                if (allSeparatorsHidden) {
-                    settings.showSeparators = false;
+                if (e.target.checked) {
+                    // If a separator is turned ON, the global setting should also be ON.
+                    settings.showSeparators = true;
+                } else {
+                    // If a separator is turned OFF, check if they are all off.
+                    const allSeparatorsHidden = arcKeys.every(k => !settings.separatorVisibility[k]);
+                    if (allSeparatorsHidden) {
+                        settings.showSeparators = false;
+                    }
                 }
 
                 saveSettings();
