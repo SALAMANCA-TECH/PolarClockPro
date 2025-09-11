@@ -3,13 +3,16 @@ const UI = (function() {
         main: document.getElementById('mainView'),
         settings: document.getElementById('settingsView'),
         tools: document.getElementById('toolsView'),
+        about: document.getElementById('aboutView'),
     };
     const navButtons = {
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToTools: document.getElementById('goToToolsBtn'),
         goToAlarms: document.getElementById('goToAlarmsBtn'),
+        goToAbout: document.getElementById('goToAboutBtn'),
         backFromSettings: document.getElementById('backToMainFromSettings'),
         backFromTools: document.getElementById('backToMainFromTools'),
+        backFromAbout: document.getElementById('backToMainFromAbout'),
     };
     const toolTabs = {
         timer: document.getElementById('timerTab'),
@@ -55,16 +58,77 @@ const UI = (function() {
         document.dispatchEvent(event);
     }
 
+    let aboutPageInitialized = false;
+
+    function initAboutPage() {
+        if (aboutPageInitialized) return;
+        aboutPageInitialized = true;
+
+        // Accordion logic
+        const accordionItems = document.querySelectorAll('.accordion-item');
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            header.addEventListener('click', () => {
+                // Close other items
+                accordionItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                        otherItem.querySelector('.accordion-content').style.padding = '0 15px';
+                    }
+                });
+                // Open clicked item
+                item.classList.toggle('active');
+                if (item.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.style.padding = '15px';
+                } else {
+                    content.style.maxHeight = null;
+                    content.style.padding = '0 15px';
+                }
+            });
+        });
+
+        // Content fetching
+        const contentIds = ['about', 'how-to-use', 'pomodoro', 'faq'];
+        contentIds.forEach(id => {
+            fetch(`assets/content/${id}.txt`)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById(`${id}-content`).innerText = text;
+                })
+                .catch(error => console.error(`Error fetching ${id}.txt:`, error));
+        });
+
+        // Feedback form
+        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+        submitFeedbackBtn.addEventListener('click', () => {
+            const title = document.getElementById('feedbackTitle').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const subject = `Feedback report: ${title || 'Feedback Report'}`;
+            const mailtoLink = `mailto:Salamanca-Tech42@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+            window.location.href = mailtoLink;
+        });
+    }
+
     return {
         init: function(clockModule) {
             Clock = clockModule; // Store the reference
             navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
             navButtons.goToTools.addEventListener('click', () => showView(views.tools));
+            navButtons.goToAbout.addEventListener('click', () => {
+                showView(views.about);
+                initAboutPage();
+            });
+
             navButtons.backFromSettings.addEventListener('click', () => {
                 showView(views.main);
                 document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
             });
             navButtons.backFromTools.addEventListener('click', () => showView(views.main));
+            navButtons.backFromAbout.addEventListener('click', () => showView(views.main));
+
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));

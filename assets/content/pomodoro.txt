@@ -1,0 +1,2 @@
+This is placeholder text for "The Pomodoro Technique" section.
+It will contain a short explanation of the Pomodoro Technique for users who may be unfamiliar with it.
