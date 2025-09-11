@@ -13,11 +13,33 @@ const Clock = (function() {
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
-        const useGradient = settings && settings.useGradient;
-        const gradient = ctx.createConicGradient(baseStartAngle, x, y);
-        gradient.addColorStop(0, colorLight);
-        gradient.addColorStop(1, colorDark);
-        ctx.strokeStyle = useGradient ? gradient : colorLight;
+
+        let strokeStyle;
+        if (settings.colorPreset === 'candy') {
+            // Create a gradient that gives a glossy, 3D effect
+            const innerRadius = radius - lineWidth / 2;
+            const outerRadius = radius + lineWidth / 2;
+            const gradient = ctx.createLinearGradient(x - innerRadius, y - innerRadius, x + outerRadius, y + outerRadius);
+
+            // Adding a bright highlight and a subtle shadow
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)'); // Top-left highlight
+            gradient.addColorStop(0.5, colorLight); // Main color
+            gradient.addColorStop(1, colorDark); // Bottom-right shadow
+
+            strokeStyle = gradient;
+        } else {
+            const useGradient = settings && settings.useGradient;
+            if (useGradient) {
+                const gradient = ctx.createConicGradient(baseStartAngle, x, y);
+                gradient.addColorStop(0, colorLight);
+                gradient.addColorStop(1, colorDark);
+                strokeStyle = gradient;
+            } else {
+                strokeStyle = colorLight;
+            }
+        }
+
+        ctx.strokeStyle = strokeStyle;
         ctx.beginPath();
         ctx.arc(x, y, radius, startAngle, endAngle);
         ctx.lineWidth = lineWidth;
@@ -190,6 +212,7 @@ const Clock = (function() {
 
         // Arcs are now always defined and drawn
         const arcs = [
+            { key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: dimensions.weekLineWidth, endAngle: weekEndAngle },
             { key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: dimensions.monthLineWidth, endAngle: monthEndAngle },
             { key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
             { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
@@ -434,9 +457,9 @@ const Clock = (function() {
             dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
             currentRadius -= (dimensions.monthLineWidth + renderedGap);
 
-            // Week arc is disabled, so set its dimensions to 0
-            dimensions.weekLineWidth = 0;
-            dimensions.weekRadius = 0;
+            dimensions.weekLineWidth = renderedLineWidth;
+            dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
+            currentRadius -= (dimensions.weekLineWidth + renderedGap);
         },
         update: function(newSettings, newState) {
             settings = newSettings;
