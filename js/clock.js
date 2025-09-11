@@ -151,15 +151,8 @@ const Clock = (function() {
     };
 
     const getTotalWeeksInYear = (year) => {
-        const date = new Date(year, 11, 31);
-        const day = date.getDay();
-        let week = getWeekOfYear(date);
-        // If Dec 31 is a Sunday, it's the last day of the last week.
-        // Otherwise, it's part of the first week of the next year.
-        if (day !== 0) {
-            week--;
-        }
-        return week;
+        const date = new Date(year, 11, 28); // December 28th is always in the last week of the year
+        return getWeekOfYear(date);
     };
 
     const getWeekOfYear = (date) => {

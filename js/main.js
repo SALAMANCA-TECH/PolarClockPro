@@ -17,11 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const colorPalettes = {
-            default: { dayOfWeek: { light: '#aaff82', dark: '#54a828' }, weekOfYear: { light: '#D05CE3', dark: '#4A0055' }, month: { light: '#81C784', dark: '#003D00' }, day: { light: '#82aaff', dark: '#2854a8' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' } },
-            neon: { dayOfWeek: { light: '#ccff00', dark: '#669900' }, weekOfYear: { light: '#ff00ff', dark: '#800080' }, month: { light: '#00ff00', dark: '#008000' }, day: { light: '#00ffff', dark: '#008080' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#0099ff', dark: '#0033cc' } },
-            pastel: { dayOfWeek: { light: '#e1f4a8', dark: '#8aa142' }, weekOfYear: { light: '#f4a8e1', dark: '#a1428a' }, month: { light: '#a8f4b6', dark: '#42a155' }, day: { light: '#a8e1f4', dark: '#428aa1' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8c4f4', dark: '#426aa1' } },
-            colorblind: { dayOfWeek: { light: '#f0e442', dark: '#8a8326' }, weekOfYear: { light: '#f7931a', dark: '#a45c05' }, month: { light: '#0072b2', dark: '#003c5c' }, day: { light: '#56b4e9', dark: '#2a5a75' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#cc79a7', dark: '#663d53' }, seconds: { light: '#cccccc', dark: '#666666' } },
-            candy: { dayOfWeek: { light: '#76FF03', dark: '#64DD17' }, weekOfYear: { light: '#FF4081', dark: '#C51162' }, month: { light: '#18FFFF', dark: '#00B8D4' }, day: { light: '#40C4FF', dark: '#00B0FF' }, hours: { light: '#FF9100', dark: '#FF6D00' }, minutes: { light: '#FFD600', dark: '#FFC400' }, seconds: { light: '#E040FB', dark: '#AA00FF' } }
+            default: { dayOfWeek: { light: '#aaff82', dark: '#54a828' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' }, weekOfYear: { light: '#82aaff', dark: '#2854a8' } },
+            neon: { dayOfWeek: { light: '#ccff00', dark: '#669900' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' }, weekOfYear: { light: '#82aaff', dark: '#2854a8' } },
+            pastel: { dayOfWeek: { light: '#e1f4a8', dark: '#8aa142' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' }, weekOfYear: { light: '#82aaff', dark: '#2854a8' } },
+            colorblind: { dayOfWeek: { light: '#f0e442', dark: '#8a8326' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#cc79a7', dark: '#663d53' }, seconds: { light: '#cccccc', dark: '#666666' }, weekOfYear: { light: '#82aaff', dark: '#2854a8' } },
+            candy: { dayOfWeek: { light: '#76FF03', dark: '#64DD17' }, month: { light: '#FF4081', dark: '#C51162' }, day: { light: '#18FFFF', dark: '#00B8D4' }, hours: { light: '#FF9100', dark: '#FF6D00' }, minutes: { light: '#FFD600', dark: '#FFC400' }, seconds: { light: '#40C4FF', dark: '#00B0FF' }, weekOfYear: { light: '#E040FB', dark: '#AA00FF' } }
         };
 
         function update(timestamp) {
@@ -46,9 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedState = localStorage.getItem('polarClockState');
             if (savedState) {
                 Object.assign(state, JSON.parse(savedState));
-                state.timer.isRunning = false;
-                state.stopwatch.isRunning = false;
-                state.pomodoro.isRunning = false;
+                if (state.timer) state.timer.isRunning = false;
+                if (state.stopwatch) state.stopwatch.isRunning = false;
+                if (state.pomodoro) state.pomodoro.isRunning = false;
             }
         }
         function saveSettings() { localStorage.setItem('polarClockSettings', JSON.stringify(settings)); }
