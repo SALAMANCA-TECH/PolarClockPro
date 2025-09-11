@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/settings.css">
     <style>
     /* General page styling */
     body {
@@ -597,112 +598,135 @@
                 <button id="backToMainFromSettings" class="back-button">Back</button>
                 <h2 class="view-title">Settings</h2>
             </div>
-            <div class="settings-section">
-                <h3>Time Format</h3>
-                <div class="format-buttons">
-                    <button id="format12" class="format-button">12 Hour</button>
-                    <button id="format24" class="format-button">24 Hour</button>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Inverse Mode</h3>
-                <div class="setting-toggle">
-                    <span>Inverse Mode</span>
-                    <label class="switch">
-                        <input type="checkbox" id="inverseModeToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Label Display</h3>
-                <div class="display-mode-buttons">
-                    <button id="modeStandard" class="display-mode-button">Standard</button>
-                    <button id="modePercentage" class="display-mode-button">Percentage</button>
-                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Color Scheme</h3>
-                <div class="color-preset-buttons">
-                    <button id="presetDefault" class="color-preset-button">Default</button>
-                    <button id="presetNeon" class="color-preset-button">Neon</button>
-                    <button id="presetPastel" class="color-preset-button">Pastel</button>
-                    <button id="presetColorblind" class="color-preset-button">Colorblind</button>
-                    <button id="presetCandy" class="color-preset-button">Candy</button>
-                </div>
-                <div class="setting-toggle">
-                    <span>Gradient</span>
-                    <label class="switch">
-                        <input type="checkbox" id="gradientToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h3>Separators</h3>
-                <div class="flex w-full justify-center gap-4">
-                    <div class="flex-1">
-                        <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
-                        <div class="format-buttons">
-                            <button id="separatorsShow" class="format-button">Show</button>
-                            <button id="separatorsHide" class="format-button">Hide</button>
+
+            <div class="accordion">
+                <!-- Section 1: Clock & Time -->
+                <div class="accordion-item">
+                    <button class="accordion-header">Clock & Time</button>
+                    <div class="accordion-content">
+                        <div class="settings-section">
+                            <h3>Time Format</h3>
+                            <div class="format-buttons">
+                                <button id="format12" class="format-button">12 Hour</button>
+                                <button id="format24" class="format-button">24 Hour</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
-                        <div class="format-buttons">
-                            <button id="modeStandardSeparators" class="format-button">Standard</button>
-                            <button id="modeRuler" class="format-button">Ruler</button>
+                        <div class="settings-section">
+                            <h3>Inverse Mode</h3>
+                            <div class="setting-toggle">
+                                <span>Inverse Mode</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="inverseModeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>Label Display</h3>
+                            <div class="display-mode-buttons">
+                                <button id="modeStandard" class="display-mode-button">Standard</button>
+                                <button id="modePercentage" class="display-mode-button">Percentage</button>
+                                <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="settings-section">
-                <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
-                    <div class="flex-1 text-center">
-                        <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
-                    </div>
-                    <div class="flex-1 text-center">
-                        <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
+
+                <!-- Section 2: Visuals & Colors -->
+                <div class="accordion-item">
+                    <button class="accordion-header">Visuals & Colors</button>
+                    <div class="accordion-content">
+                        <div class="settings-section">
+                            <h3>Color Scheme</h3>
+                            <div class="color-preset-buttons">
+                                <button id="presetDefault" class="color-preset-button">Default</button>
+                                <button id="presetNeon" class="color-preset-button">Neon</button>
+                                <button id="presetPastel" class="color-preset-button">Pastel</button>
+                                <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                                <button id="presetCandy" class="color-preset-button">Candy</button>
+                            </div>
+                            <div class="setting-toggle">
+                                <span>Gradient</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="gradientToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>Separators</h3>
+                            <div class="flex w-full justify-center gap-4">
+                                <div class="flex-1">
+                                    <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
+                                    <div class="format-buttons">
+                                        <button id="separatorsShow" class="format-button">Show</button>
+                                        <button id="separatorsHide" class="format-button">Hide</button>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
+                                    <div class="format-buttons">
+                                        <button id="modeStandardSeparators" class="format-button">Standard</button>
+                                        <button id="modeRuler" class="format-button">Ruler</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="w-full max-w-xs space-y-2">
-                    <!-- Combined Toggles -->
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Day of Week</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Month</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Day</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Hours</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Minutes</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Seconds</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="flex-1 text-left">Week of Year</span>
-                        <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
-                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
+
+                <!-- Section 3: Arcs & Separators Visibility -->
+                <div class="accordion-item">
+                    <button class="accordion-header">Arcs & Separators Visibility</button>
+                    <div class="accordion-content">
+                        <div class="settings-section">
+                            <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
+                                <div class="flex-1 text-center">
+                                    <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
+                                </div>
+                                <div class="flex-1 text-center">
+                                    <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
+                                </div>
+                            </div>
+                            <div class="w-full max-w-xs space-y-2">
+                                <!-- Combined Toggles -->
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Day of Week</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Month</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Day</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Hours</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Minutes</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Seconds</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="flex-1 text-left">Week of Year</span>
+                                    <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
+                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
