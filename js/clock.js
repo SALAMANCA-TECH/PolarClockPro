@@ -143,6 +143,38 @@ const Clock = (function() {
         }
     };
 
+    const drawAdvancedRulerSeparators = (radius, majorDivisions, minorDivisions, arcLineWidth, arcKey) => {
+        if (!radius || radius <= 0) return;
+
+        const centerlineRadius = radius;
+        const fullOuterRadius = radius + (arcLineWidth / 2);
+
+        ctx.strokeStyle = '#121212';
+
+        for (let i = 0; i < majorDivisions; i++) {
+            for (let j = 1; j < minorDivisions; j++) {
+                const angle = baseStartAngle + ((i + j / minorDivisions) / majorDivisions) * Math.PI * 2;
+
+                let lineWidth = 1.5; // Default minor tick width
+                if (arcKey === 'hours' && j === minorDivisions / 2) {
+                    lineWidth = 2.0; // Thicker half-hour marker
+                }
+
+                ctx.lineWidth = lineWidth;
+
+                const startX = dimensions.centerX + Math.cos(angle) * centerlineRadius;
+                const startY = dimensions.centerY + Math.sin(angle) * centerlineRadius;
+                const endX = dimensions.centerX + Math.cos(angle) * fullOuterRadius;
+                const endY = dimensions.centerY + Math.sin(angle) * fullOuterRadius;
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+        }
+    };
+
     const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
     const getDayOfWeek = (date) => {
         // Monday is 1, Sunday is 7
@@ -268,9 +300,19 @@ const Clock = (function() {
             }
 
             // Other arcs always use standard separators
-            if (settings.arcVisibility.hours) drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+            if (settings.arcVisibility.hours) {
+                drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+                if (settings.separatorMode === 'ruler') {
+                    drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
+                }
+            }
             if (settings.arcVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
-            if (settings.arcVisibility.month) drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+            if (settings.arcVisibility.month) {
+                drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+                if (settings.separatorMode === 'ruler') {
+                    drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
+                }
+            }
             if (settings.arcVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
             if (settings.arcVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
