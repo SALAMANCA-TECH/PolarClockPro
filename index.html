@@ -15,8 +15,7 @@
     /* General page styling */
     body {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column; /* Main view: nav on top */
         height: 100vh;
         margin: 0;
         background-color: #121212;
@@ -24,21 +23,29 @@
         font-family: 'Bahnschrift', sans-serif;
         overflow: hidden;
     }
+    body.panel-open {
+        flex-direction: row; /* Panel view: UI on side */
+    }
 
     /* Canvas container */
     .canvas-container {
         position: relative;
-        height: 100vh;
-        width: 100vh; /* Base size on viewport height */
-        max-width: calc(100vw - 380px); /* Guarantees space for the UI panel */
-        aspect-ratio: 1 / 1; /* This is key: it forces the element to be a perfect square */
-        flex-shrink: 0;
+        flex-grow: 1; /* Fill available space */
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    body.panel-open .canvas-container {
+        order: 1; /* Ensures clock is on the left */
     }
 
     canvas {
         display: block;
-        width: 100%;
-        height: 100%;
+        aspect-ratio: 1 / 1;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     /* Digital clock display */
@@ -65,16 +72,33 @@
 
     /* --- UI STYLES --- */
     .ui-container {
-        flex-grow: 1;
-        min-width: 380px;
-        height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding: 2rem;
         box-sizing: border-box;
+        transition: all 0.3s ease-in-out;
+
+        /* Default state: Top Nav Bar */
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+    body:not(.panel-open) .ui-container {
+        justify-content: center;
+    }
+    body.panel-open .ui-container {
+        /* Panel state: Side Panel */
+        order: 2; /* Ensures panel is on the right */
+        height: 100vh;
+        width: auto;
+        min-width: 340px;
+        padding: 2rem;
         overflow-y: auto;
+        justify-content: flex-start;
+        background-color: rgba(20, 20, 20, 0.85);
+        backdrop-filter: blur(8px);
+        border-left: 1px solid #333;
     }
 
     .ui-content {
@@ -430,57 +454,56 @@
 
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
-        body {
+        body, body.panel-open {
             flex-direction: column;
-            justify-content: flex-start; /* Align content to the top */
-            height: auto; /* Allow body to grow as needed */
-            overflow-y: auto; /* Allow scrolling */
+            justify-content: flex-start;
+            height: auto;
+            overflow-y: auto;
         }
 
         .canvas-container {
-            width: 90vw; /* Make canvas responsive to viewport width */
-            height: 90vw; /* Maintain aspect ratio */
-            max-width: 100%; /* Override desktop max-width */
-            margin-top: 5vh; /* Add some space at the top */
-            margin-bottom: 5vh; /* Add space between clock and UI */
+            width: 90vw;
+            height: 90vw;
+            max-width: 100%;
+            margin-top: 5vh;
+            margin-bottom: 5vh;
+            flex-grow: 0;
+        }
+
+        body.panel-open .canvas-container {
+            width: 90vw;
+            height: 90vw;
         }
 
         .ui-container {
             min-width: 100%;
             height: auto;
-            flex-grow: 0; /* Prevent it from growing */
+            flex-grow: 0;
             padding: 1rem;
-            justify-content: flex-start;
+        }
+
+        body.panel-open .ui-container {
+            min-width: 100%;
+            height: auto;
+            background-color: transparent;
+            backdrop-filter: none;
+            border-left: none;
         }
 
         .main-nav-buttons {
-            flex-direction: row; /* Buttons side-by-side */
-            flex-wrap: wrap; /* Allow wrapping on very small screens */
+            flex-direction: row;
+            flex-wrap: wrap;
             gap: 5px;
         }
 
         .main-nav-button {
-            flex-grow: 1; /* Allow buttons to grow and fill space */
-            font-size: 1rem; /* Slightly smaller font for mobile */
+            flex-grow: 1;
+            font-size: 1rem;
         }
     }
     </style>
 </head>
 <body>
-    <!-- Canvas Container for the Clock -->
-    <div class="canvas-container">
-        <div id="active-clock-name" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 1.5em; color: #fff; z-index: 10;"></div>
-        <canvas id="polarClockCanvas"></canvas>
-        <div id="digitalDisplay">
-            <div id="digitalTime"></div>
-            <!-- FIX: Added the missing ID to this div -->
-            <div id="digitalDate"></div>
-        </div>
-        <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
-            <!-- Miniature clocks will be added here -->
-        </div>
-    </div>
-
     <!-- UI Container for Controls -->
     <div class="ui-container">
         <!-- Main Navigation View -->
@@ -779,6 +802,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Canvas Container for the Clock -->
+    <div class="canvas-container">
+        <div id="active-clock-name" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 1.5em; color: #fff; z-index: 10;"></div>
+        <canvas id="polarClockCanvas"></canvas>
+        <div id="digitalDisplay">
+            <div id="digitalTime"></div>
+            <!-- FIX: Added the missing ID to this div -->
+            <div id="digitalDate"></div>
+        </div>
+        <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
+            <!-- Miniature clocks will be added here -->
         </div>
     </div>
 

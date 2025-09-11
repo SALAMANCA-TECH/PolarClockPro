@@ -31,14 +31,14 @@ const UI = (function() {
     let Clock; // To hold the clock module reference
 
     function showView(viewToShow) {
-        const isClockRunningView = viewToShow === views.main || viewToShow === views.settings;
-        if (Clock) {
-            if (isClockRunningView) {
-                Clock.resume();
-            } else {
-                Clock.pause();
-            }
+        // Manage layout state with a class on the body
+        if (viewToShow === views.main) {
+            document.body.classList.remove('panel-open');
+        } else {
+            document.body.classList.add('panel-open');
         }
+
+        // With the new layout, the clock is always visible, so we no longer need to pause it.
         Object.values(views).forEach(v => v.style.display = 'none');
         viewToShow.style.display = 'flex';
     }
