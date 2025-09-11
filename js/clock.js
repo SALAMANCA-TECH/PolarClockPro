@@ -144,17 +144,38 @@ const Clock = (function() {
     };
 
     const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+    const getDayOfWeek = (date) => {
+        // Monday is 1, Sunday is 7
+        const day = date.getDay();
+        return day === 0 ? 7 : day;
+    };
+
+    const getTotalWeeksInYear = (year) => {
+        const date = new Date(year, 11, 31);
+        const day = date.getDay();
+        let week = getWeekOfYear(date);
+        // If Dec 31 is a Sunday, it's the last day of the last week.
+        // Otherwise, it's part of the first week of the next year.
+        if (day !== 0) {
+            week--;
+        }
+        return week;
+    };
+
     const getWeekOfYear = (date) => {
         const start = new Date(date.getFullYear(), 0, 1);
         const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
         const oneDay = 1000 * 60 * 60 * 24;
         const day = Math.floor(diff / oneDay);
-        return Math.ceil(day / 7);
+        return Math.ceil((day + 1) / 7);
     };
 
     const getLabelText = (unit, now) => {
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), milliseconds = now.getMilliseconds();
         const daysInMonth = getDaysInMonth(year, month);
+        const dayOfWeek = getDayOfWeek(now);
+        const weekOfYear = getWeekOfYear(now);
+        const totalWeeks = getTotalWeeksInYear(year);
 
         switch (settings.labelDisplayMode) {
             case 'percentage':
@@ -166,7 +187,8 @@ const Clock = (function() {
                 if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
                 if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
                 if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                if (unit === 'week') percent = (getWeekOfYear(now) / 52) * 100;
+                if (unit === 'dayOfWeek') percent = (dayOfWeek / 7) * 100;
+                if (unit === 'weekOfYear') percent = (weekOfYear / totalWeeks) * 100;
                 return `${Math.floor(percent)}%`;
             case 'remainder':
                 if (unit === 'seconds') return 59 - seconds;
@@ -174,7 +196,8 @@ const Clock = (function() {
                 if (unit === 'hours') return 11 - (hours % 12);
                 if (unit === 'day') return daysInMonth - date;
                 if (unit === 'month') return 11 - month;
-                if (unit === 'week') return 52 - getWeekOfYear(now);
+                if (unit === 'dayOfWeek') return 7 - dayOfWeek;
+                if (unit === 'weekOfYear') return totalWeeks - weekOfYear;
                 return '';
             default: // standard
                 if (unit === 'seconds') return seconds.toString().padStart(2, '0');
@@ -188,7 +211,8 @@ const Clock = (function() {
                 }
                 if (unit === 'day') return date.toString();
                 if (unit === 'month') return (month + 1).toString().padStart(2, '0');
-                if (unit === 'week') return getWeekOfYear(now);
+                if (unit === 'dayOfWeek') return dayOfWeek.toString();
+                if (unit === 'weekOfYear') return weekOfYear.toString();
                 return '';
         }
     };
@@ -200,24 +224,28 @@ const Clock = (function() {
 
         const now = new Date();
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+        const dayOfWeek = getDayOfWeek(now);
         const daysInMonth = getDaysInMonth(year, month);
         const weekOfYear = getWeekOfYear(now);
+        const totalWeeks = getTotalWeeksInYear(year);
 
+        const dayOfWeekEndAngle = baseStartAngle + (dayOfWeek / 7) * Math.PI * 2;
         const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
         const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
-        const weekEndAngle = baseStartAngle + (weekOfYear / 52) * Math.PI * 2;
         const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
         const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
         const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+        const weekOfYearEndAngle = baseStartAngle + (weekOfYear / totalWeeks) * Math.PI * 2;
 
         // Arcs are now always defined and drawn
         const arcs = [
-            { key: 'week', radius: dimensions.weekRadius, colors: settings.currentColors.week, lineWidth: dimensions.weekLineWidth, endAngle: weekEndAngle },
+            { key: 'dayOfWeek', radius: dimensions.dayOfWeekRadius, colors: settings.currentColors.dayOfWeek, lineWidth: dimensions.dayOfWeekLineWidth, endAngle: dayOfWeekEndAngle },
             { key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: dimensions.monthLineWidth, endAngle: monthEndAngle },
             { key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
             { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
             { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, endAngle: minutesEndAngle },
-            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle }
+            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle },
+            { key: 'weekOfYear', radius: dimensions.weekOfYearRadius, colors: settings.currentColors.weekOfYear, lineWidth: dimensions.weekOfYearLineWidth, endAngle: weekOfYearEndAngle }
         ];
 
         if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
@@ -250,6 +278,8 @@ const Clock = (function() {
             drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
             drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
             drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+            drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
+            drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
 
         lastNow = now;
@@ -424,42 +454,44 @@ const Clock = (function() {
             dimensions.centerY = canvas.height / 2;
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
-
-            // Define the final, rendered line width and gap size as a fraction of baseRadius.
-            // These fractions are calculated from the previous state to maintain consistency
-            // and implement the requested changes.
-            // Desired rendered line width = (6/57) * baseRadius
-            // Desired rendered gap = (7.5/57) * 0.25 * baseRadius = (1.875/57) * baseRadius
             const renderedLineWidth = (6 / 57) * baseRadius;
             const renderedGap = (1.875 / 57) * baseRadius;
 
             let currentRadius = baseRadius;
 
-            // For each arc, we use the pre-calculated rendered sizes.
-            // The `dimensions` object will store these final pixel values.
+            // Outermost arc: Week of the Year
+            dimensions.weekOfYearLineWidth = renderedLineWidth;
+            dimensions.weekOfYearRadius = currentRadius - (dimensions.weekOfYearLineWidth / 2);
+            currentRadius -= (dimensions.weekOfYearLineWidth + renderedGap);
+
+            // Seconds
             dimensions.secondsLineWidth = renderedLineWidth;
             dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
             currentRadius -= (dimensions.secondsLineWidth + renderedGap);
 
+            // Minutes
             dimensions.minutesLineWidth = renderedLineWidth;
             dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
             currentRadius -= (dimensions.minutesLineWidth + renderedGap);
 
+            // Hours
             dimensions.hoursLineWidth = renderedLineWidth;
             dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
             currentRadius -= (dimensions.hoursLineWidth + renderedGap);
 
+            // Day of the Month
             dimensions.dayLineWidth = renderedLineWidth;
             dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
             currentRadius -= (dimensions.dayLineWidth + renderedGap);
 
+            // Month of the Year
             dimensions.monthLineWidth = renderedLineWidth;
             dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
             currentRadius -= (dimensions.monthLineWidth + renderedGap);
 
-            dimensions.weekLineWidth = renderedLineWidth;
-            dimensions.weekRadius = currentRadius - (dimensions.weekLineWidth / 2);
-            currentRadius -= (dimensions.weekLineWidth + renderedGap);
+            // Innermost arc: Day of the Week
+            dimensions.dayOfWeekLineWidth = renderedLineWidth;
+            dimensions.dayOfWeekRadius = currentRadius - (dimensions.dayOfWeekLineWidth / 2);
         },
         update: function(newSettings, newState) {
             settings = newSettings;
