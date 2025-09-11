@@ -31,14 +31,14 @@ const UI = (function() {
     let Clock; // To hold the clock module reference
 
     function showView(viewToShow) {
-        // Manage layout state with a class on the body
+        // The clock is always visible in the desktop layout, so we no longer need to pause it.
+        // The panel-open class will be used for mobile-specific layout changes.
         if (viewToShow === views.main) {
             document.body.classList.remove('panel-open');
         } else {
             document.body.classList.add('panel-open');
         }
 
-        // With the new layout, the clock is always visible, so we no longer need to pause it.
         Object.values(views).forEach(v => v.style.display = 'none');
         viewToShow.style.display = 'flex';
     }
