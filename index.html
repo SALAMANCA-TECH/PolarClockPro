@@ -580,110 +580,50 @@
                 </div>
             </div>
             <div class="settings-section">
-                <h3>Separator Controls</h3>
-                <div id="separator-toggles" class="w-full max-w-xs space-y-2">
-                    <div class="setting-toggle">
-                        <span>Day of Week</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorDayOfWeek">
-                            <span class="slider"></span>
-                        </label>
+                <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
+                    <div class="flex-1 text-center">
+                        <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Month</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorMonth">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Day</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorDay">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Hours</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorHours">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Minutes</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorMinutes">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Seconds</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorSeconds">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-toggle">
-                        <span>Week of Year</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleSeparatorWeekOfYear">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex-1 text-center">
+                        <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
                     </div>
                 </div>
-            </div>
-            <div class="settings-section">
-                <h3>Visible Arcs</h3>
-                <div id="arc-toggles" class="w-full max-w-xs space-y-2">
-                    <div class="setting-toggle">
-                        <span>Day of Week</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcDayOfWeek">
-                            <span class="slider"></span>
-                        </label>
+                <div class="w-full max-w-xs space-y-2">
+                    <!-- Combined Toggles -->
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Day of Week</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Month of Year</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcMonth">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Month</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Day of Month</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcDay">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Day</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Hours</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcHours">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Hours</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Minutes</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcMinutes">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Minutes</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Seconds</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcSeconds">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Seconds</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Week of Year</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleArcWeekOfYear">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between">
+                        <span class="flex-1 text-left">Week of Year</span>
+                        <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
+                        <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
                     </div>
                 </div>
             </div>
