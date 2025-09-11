@@ -290,31 +290,38 @@ const Clock = (function() {
         if (settings.showSeparators) {
             const isRulerMode = settings.separatorMode === 'ruler';
 
-            // Ruler mode only applies to minutes and seconds
-            if (isRulerMode) {
-                drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
-                drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-            } else {
-                drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
-                drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+            if (settings.arcVisibility.seconds && settings.separatorVisibility.seconds) {
+                if (isRulerMode) {
+                    drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                } else {
+                    drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                }
+            }
+
+            if (settings.arcVisibility.minutes && settings.separatorVisibility.minutes) {
+                if (isRulerMode) {
+                    drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                } else {
+                    drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                }
             }
 
             // Other arcs always use standard separators
-            if (settings.arcVisibility.hours) {
+            if (settings.arcVisibility.hours && settings.separatorVisibility.hours) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
                 if (settings.separatorMode === 'ruler') {
                     drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
                 }
             }
-            if (settings.arcVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
-            if (settings.arcVisibility.month) {
+            if (settings.arcVisibility.day && settings.separatorVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
+            if (settings.arcVisibility.month && settings.separatorVisibility.month) {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
                 if (settings.separatorMode === 'ruler') {
                     drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
                 }
             }
-            if (settings.arcVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
-            if (settings.arcVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
+            if (settings.arcVisibility.dayOfWeek && settings.separatorVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
+            if (settings.arcVisibility.weekOfYear && settings.separatorVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
 
         lastNow = now;

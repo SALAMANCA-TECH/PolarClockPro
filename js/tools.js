@@ -406,8 +406,26 @@ const Tools = (function() {
 
     // --- Public API ---
     return {
-        init: function(appSettings) {
+        init: function(appSettings, initialState) {
             settings = appSettings;
+
+            if (initialState) {
+                // Restore state, ensuring timers aren't running on load
+                if (initialState.timer) {
+                    Object.assign(state.timer, initialState.timer);
+                    state.timer.isRunning = false;
+                }
+                if (initialState.pomodoro) {
+                    Object.assign(state.pomodoro, initialState.pomodoro);
+                    state.pomodoro.isRunning = false;
+                    state.pomodoro.alarmPlaying = false; // Ensure alarm isn't stuck on
+                }
+                if (initialState.stopwatch) {
+                    Object.assign(state.stopwatch, initialState.stopwatch);
+                    state.stopwatch.isRunning = false;
+                }
+            }
+
             setupAllEventListeners();
             updateLapDisplay();
             updateButtonStates();
