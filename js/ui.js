@@ -26,6 +26,17 @@ const UI = (function() {
     const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
 
     let Clock; // To hold the clock module reference
+    let settings; // To hold the settings object reference
+
+    const arcToggles = {
+        dayOfWeek: document.getElementById('toggleArcDayOfWeek'),
+        month: document.getElementById('toggleArcMonth'),
+        day: document.getElementById('toggleArcDay'),
+        hours: document.getElementById('toggleArcHours'),
+        minutes: document.getElementById('toggleArcMinutes'),
+        seconds: document.getElementById('toggleArcSeconds'),
+        weekOfYear: document.getElementById('toggleArcWeekOfYear')
+    };
 
     function showView(viewToShow) {
         const isMainView = viewToShow === views.main;
@@ -56,8 +67,9 @@ const UI = (function() {
     }
 
     return {
-        init: function(clockModule) {
+        init: function(clockModule, appSettings) {
             Clock = clockModule; // Store the reference
+            settings = appSettings; // Store the reference
             navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
             navButtons.goToTools.addEventListener('click', () => showView(views.tools));
             navButtons.backFromSettings.addEventListener('click', () => {
@@ -73,6 +85,22 @@ const UI = (function() {
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
+
+            for (const arcKey in arcToggles) {
+                const toggle = arcToggles[arcKey];
+                if (toggle) {
+                    toggle.addEventListener('change', (e) => {
+                        const numVisible = Object.values(settings.arcVisibility).filter(v => v).length;
+                        if (numVisible === 1 && !e.target.checked) {
+                            e.target.checked = true;
+                            return;
+                        }
+                        settings.arcVisibility[arcKey] = e.target.checked;
+                        document.dispatchEvent(new CustomEvent('settingschange'));
+                        Clock.resize();
+                    });
+                }
+            }
         },
         handleActiveButton: handleActiveButton
     };

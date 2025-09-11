@@ -246,7 +246,7 @@ const Clock = (function() {
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
         }
-        arcs.forEach(arc => {
+        arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
                 drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                 arc.text = getLabelText(arc.key, now);
@@ -268,11 +268,11 @@ const Clock = (function() {
             }
 
             // Other arcs always use standard separators
-            drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-            drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
-            drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-            drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
-            drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
+            if (settings.arcVisibility.hours) drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+            if (settings.arcVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
+            if (settings.arcVisibility.month) drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
+            if (settings.arcVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
+            if (settings.arcVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
 
         lastNow = now;
@@ -451,41 +451,35 @@ const Clock = (function() {
             const thinnerLineWidth = renderedLineWidth * 0.5;
             const renderedGap = (1.875 / 57) * baseRadius;
 
-            let currentRadius = baseRadius;
+            const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek'];
+            const arcLineWidths = {
+                weekOfYear: thinnerLineWidth,
+                seconds: renderedLineWidth,
+                minutes: renderedLineWidth,
+                hours: renderedLineWidth,
+                day: renderedLineWidth,
+                month: renderedLineWidth,
+                dayOfWeek: thinnerLineWidth
+            };
 
-            // Outermost arc: Week of the Year
-            dimensions.weekOfYearLineWidth = thinnerLineWidth;
-            dimensions.weekOfYearRadius = currentRadius - (dimensions.weekOfYearLineWidth / 2);
-            currentRadius -= (dimensions.weekOfYearLineWidth + renderedGap);
+            const visibleArcs = arcOrder.filter(arcKey => settings.arcVisibility[arcKey]);
+            const numVisible = visibleArcs.length;
+            const totalArcWidth = visibleArcs.reduce((total, arcKey) => total + arcLineWidths[arcKey], 0);
+            const totalGap = (numVisible > 0) ? (numVisible - 1) * renderedGap : 0;
+            const totalHeight = totalArcWidth + totalGap;
 
-            // Seconds
-            dimensions.secondsLineWidth = renderedLineWidth;
-            dimensions.secondsRadius = currentRadius - (dimensions.secondsLineWidth / 2);
-            currentRadius -= (dimensions.secondsLineWidth + renderedGap);
+            let currentRadius = (baseRadius + totalHeight) / 2;
 
-            // Minutes
-            dimensions.minutesLineWidth = renderedLineWidth;
-            dimensions.minutesRadius = currentRadius - (dimensions.minutesLineWidth / 2);
-            currentRadius -= (dimensions.minutesLineWidth + renderedGap);
-
-            // Hours
-            dimensions.hoursLineWidth = renderedLineWidth;
-            dimensions.hoursRadius = currentRadius - (dimensions.hoursLineWidth / 2);
-            currentRadius -= (dimensions.hoursLineWidth + renderedGap);
-
-            // Day of the Month
-            dimensions.dayLineWidth = renderedLineWidth;
-            dimensions.dayRadius = currentRadius - (dimensions.dayLineWidth / 2);
-            currentRadius -= (dimensions.dayLineWidth + renderedGap);
-
-            // Month of the Year
-            dimensions.monthLineWidth = renderedLineWidth;
-            dimensions.monthRadius = currentRadius - (dimensions.monthLineWidth / 2);
-            currentRadius -= (dimensions.monthLineWidth + renderedGap);
-
-            // Innermost arc: Day of the Week
-            dimensions.dayOfWeekLineWidth = thinnerLineWidth;
-            dimensions.dayOfWeekRadius = currentRadius - (dimensions.dayOfWeekLineWidth / 2);
+            for (const arcKey of arcOrder) {
+                if (settings.arcVisibility[arcKey]) {
+                    const lineWidth = arcLineWidths[arcKey];
+                    dimensions[`${arcKey}LineWidth`] = lineWidth;
+                    dimensions[`${arcKey}Radius`] = currentRadius - (lineWidth / 2);
+                    currentRadius -= (lineWidth + renderedGap);
+                } else {
+                    dimensions[`${arcKey}Radius`] = 0;
+                }
+            }
         },
         update: function(newSettings, newState) {
             settings = newSettings;
