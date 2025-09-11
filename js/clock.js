@@ -13,10 +13,6 @@ const Clock = (function() {
     let resetAnimations = {};
     const animationDuration = 1500; // 1.5 seconds
 
-    const easeOutCubic = (x) => {
-        return 1 - Math.pow(1 - x, 3);
-    };
-
     const hasCompletedCycle = (unit, now, lastNow) => {
         switch (unit) {
             case 'seconds':
@@ -24,6 +20,9 @@ const Clock = (function() {
             case 'minutes':
                 return lastNow.getMinutes() === 59 && now.getMinutes() === 0;
             case 'hours':
+                // This handles both 12-hour (e.g., 11 AM -> 12 PM) and 24-hour (e.g., 23:00 -> 00:00) rollovers.
+                // 11 % 12 === 11, and 12 % 12 === 0.
+                // 23 % 12 === 11, and 0 % 12 === 0.
                 return lastNow.getHours() % 12 === 11 && now.getHours() % 12 === 0;
             case 'day':
                 return now.getDate() === 1 && lastNow.getDate() > 1;
@@ -324,10 +323,15 @@ const Clock = (function() {
                     const elapsed = nowMs - anim.startTime;
                     if (elapsed < animationDuration) {
                         const progress = elapsed / animationDuration;
-                        const easedProgress = easeOutCubic(progress);
-                        const animatedStartAngle = baseStartAngle + (easedProgress * Math.PI * 2);
-
-                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        if (settings.inverseMode && globalState.mode === 'clock') {
+                            // In inverse mode, the arc "fills up" from the top to represent the new cycle's remainder
+                            const animatedEndAngle = baseStartAngle + (progress * Math.PI * 2);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        } else {
+                            // In normal mode, the arc "wipes" itself clean by the tail chasing the head
+                            const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        }
                         isAnimatingThisFrame = true;
                     } else {
                         anim.isAnimating = false;
