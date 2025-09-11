@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Initialize Settings: Load settings from localStorage and set up event listeners for settings controls.
     Settings.init();
-    const settings = Settings.get();
+    let settings = Settings.get();
 
     // 2. Load Application State: Load tool states and other app-wide states from localStorage.
     let appState = {
@@ -89,6 +89,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (Clock && typeof Clock.resize === 'function') {
             Clock.resize();
         }
+    });
+
+    // A generic event for when a setting changes that doesn't require a resize but needs to be re-fetched.
+    document.addEventListener('settings-changed', () => {
+        settings = Settings.get();
     });
 
     // 6. Start the application

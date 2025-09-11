@@ -104,8 +104,16 @@ const Settings = (function() {
         ['default', 'neon', 'pastel', 'colorblind', 'candy'].forEach(preset => {
             document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
         });
-        document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
-        document.getElementById('inverseModeToggle').addEventListener('change', (e) => { settings.inverseMode = e.target.checked; saveSettings(); });
+        document.getElementById('gradientToggle').addEventListener('change', (e) => {
+            settings.useGradient = e.target.checked;
+            saveSettings();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+        document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
+            settings.inverseMode = e.target.checked;
+            saveSettings();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
 
         // Separator mode listeners
         document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); });
