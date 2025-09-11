@@ -31,9 +31,9 @@ const UI = (function() {
     let Clock; // To hold the clock module reference
 
     function showView(viewToShow) {
-        const isMainView = viewToShow === views.main;
+        const isClockRunningView = viewToShow === views.main || viewToShow === views.settings;
         if (Clock) {
-            if (isMainView) {
+            if (isClockRunningView) {
                 Clock.resume();
             } else {
                 Clock.pause();
