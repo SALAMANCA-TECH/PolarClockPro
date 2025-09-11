@@ -10,6 +10,44 @@ const Clock = (function() {
     let lastNow = new Date();
     let isFirstFrameDrawn = false;
     let animationFrameId = null;
+    let resetAnimations = {};
+    const animationDuration = 1500; // 1.5 seconds
+
+    const easeOutBounce = (x) => {
+        const n1 = 7.5625;
+        const d1 = 2.75;
+
+        if (x < 1 / d1) {
+            return n1 * x * x;
+        } else if (x < 2 / d1) {
+            return n1 * (x -= 1.5 / d1) * x + 0.75;
+        } else if (x < 2.5 / d1) {
+            return n1 * (x -= 2.25 / d1) * x + 0.9375;
+        } else {
+            return n1 * (x -= 2.625 / d1) * x + 0.984375;
+        }
+    };
+
+    const hasCompletedCycle = (unit, now, lastNow) => {
+        switch (unit) {
+            case 'seconds':
+                return lastNow.getSeconds() === 59 && now.getSeconds() === 0;
+            case 'minutes':
+                return lastNow.getMinutes() === 59 && now.getMinutes() === 0;
+            case 'hours':
+                return lastNow.getHours() % 12 === 11 && now.getHours() % 12 === 0;
+            case 'day':
+                return now.getDate() === 1 && lastNow.getDate() > 1;
+            case 'month':
+                return now.getMonth() === 0 && lastNow.getMonth() === 11;
+            case 'dayOfWeek':
+                return getDayOfWeek(now) === 1 && getDayOfWeek(lastNow) === 7;
+            case 'weekOfYear':
+                return getWeekOfYear(now) === 1 && getWeekOfYear(lastNow) > 1;
+            default:
+                return false;
+        }
+    };
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
@@ -279,15 +317,42 @@ const Clock = (function() {
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
         }
+
+        const nowMs = now.getTime();
         arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                if (settings.inverseMode && globalState.mode === 'clock') {
-                    // In inverse mode, draw from the current time to the end of the circle
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                } else {
-                    // Normal mode: draw from the start to the current time
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+
+                if (hasCompletedCycle(arc.key, now, lastNow)) {
+                    if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
+                        resetAnimations[arc.key] = { isAnimating: true, startTime: nowMs };
+                    }
                 }
+
+                const anim = resetAnimations[arc.key];
+                let isAnimatingThisFrame = false;
+
+                if (anim && anim.isAnimating) {
+                    const elapsed = nowMs - anim.startTime;
+                    if (elapsed < animationDuration) {
+                        const progress = elapsed / animationDuration;
+                        const easedProgress = easeOutBounce(progress);
+                        const animatedStartAngle = baseStartAngle + (easedProgress * Math.PI * 2);
+
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        isAnimatingThisFrame = true;
+                    } else {
+                        anim.isAnimating = false;
+                    }
+                }
+
+                if (!isAnimatingThisFrame) {
+                    if (settings.inverseMode && globalState.mode === 'clock') {
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    } else {
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    }
+                }
+
                 arc.text = getLabelText(arc.key, now);
                 drawLabel(arc);
             }
