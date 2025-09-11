@@ -1,0 +1,2 @@
+This is placeholder text for the "FAQ" section.
+It will contain a list of frequently asked questions and their answers.
