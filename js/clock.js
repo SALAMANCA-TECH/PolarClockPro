@@ -201,8 +201,9 @@ const Clock = (function() {
         const dayOfWeek = getDayOfWeek(now);
         const weekOfYear = getWeekOfYear(now);
         const totalWeeks = getTotalWeeksInYear(year);
+        const displayMode = (settings.inverseMode && globalState.mode === 'clock') ? 'remainder' : settings.labelDisplayMode;
 
-        switch (settings.labelDisplayMode) {
+        switch (displayMode) {
             case 'percentage':
                 let percent = 0;
                 const totalMsInDay = 86400000;
@@ -280,7 +281,13 @@ const Clock = (function() {
         }
         arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                if (settings.inverseMode && globalState.mode === 'clock') {
+                    // In inverse mode, draw from the current time to the end of the circle
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                } else {
+                    // Normal mode: draw from the start to the current time
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                }
                 arc.text = getLabelText(arc.key, now);
                 drawLabel(arc);
             }

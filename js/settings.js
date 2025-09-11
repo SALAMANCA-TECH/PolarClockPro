@@ -18,6 +18,7 @@ const Settings = (function() {
     function loadSettings() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
+            inverseMode: false,
             is24HourFormat: false,
             labelDisplayMode: 'standard',
             useGradient: true,
@@ -66,6 +67,7 @@ const Settings = (function() {
         ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind', 'presetCandy'].forEach(id => document.getElementById(id).classList.remove('active'));
         document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
         document.getElementById('gradientToggle').checked = settings.useGradient;
+        document.getElementById('inverseModeToggle').checked = settings.inverseMode;
 
         // Separator settings
         document.getElementById('separatorsShow').classList.toggle('active', settings.showSeparators);
@@ -103,6 +105,7 @@ const Settings = (function() {
             document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
         });
         document.getElementById('gradientToggle').addEventListener('change', (e) => { settings.useGradient = e.target.checked; saveSettings(); });
+        document.getElementById('inverseModeToggle').addEventListener('change', (e) => { settings.inverseMode = e.target.checked; saveSettings(); });
 
         // Separator mode listeners
         document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); });
