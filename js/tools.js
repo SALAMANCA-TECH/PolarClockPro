@@ -52,7 +52,8 @@ const Tools = (function() {
             continuous: false,
             workDuration: 25,
             shortBreakDuration: 5,
-            longBreakDuration: 15
+            longBreakDuration: 15,
+            isOneMinuteWarningPlayed: false
         },
         stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] }
     };
@@ -198,6 +199,7 @@ const Tools = (function() {
         state.pomodoro.isMuted = false;
         state.pomodoro.isSnoozed = false;
         state.pomodoro.hasStarted = false;
+        state.pomodoro.isOneMinuteWarningPlayed = false;
         updatePomodoroDashboard();
         updatePomodoroUI();
         document.dispatchEvent(new CustomEvent('pomodoro-reset'));
@@ -255,6 +257,7 @@ const Tools = (function() {
         }
 
         state.pomodoro.remainingSeconds = duration;
+        state.pomodoro.isOneMinuteWarningPlayed = false;
 
         if (playSoundOnStart && !state.pomodoro.isMuted) {
             playSound(settings.timerSound);
@@ -334,7 +337,16 @@ const Tools = (function() {
         if (!soundFile) return;
         const audio = new Audio(`assets/Sounds/${soundFile}`);
         audio.volume = settings.volume || 1.0;
-        audio.play().catch(e => console.error("Error playing sound:", e));
+        audio.play().catch(e => {
+            console.error("Error playing sound:", e);
+            const failureMessage = document.getElementById('audio-failure-message');
+            if (failureMessage) {
+                failureMessage.classList.add('visible');
+                setTimeout(() => {
+                    failureMessage.classList.remove('visible');
+                }, 5000);
+            }
+        });
     }
 
     function updateButtonStates() {
@@ -439,6 +451,31 @@ const Tools = (function() {
             }
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;
+
+                // One-minute warning sound
+                if (
+                    state.pomodoro.remainingSeconds <= 60 &&
+                    state.pomodoro.remainingSeconds > 59 && // Play within the 60th second
+                    !state.pomodoro.isOneMinuteWarningPlayed
+                ) {
+                    state.pomodoro.isOneMinuteWarningPlayed = true;
+                    let soundFile = '';
+                    switch (state.pomodoro.phase) {
+                        case 'work':
+                            soundFile = 'work_end.mp3';
+                            break;
+                        case 'shortBreak':
+                            soundFile = 'short_break_end.mp3';
+                            break;
+                        case 'longBreak':
+                            soundFile = 'long_break_end.mp3';
+                            break;
+                    }
+                    if (soundFile) {
+                        playSound(soundFile);
+                    }
+                }
+
                 if (state.pomodoro.remainingSeconds <= 0) {
                     state.pomodoro.isRunning = false;
                     if (state.pomodoro.continuous) {
