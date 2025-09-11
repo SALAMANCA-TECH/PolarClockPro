@@ -448,12 +448,13 @@ const Clock = (function() {
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
             const renderedLineWidth = (6 / 57) * baseRadius;
+            const thinnerLineWidth = renderedLineWidth * 0.5;
             const renderedGap = (1.875 / 57) * baseRadius;
 
             let currentRadius = baseRadius;
 
             // Outermost arc: Week of the Year
-            dimensions.weekOfYearLineWidth = renderedLineWidth;
+            dimensions.weekOfYearLineWidth = thinnerLineWidth;
             dimensions.weekOfYearRadius = currentRadius - (dimensions.weekOfYearLineWidth / 2);
             currentRadius -= (dimensions.weekOfYearLineWidth + renderedGap);
 
@@ -483,7 +484,7 @@ const Clock = (function() {
             currentRadius -= (dimensions.monthLineWidth + renderedGap);
 
             // Innermost arc: Day of the Week
-            dimensions.dayOfWeekLineWidth = renderedLineWidth;
+            dimensions.dayOfWeekLineWidth = thinnerLineWidth;
             dimensions.dayOfWeekRadius = currentRadius - (dimensions.dayOfWeekLineWidth / 2);
         },
         update: function(newSettings, newState) {
