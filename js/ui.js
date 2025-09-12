@@ -1,3 +1,4 @@
+emailjs.init({ publicKey: 'YOUR_PUBLIC_KEY' });
 const UI = (function() {
     const views = {
         main: document.getElementById('mainView'),
@@ -102,41 +103,38 @@ const UI = (function() {
         });
 
         // Feedback form
-        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
-        submitFeedbackBtn.addEventListener('click', () => {
-            const submitButton = document.getElementById('submitFeedbackBtn');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...';
+        const feedbackForm = document.getElementById('feedbackForm');
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
 
-            const params = {
-                from_name: "Polar Clock Pro User", // Anonymous user
-                subject: document.getElementById('feedbackTitle').value,
-                message: document.getElementById('feedbackMessage').value,
-                reply_to: "no-reply@example.com", // Default no-reply
-            };
+                const submitButton = this.querySelector('button');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Submitting...';
+                }
 
-            // Refactored EmailJS configuration for clarity
-            const serviceID = "YOUR_SERVICE_ID";
-            const templateID = 'YOUR_TEMPLATE_ID'; // A variable for the Template ID
-            const publicKey = "YOUR_PUBLIC_KEY";
+                const serviceID = 'service_hnc4xxb';
+                const templateID = 'YOUR_TEMPLATE_ID';
 
-            // The send function now uses the templateID variable
-            emailjs.send(serviceID, templateID, params, publicKey)
-                .then(res => {
-                    console.log("EmailJS response:", res);
-                    document.getElementById('feedbackTitle').value = "";
-                    document.getElementById('feedbackMessage').value = "";
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Submit';
-                    alert("Feedback sent successfully!");
-                })
-                .catch(err => {
-                    console.error("EmailJS error:", err);
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Submit';
-                    alert("Failed to send feedback. Please try again later.");
-                });
-        });
+                emailjs.sendForm(serviceID, templateID, this)
+                    .then(() => {
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Submit';
+                        }
+                        alert('Feedback sent successfully!');
+                        feedbackForm.reset(); // Clear the form
+                    }, (err) => {
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Submit';
+                        }
+                        alert('Failed to send feedback. Error: ' + JSON.stringify(err));
+                        console.error('EmailJS error:', err);
+                    });
+            });
+        }
     }
 
     let settingsAccordionInitialized = false;
