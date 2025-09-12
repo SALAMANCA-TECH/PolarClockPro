@@ -152,13 +152,13 @@ const Clock = (function() {
             ctx.strokeStyle = '#FFFFFF';
             ctx.lineWidth = 1;
             ctx.stroke();
-        }
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = `${arc.lineWidth * fontSizeMultiplier}px Bahnschrift`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(arc.text, textX, textY);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `${arc.lineWidth * fontSizeMultiplier}px Bahnschrift`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(arc.text, textX, textY);
+        }
     };
 
     const drawSeparators = (radius, count, arcLineWidth) => {
