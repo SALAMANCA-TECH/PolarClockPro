@@ -815,10 +815,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const index = i * step;
                 const angle = baseStartAngle + (index / count) * Math.PI * 2;
 
-                // Skip the 6 o'clock position with a small tolerance
-                if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                    continue;
-                }
 
                 const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
                 const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
@@ -845,9 +841,6 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < count; i++) {
                 const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-                if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                    continue;
-                }
 
                 const isMajorTick = i % 5 === 0;
 
@@ -955,7 +948,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (arc.radius > 0 && settings.currentColors) {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     arc.text = getLabelText(arc.key, now);
-                    drawLabel(arc);
                 }
             });
 
@@ -977,6 +969,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
             }
+
+            // --- Draw Labels ---
+            arcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawLabel(arc);
+                }
+            });
 
             lastNow = now;
 
@@ -1039,7 +1038,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (arc.radius > 0 && settings.currentColors) {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     arc.text = getLabelText(arc.key, now);
-                    drawLabel(arc);
                 }
             });
 
@@ -1067,6 +1065,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (settings.showTimeLines) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
             }
+
+            // --- Draw Labels ---
+            timeArcs.forEach(arc => {
+                if (arc.radius > 0 && settings.currentColors) {
+                    drawLabel(arc);
+                }
+            });
         };
 
         const animate = () => {
