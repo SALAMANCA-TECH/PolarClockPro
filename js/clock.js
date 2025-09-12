@@ -114,10 +114,7 @@ const Clock = (function() {
             const index = i * step;
             const angle = baseStartAngle + (index / count) * Math.PI * 2;
 
-            // Skip the 6 o'clock position with a small tolerance
-            if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                continue;
-            }
+          
 
             const startX = dimensions.centerX + Math.cos(angle) * innerRadius;
             const startY = dimensions.centerY + Math.sin(angle) * innerRadius;
@@ -144,9 +141,6 @@ const Clock = (function() {
         for (let i = 0; i < count; i++) {
             const angle = baseStartAngle + (i / count) * Math.PI * 2;
 
-            if (Math.abs(angle - sixOClockAngle) < 0.01) {
-                continue;
-            }
 
             const isMajorTick = i % 5 === 0;
 
