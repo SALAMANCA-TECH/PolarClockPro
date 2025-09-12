@@ -141,16 +141,19 @@ const Clock = (function() {
         let circleSizeMultiplier = 0.5;
         if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
 
-        const circleRadius = arc.lineWidth * circleSizeMultiplier;
-        ctx.beginPath();
-        ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#000000';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        if (settings.showArcEndCircles) {
+            const circleRadius = arc.lineWidth * circleSizeMultiplier;
+            ctx.beginPath();
+            ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(textX, textY, circleRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
         ctx.fillStyle = '#FFFFFF';
         ctx.font = `${arc.lineWidth * fontSizeMultiplier}px Bahnschrift`;
         ctx.textAlign = 'center';

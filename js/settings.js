@@ -18,6 +18,9 @@ const Settings = (function() {
     function loadSettings() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
+            showDigitalTime: true,
+            showDigitalDate: true,
+            showArcEndCircles: true,
             inverseMode: false,
             is24HourFormat: false,
             labelDisplayMode: 'standard',
@@ -69,6 +72,14 @@ const Settings = (function() {
         document.getElementById('gradientToggle').checked = settings.useGradient;
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
 
+        // New display toggles
+        document.getElementById('digitalTimeToggle').checked = settings.showDigitalTime;
+        document.getElementById('digitalDateToggle').checked = settings.showDigitalDate;
+        document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
+        document.getElementById('digitalTime').style.display = settings.showDigitalTime ? 'block' : 'none';
+        document.getElementById('digitalDate').style.display = settings.showDigitalDate ? 'block' : 'none';
+
+
         // Separator settings
         document.getElementById('separatorsShow').classList.toggle('active', settings.showSeparators);
         document.getElementById('separatorsHide').classList.toggle('active', !settings.showSeparators);
@@ -111,6 +122,27 @@ const Settings = (function() {
         });
         document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
             settings.inverseMode = e.target.checked;
+            saveSettings();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+
+        // New display toggle listeners
+        document.getElementById('digitalTimeToggle').addEventListener('change', (e) => {
+            settings.showDigitalTime = e.target.checked;
+            saveSettings();
+            applySettingsToUI();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+
+        document.getElementById('digitalDateToggle').addEventListener('change', (e) => {
+            settings.showDigitalDate = e.target.checked;
+            saveSettings();
+            applySettingsToUI();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+
+        document.getElementById('arcEndCirclesToggle').addEventListener('change', (e) => {
+            settings.showArcEndCircles = e.target.checked;
             saveSettings();
             document.dispatchEvent(new CustomEvent('settings-changed'));
         });
