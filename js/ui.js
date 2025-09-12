@@ -97,7 +97,8 @@ const UI = (function() {
             fetch(`assets/content/${id}.txt`)
                 .then(response => response.text())
                 .then(text => {
-                    document.getElementById(`${id}-content`).innerText = text;
+                    const contentElement = document.getElementById(`${id}-content`);
+                    contentElement.innerHTML = `<div class="scrollable-content">${text}</div>`;
                 })
                 .catch(error => console.error(`Error fetching ${id}.txt:`, error));
         });
