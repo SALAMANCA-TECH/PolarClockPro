@@ -23,7 +23,6 @@ const Settings = (function() {
             showArcEndCircles: true,
             inverseMode: false,
             is24HourFormat: false,
-            labelDisplayMode: 'standard',
             useGradient: true,
             colorPreset: 'default',
             showSeparators: true,
@@ -65,8 +64,6 @@ const Settings = (function() {
         // Standard settings
         document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
         document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
-        ['modeStandard', 'modePercentage', 'modeRemainder'].forEach(id => document.getElementById(id).classList.remove('active'));
-        document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
         ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind', 'presetCandy'].forEach(id => document.getElementById(id).classList.remove('active'));
         document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
         document.getElementById('gradientToggle').checked = settings.useGradient;
@@ -109,9 +106,6 @@ const Settings = (function() {
         // Standard settings listeners
         document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
         document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
-        ['standard', 'percentage', 'remainder'].forEach(mode => {
-            document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`).addEventListener('click', () => { settings.labelDisplayMode = mode; saveSettings(); applySettingsToUI(); });
-        });
         ['default', 'neon', 'pastel', 'colorblind', 'candy'].forEach(preset => {
             document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
         });
