@@ -51,23 +51,21 @@ const UI = (function() {
     }
 
     function showToolsPanel(panelToShow, tabToActivate) {
-        document.body.classList.add('tool-mode-active');
         Object.values(toolPanels).forEach(p => p.style.display = 'none');
-        panelToShow.style.display = 'flex';
+        if (panelToShow) {
+            panelToShow.style.display = 'flex';
+        }
         handleActiveButton(tabToActivate, Object.values(toolTabs));
+
+        let mode = 'clock'; // Default mode
+        if (panelToShow) {
+            mode = panelToShow.id.replace('Panel', '').toLowerCase();
+        }
+
         const event = new CustomEvent('modechange', {
-            detail: { mode: panelToShow.id.replace('Panel', '').toLowerCase() }
+            detail: { mode: mode }
         });
         document.dispatchEvent(event);
-    }
-
-    function showMainClockAsTool() {
-        document.body.classList.remove('tool-mode-active');
-        Object.values(toolPanels).forEach(p => p.style.display = 'none');
-        handleActiveButton(toolTabs.default, Object.values(toolTabs));
-        document.dispatchEvent(new CustomEvent('modechange', {
-            detail: { mode: 'clock' }
-        }));
     }
 
     let aboutPageInitialized = false;
@@ -195,40 +193,34 @@ const UI = (function() {
         init: function(clockModule) {
             Clock = clockModule; // Store the reference
             navButtons.goToSettings.addEventListener('click', () => {
-                document.body.classList.remove('tool-mode-active');
                 showView(views.settings);
                 initSettingsAccordion();
             });
             navButtons.goToTools.addEventListener('click', () => {
-                showView(views.tools)
-                showMainClockAsTool();
+                showView(views.tools);
+                // When navigating to tools, default to the main clock view.
+                showToolsPanel(null, toolTabs.default);
             });
             navButtons.goToAbout.addEventListener('click', () => {
-                document.body.classList.remove('tool-mode-active');
                 showView(views.about);
                 initAboutPage();
             });
 
             navButtons.backFromSettings.addEventListener('click', () => {
-                document.body.classList.remove('tool-mode-active');
                 showView(views.main);
                 document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
             });
-            navButtons.backFromTools.addEventListener('click', () => {
-                document.body.classList.remove('tool-mode-active');
-                showView(views.main);
-            });
-            navButtons.backFromAbout.addEventListener('click', () => {
-                document.body.classList.remove('tool-mode-active');
-                showView(views.main);
-            });
+            navButtons.backFromTools.addEventListener('click', () => showView(views.main));
+            navButtons.backFromAbout.addEventListener('click', () => showView(views.main));
 
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
-            toolTabs.default.addEventListener('click', () => showMainClockAsTool());
+            // Unified tool tab event listeners
+            toolTabs.default.addEventListener('click', () => showToolsPanel(null, toolTabs.default));
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
             toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
             toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
+
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
