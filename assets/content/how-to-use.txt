@@ -1,0 +1,38 @@
+How to Use Polar Clock Pro
+The Clock Face
+The main interface of Polar Clock Pro displays time through a series of concentric data arcs. From the inside out, these arcs represent:
+
+Timer/Alarm Arc: An optional, innermost ring for timers.
+
+Month of the Year
+
+Day of the Month
+
+Hour of the Day
+
+Minute of the Hour
+
+Second of the Minute
+
+Week of the Year: An optional, outermost ring.
+
+As time passes, each arc will fill up, and upon completion, it will perform a smooth "reverse fill" animation before starting its next cycle.
+
+Settings Panel
+All customization and productivity tools are located in the accordion-style settings panel.
+
+Structured Work Timers:
+
+Pomodoro Technique: A pre-configured timer with 25-minute work intervals and 5-minute breaks.
+
+Custom Timer: Set a countdown timer for any task.
+
+Toggleable Arcs:
+
+You can show or hide the "Week of the Year" arc to simplify the display.
+
+Separator Style:
+
+Standard: Clean, simple lines between the arcs.
+
+Ruler: More detailed, tick-marked lines for a technical look.
