@@ -503,6 +503,9 @@
         }
     }
     </style>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
 </head>
 <body>
     <!-- Canvas Container for the Clock -->
@@ -811,11 +814,11 @@
                 <div class="accordion-item">
                     <div class="accordion-header">Feedback & Suggestions</div>
                     <div class="accordion-content">
-                        <div class="feedback-form">
-                            <input type="text" id="feedbackTitle" placeholder="Subject">
-                            <textarea id="feedbackMessage" rows="5" placeholder="Your message..."></textarea>
-                            <button id="submitFeedbackBtn">Submit</button>
-                        </div>
+                        <form id="feedbackForm" class="feedback-form">
+                            <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
+                            <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
+                            <button type="button" id="submitFeedbackBtn">Submit</button>
+                        </form>
                     </div>
                 </div>
             </div>
