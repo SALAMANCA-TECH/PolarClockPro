@@ -31,14 +31,14 @@ const UI = (function() {
     let Clock; // To hold the clock module reference
 
     function showView(viewToShow) {
-        const isMainView = viewToShow === views.main;
-        if (Clock) {
-            if (isMainView) {
-                Clock.resume();
-            } else {
-                Clock.pause();
-            }
+        // The clock is always visible in the desktop layout, so we no longer need to pause it.
+        // The panel-open class will be used for mobile-specific layout changes.
+        if (viewToShow === views.main) {
+            document.body.classList.remove('panel-open');
+        } else {
+            document.body.classList.add('panel-open');
         }
+
         Object.values(views).forEach(v => v.style.display = 'none');
         viewToShow.style.display = 'flex';
     }
@@ -112,10 +112,47 @@ const UI = (function() {
         });
     }
 
+    let settingsAccordionInitialized = false;
+
+    function initSettingsAccordion() {
+        if (settingsAccordionInitialized) return;
+        settingsAccordionInitialized = true;
+
+        const accordionItems = document.querySelectorAll('#settingsView .accordion-item');
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+
+            header.addEventListener('click', () => {
+                const wasActive = item.classList.contains('active');
+
+                // Close all items before opening a new one
+                accordionItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                    // Reset padding when closing
+                    if (otherItem.querySelector('.accordion-content').style.padding) {
+                        otherItem.querySelector('.accordion-content').style.padding = '0 15px';
+                    }
+                });
+
+                // If the clicked item wasn't active, open it.
+                if (!wasActive) {
+                    item.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.style.padding = '15px'; // Set padding when opening
+                }
+            });
+        });
+    }
+
     return {
         init: function(clockModule) {
             Clock = clockModule; // Store the reference
-            navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
+            navButtons.goToSettings.addEventListener('click', () => {
+                showView(views.settings);
+                initSettingsAccordion();
+            });
             navButtons.goToTools.addEventListener('click', () => showView(views.tools));
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);

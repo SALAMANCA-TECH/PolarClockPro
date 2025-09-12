@@ -10,6 +10,32 @@ const Clock = (function() {
     let lastNow = new Date();
     let isFirstFrameDrawn = false;
     let animationFrameId = null;
+    let resetAnimations = {};
+    const animationDuration = 1500; // 1.5 seconds
+
+    const hasCompletedCycle = (unit, now, lastNow) => {
+        switch (unit) {
+            case 'seconds':
+                return lastNow.getSeconds() === 59 && now.getSeconds() === 0;
+            case 'minutes':
+                return lastNow.getMinutes() === 59 && now.getMinutes() === 0;
+            case 'hours':
+                // This handles both 12-hour (e.g., 11 AM -> 12 PM) and 24-hour (e.g., 23:00 -> 00:00) rollovers.
+                // 11 % 12 === 11, and 12 % 12 === 0.
+                // 23 % 12 === 11, and 0 % 12 === 0.
+                return lastNow.getHours() % 12 === 11 && now.getHours() % 12 === 0;
+            case 'day':
+                return now.getDate() === 1 && lastNow.getDate() > 1;
+            case 'month':
+                return now.getMonth() === 0 && lastNow.getMonth() === 11;
+            case 'dayOfWeek':
+                return getDayOfWeek(now) === 1 && getDayOfWeek(lastNow) === 7;
+            case 'weekOfYear':
+                return getWeekOfYear(now) === 1 && getWeekOfYear(lastNow) > 1;
+            default:
+                return false;
+        }
+    };
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
@@ -279,15 +305,47 @@ const Clock = (function() {
             const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
             drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
         }
+
+        const nowMs = now.getTime();
         arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                if (settings.inverseMode && globalState.mode === 'clock') {
-                    // In inverse mode, draw from the current time to the end of the circle
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                } else {
-                    // Normal mode: draw from the start to the current time
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+
+                if (hasCompletedCycle(arc.key, now, lastNow)) {
+                    if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
+                        resetAnimations[arc.key] = { isAnimating: true, startTime: nowMs };
+                    }
                 }
+
+                const anim = resetAnimations[arc.key];
+                let isAnimatingThisFrame = false;
+
+                if (anim && anim.isAnimating) {
+                    const elapsed = nowMs - anim.startTime;
+                    if (elapsed < animationDuration) {
+                        const progress = elapsed / animationDuration;
+                        if (settings.inverseMode && globalState.mode === 'clock') {
+                            // In inverse mode, the arc "fills up" from the top to represent the new cycle's remainder
+                            const animatedEndAngle = baseStartAngle + (progress * Math.PI * 2);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        } else {
+                            // In normal mode, the arc "wipes" itself clean by the tail chasing the head
+                            const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                        }
+                        isAnimatingThisFrame = true;
+                    } else {
+                        anim.isAnimating = false;
+                    }
+                }
+
+                if (!isAnimatingThisFrame) {
+                    if (settings.inverseMode && globalState.mode === 'clock') {
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    } else {
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    }
+                }
+
                 arc.text = getLabelText(arc.key, now);
                 drawLabel(arc);
             }
