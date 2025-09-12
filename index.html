@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polar Clock Pro</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <!-- DEPENDENCIES: Tailwind CSS for styling and Phosphor Icons for UI icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -416,6 +417,7 @@
             <div class="main-nav-buttons">
                 <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
                 <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
+                <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
                 <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
             </div>
         </div>
@@ -584,6 +586,25 @@
             </div>
         </div>
 
+        <!-- About View -->
+        <div id="aboutView" class="ui-content" style="display: none;">
+            <div class="view-header">
+                <button id="backToMainFromAbout" class="back-button">Back</button>
+                <h2 class="view-title">About & Feedback</h2>
+            </div>
+            <div class="settings-section w-full max-w-xs">
+                <p class="text-center text-gray-400 mb-4">
+                    Polar Clock Pro is a visual timepiece designed to be both beautiful and functional.
+                </p>
+                <h3 class="text-sm uppercase text-gray-400 mt-4">Send Anonymous Feedback</h3>
+                <form id="feedbackForm" class="w-full">
+                    <textarea id="feedbackMessage" name="message" class="w-full bg-slate-700 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="Your feedback..."></textarea>
+                    <button id="submitFeedbackBtn" type="submit" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">Submit</button>
+                    <p id="feedbackStatus" class="text-center text-sm mt-2"></p>
+                </form>
+            </div>
+        </div>
+
         <!-- Settings View -->
         <div id="settingsView" class="ui-content" style="display: none;">
             <div class="view-header">
@@ -668,19 +689,25 @@
 document.addEventListener('DOMContentLoaded', function() {
     const App = {};
 
+    // Initialize EmailJS
+    emailjs.init({ publicKey: 'YOUR_PUBLIC_KEY' });
+
     // --- UI Module ---
     (function(App) {
         const views = {
             main: document.getElementById('mainView'),
             settings: document.getElementById('settingsView'),
             tools: document.getElementById('toolsView'),
+            about: document.getElementById('aboutView'),
         };
         const navButtons = {
             goToSettings: document.getElementById('goToSettingsBtn'),
             goToTools: document.getElementById('goToToolsBtn'),
+            goToAbout: document.getElementById('goToAboutBtn'),
             goToAlarms: document.getElementById('goToAlarmsBtn'),
             backFromSettings: document.getElementById('backToMainFromSettings'),
             backFromTools: document.getElementById('backToMainFromTools'),
+            backFromAbout: document.getElementById('backToMainFromAbout'),
         };
         const toolTabs = {
             timer: document.getElementById('timerTab'),
@@ -726,13 +753,50 @@ document.addEventListener('DOMContentLoaded', function() {
             document.dispatchEvent(event);
         }
 
+        function initAboutPage() {
+            const feedbackForm = document.getElementById('feedbackForm');
+            if (!feedbackForm) return;
+
+            feedbackForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const submitBtn = document.getElementById('submitFeedbackBtn');
+                const statusMsg = document.getElementById('feedbackStatus');
+                const serviceID = 'service_hnc4xxb';
+                const templateID = 'YOUR_TEMPLATE_ID';
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+                statusMsg.textContent = '';
+
+                emailjs.sendForm(serviceID, templateID, this)
+                    .then(() => {
+                        feedbackForm.reset();
+                        statusMsg.textContent = 'Feedback sent successfully!';
+                        statusMsg.style.color = '#4CAF50';
+                    }, (err) => {
+                        console.error('EmailJS error:', err);
+                        statusMsg.textContent = 'Failed to send feedback. Please try again later.';
+                        statusMsg.style.color = '#FF8A80';
+                    })
+                    .finally(() => {
+                         submitBtn.disabled = false;
+                         submitBtn.textContent = 'Submit';
+                    });
+            });
+        }
+
         App.UI = {
             init: function() {
                 navButtons.goToSettings.addEventListener('click', () => showView(views.settings));
                 navButtons.goToTools.addEventListener('click', () => showView(views.tools));
+                navButtons.goToAbout.addEventListener('click', () => showView(views.about));
                 navButtons.backFromSettings.addEventListener('click', () => showView(views.main));
                 navButtons.backFromTools.addEventListener('click', () => showView(views.main));
+                navButtons.backFromAbout.addEventListener('click', () => showView(views.main));
                 navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
+
+                initAboutPage(); // Initialize the feedback form logic
 
                 toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
                 toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
