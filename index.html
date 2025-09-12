@@ -246,6 +246,14 @@
         -moz-appearance: textfield;
     }
 
+    body.tool-mode-active .canvas-container {
+        display: none;
+    }
+    body.tool-mode-active .ui-container {
+        flex-basis: 100%;
+        border-left: none;
+    }
+
     .control-buttons {
         display: flex;
         gap: 1rem;
@@ -536,7 +544,6 @@
         <!-- Main Navigation View -->
         <div id="mainView" class="ui-content">
             <div class="main-nav-buttons">
-                <button id="goToClockBtn" class="main-nav-button"><i class="ph ph-clock"></i></button>
                 <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
                 <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
                 <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
@@ -550,6 +557,7 @@
                 <button id="backToMainFromTools" class="back-button">Back</button>
             </div>
             <div class="tab-buttons">
+                <button id="defaultTab" class="tab-button">Default</button>
                 <button id="timerTab" class="tab-button active">Timer</button>
                 <button id="pomodoroTab" class="tab-button">Pomodoro</button>
                 <button id="stopwatchTab" class="tab-button">Stopwatch</button>
