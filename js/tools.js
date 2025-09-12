@@ -2,6 +2,7 @@ const Tools = (function() {
     // --- DOM Element Selections ---
     const toggleTimerBtn = document.getElementById('toggleTimerBtn');
     const resetTimerBtn = document.getElementById('resetTimer');
+    const timerDaysInput = document.getElementById('timerDays');
     const timerHoursInput = document.getElementById('timerHours');
     const timerMinutesInput = document.getElementById('timerMinutes');
     const timerSecondsInput = document.getElementById('timerSeconds');
@@ -61,15 +62,47 @@ const Tools = (function() {
     // --- Private Functions ---
 
     // Timer Functions
+    function normalizeTimerInputs() {
+        const days = parseInt(timerDaysInput.value) || 0;
+        const hours = parseInt(timerHoursInput.value) || 0;
+        const minutes = parseInt(timerMinutesInput.value) || 0;
+        const seconds = parseInt(timerSecondsInput.value) || 0;
+
+        let totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+
+        const newDays = Math.floor(totalSeconds / 86400);
+        totalSeconds %= 86400;
+        const newHours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        const newMinutes = Math.floor(totalSeconds / 60);
+        const newSeconds = totalSeconds % 60;
+
+        timerDaysInput.value = newDays;
+        timerHoursInput.value = newHours;
+        timerMinutesInput.value = newMinutes;
+        timerSecondsInput.value = newSeconds;
+
+        const finalTotalSeconds = (newDays * 86400) + (newHours * 3600) + (newMinutes * 60) + newSeconds;
+        state.timer.totalSeconds = finalTotalSeconds;
+        // Only reset remaining seconds if the timer isn't running.
+        // This prevents overwriting the countdown when an input is blurred.
+        if (!state.timer.isRunning) {
+            state.timer.remainingSeconds = finalTotalSeconds;
+        }
+    }
+
+
     function toggleTimer() {
         state.timer.isRunning ? pauseTimer() : startTimer();
     }
 
     function startTimer() {
+        // When starting, if the timer is at 0, we must get the values from the inputs.
+        // Normalizing here also handles the case where a user types and immediately hits start.
         if (state.timer.remainingSeconds <= 0) {
-            state.timer.totalSeconds = (parseInt(timerHoursInput.value) || 0) * 3600 + (parseInt(timerMinutesInput.value) || 0) * 60 + (parseInt(timerSecondsInput.value) || 0);
-            state.timer.remainingSeconds = state.timer.totalSeconds;
+            normalizeTimerInputs();
         }
+
         if (state.timer.remainingSeconds > 0) {
             state.timer.isRunning = true;
         }
@@ -85,6 +118,7 @@ const Tools = (function() {
         state.timer.isRunning = false;
         state.timer.totalSeconds = 0;
         state.timer.remainingSeconds = 0;
+        timerDaysInput.value = "0";
         timerHoursInput.value = "0";
         timerMinutesInput.value = "0";
         timerSecondsInput.value = "0";
@@ -359,6 +393,10 @@ const Tools = (function() {
         toggleTimerBtn.addEventListener('click', toggleTimer);
         resetTimerBtn.addEventListener('click', resetTimer);
         intervalToggle.addEventListener('change', (e) => state.timer.isInterval = e.target.checked);
+        timerDaysInput.addEventListener('blur', normalizeTimerInputs);
+        timerHoursInput.addEventListener('blur', normalizeTimerInputs);
+        timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
+        timerSecondsInput.addEventListener('blur', normalizeTimerInputs);
 
         // Stopwatch
         toggleStopwatchBtn.addEventListener('click', toggleStopwatch);
