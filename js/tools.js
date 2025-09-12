@@ -61,6 +61,13 @@ const Tools = (function() {
 
     // --- Private Functions ---
 
+    function setTimerInputsDisabled(disabled) {
+        timerDaysInput.disabled = disabled;
+        timerHoursInput.disabled = disabled;
+        timerMinutesInput.disabled = disabled;
+        timerSecondsInput.disabled = disabled;
+    }
+
     // Timer Functions
     function normalizeTimerInputs() {
         const days = parseInt(timerDaysInput.value) || 0;
@@ -105,17 +112,20 @@ const Tools = (function() {
 
         if (state.timer.remainingSeconds > 0) {
             state.timer.isRunning = true;
+            setTimerInputsDisabled(true);
         }
         updateButtonStates();
     }
 
     function pauseTimer() {
         state.timer.isRunning = false;
+        setTimerInputsDisabled(false);
         updateButtonStates();
     }
 
     function resetTimer() {
         state.timer.isRunning = false;
+        setTimerInputsDisabled(false);
         state.timer.totalSeconds = 0;
         state.timer.remainingSeconds = 0;
         timerDaysInput.value = "0";
@@ -485,7 +495,21 @@ const Tools = (function() {
         update: function(deltaTime) {
             if (state.timer.isRunning) {
                 state.timer.remainingSeconds -= deltaTime;
-                if (state.timer.remainingSeconds <= 0) timerFinished();
+                if (state.timer.remainingSeconds <= 0) {
+                    timerFinished();
+                }
+
+                // Update input fields in real-time
+                const remaining = Math.max(0, state.timer.remainingSeconds);
+                const days = Math.floor(remaining / 86400);
+                const hours = Math.floor((remaining % 86400) / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = Math.floor(remaining % 60);
+
+                timerDaysInput.value = days;
+                timerHoursInput.value = hours;
+                timerMinutesInput.value = minutes;
+                timerSecondsInput.value = seconds;
             }
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;

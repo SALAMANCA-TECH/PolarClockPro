@@ -140,7 +140,11 @@ const Clock = (function() {
     };
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
-        if (startAngle >= endAngle - 0.01 || radius <= 0) return;
+        if (radius <= 0) return;
+
+        // Prevent drawing a full circle if the start and end angles are effectively the same
+        if (Math.abs(endAngle - startAngle) < 0.0001) return;
+
 
         let strokeStyle;
         if (settings.colorPreset === 'candy') {
