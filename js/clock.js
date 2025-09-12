@@ -144,7 +144,6 @@ const Clock = (function() {
 
         let fontSizeMultiplier = 0.4;
         let circleSizeMultiplier = 0.5;
-        if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
 
         if (settings.showArcEndCircles) {
             const circleRadius = arc.lineWidth * circleSizeMultiplier;
@@ -290,21 +289,9 @@ const Clock = (function() {
         const dayOfWeek = getDayOfWeek(now);
         const weekOfYear = getWeekOfYear(now);
         const totalWeeks = getTotalWeeksInYear(year);
-        const displayMode = (settings.inverseMode && globalState.mode === 'clock') ? 'remainder' : settings.labelDisplayMode;
+        const displayMode = (settings.inverseMode && globalState.mode === 'clock') ? 'remainder' : 'standard';
 
         switch (displayMode) {
-            case 'percentage':
-                let percent = 0;
-                const totalMsInDay = 86400000;
-                const currentMsInDay = (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds;
-                if (unit === 'seconds') percent = (seconds * 1000 + milliseconds) / 60000 * 100;
-                if (unit === 'minutes') percent = (minutes * 60000 + seconds * 1000 + milliseconds) / 3600000 * 100;
-                if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
-                if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
-                if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                if (unit === 'dayOfWeek') percent = (dayOfWeek / 7) * 100;
-                if (unit === 'weekOfYear') percent = (weekOfYear / totalWeeks) * 100;
-                return `${Math.floor(percent)}%`;
             case 'remainder':
                 if (unit === 'seconds') return 59 - seconds;
                 if (unit === 'minutes') return 59 - minutes;
