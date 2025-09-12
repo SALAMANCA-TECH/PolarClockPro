@@ -49,62 +49,102 @@ const Clock = (function() {
 
         const { remainingSeconds, totalSeconds } = globalState.timer;
 
-        // If the timer hasn't started, draw empty arcs
         if (totalSeconds === 0) {
-            const emptyArcs = [
-                { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, text: '00' },
-                { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, text: '00' },
-                { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, text: '00' }
-            ];
-            emptyArcs.forEach(arc => {
-                 if (arc.radius > 0) {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, baseStartAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                    drawLabel({ ...arc, text: arc.text });
-                 }
-            });
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             return;
         }
 
-
         const remaining = Math.max(0, remainingSeconds);
-        const hours = Math.floor(remaining / 3600);
+        const days = Math.floor(remaining / 86400);
+        const hours = Math.floor((remaining % 86400) / 3600);
         const minutes = Math.floor((remaining % 3600) / 60);
-        const seconds = Math.floor(remaining % 60);
 
-        // Inverse fill: arcs shrink as time passes.
-        const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / (totalSeconds / 3600);
-        const minutesProgress = (minutes + (seconds / 60)) / 60;
-        const secondsProgress = seconds / 60;
+        const arcsToShow = [];
+        if (totalSeconds >= 86400) arcsToShow.push('day');
+        if (totalSeconds >= 3600) arcsToShow.push('hours');
+        if (totalSeconds >= 60) arcsToShow.push('minutes');
+        arcsToShow.push('seconds');
 
-        const hoursStartAngle = baseStartAngle + (1 - hoursProgress) * Math.PI * 2;
-        const minutesStartAngle = baseStartAngle + (1 - minutesProgress) * Math.PI * 2;
-        const secondsStartAngle = baseStartAngle + (1 - secondsProgress) * Math.PI * 2;
         const fullCircleEndAngle = baseStartAngle + Math.PI * 2;
+        const drawnArcs = [];
+        const largestUnit = arcsToShow[0];
 
+        arcsToShow.forEach(unit => {
+            let progress;
+            let text;
 
-        const arcs = [
-            { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, startAngle: hoursStartAngle, endAngle: fullCircleEndAngle, text: hours.toString().padStart(2, '0') },
-            { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, startAngle: minutesStartAngle, endAngle: fullCircleEndAngle, text: minutes.toString().padStart(2, '0') },
-            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, startAngle: secondsStartAngle, endAngle: fullCircleEndAngle, text: seconds.toString().padStart(2, '0') }
-        ];
+            if (unit === largestUnit) {
+                progress = remaining / totalSeconds;
+            } else {
+                switch (unit) {
+                    case 'hours':
+                        progress = (remaining % 86400) / 86400;
+                        break;
+                    case 'minutes':
+                        progress = (remaining % 3600) / 3600;
+                        break;
+                    case 'seconds':
+                        progress = (remaining % 60) / 60;
+                        break;
+                    default:
+                        progress = 0;
+                }
+            }
 
-        arcs.forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
+            switch (unit) {
+                case 'day':
+                    text = days.toString();
+                    break;
+                case 'hours':
+                    text = hours.toString().padStart(2, '0');
+                    break;
+                case 'minutes':
+                    text = minutes.toString().padStart(2, '0');
+                    break;
+                case 'seconds':
+                    text = Math.floor(remaining % 60).toString().padStart(2, '0');
+                    break;
+            }
+
+            const startAngle = baseStartAngle + (1 - progress) * Math.PI * 2;
+
+            drawnArcs.push({
+                key: unit,
+                radius: dimensions[`${unit}Radius`],
+                colors: settings.currentColors[unit],
+                lineWidth: dimensions[`${unit}LineWidth`],
+                startAngle: startAngle,
+                endAngle: fullCircleEndAngle,
+                text: text
+            });
+        });
+
+        drawnArcs.forEach(arc => {
+            if (arc.radius > 0 && arc.colors) {
                 drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                drawLabel({ ...arc, text: arc.text });
+                drawLabel({ ...arc });
             }
         });
 
         // Draw separators if enabled
         if (settings.showSeparators) {
-            drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-            drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-            drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+            drawnArcs.forEach(arc => {
+                if (arc.radius > 0 && settings.separatorVisibility[arc.key]) {
+                    let count = 60;
+                    if (arc.key === 'hours') count = 24;
+                    if (arc.key === 'day') count = 7; // Arbitrary, but better than nothing
+                    drawSeparators(arc.radius, count, arc.lineWidth);
+                }
+            });
         }
     };
 
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
-        if (startAngle >= endAngle - 0.01 || radius <= 0) return;
+        if (radius <= 0) return;
+
+        // Prevent drawing a full circle if the start and end angles are effectively the same
+        if (Math.abs(endAngle - startAngle) < 0.0001) return;
+
 
         let strokeStyle;
         if (settings.colorPreset === 'candy') {
@@ -616,27 +656,49 @@ const Clock = (function() {
             const thinnerLineWidth = renderedLineWidth * 0.5;
             const renderedGap = (1.875 / 57) * baseRadius;
 
-            const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek'];
+            const arcOrder = ['weekOfYear', 'month', 'dayOfWeek', 'day', 'hours', 'minutes', 'seconds'];
             const arcLineWidths = {
-                weekOfYear: thinnerLineWidth,
-                seconds: renderedLineWidth,
-                minutes: renderedLineWidth,
-                hours: renderedLineWidth,
                 day: renderedLineWidth,
+                hours: renderedLineWidth,
+                minutes: renderedLineWidth,
+                seconds: renderedLineWidth,
+                dayOfWeek: thinnerLineWidth,
                 month: renderedLineWidth,
-                dayOfWeek: thinnerLineWidth
+                weekOfYear: thinnerLineWidth
             };
 
-            const visibleArcs = arcOrder.filter(arcKey => settings.arcVisibility[arcKey]);
+            const isArcVisible = (arcKey) => {
+                if (globalState.mode === 'timer' && globalState.timer) {
+                    const { totalSeconds } = globalState.timer;
+                    if (totalSeconds === 0) return false;
+                    switch (arcKey) {
+                        case 'day':
+                            return totalSeconds >= 86400;
+                        case 'hours':
+                            return totalSeconds >= 3600;
+                        case 'minutes':
+                            return totalSeconds >= 60;
+                        case 'seconds':
+                            return totalSeconds > 0;
+                        default:
+                            return false; // Do not show other arcs in timer mode
+                    }
+                } else {
+                    // Clock mode
+                    return settings.arcVisibility[arcKey];
+                }
+            };
+
+            const visibleArcs = arcOrder.filter(isArcVisible);
             const numVisible = visibleArcs.length;
-            const totalArcWidth = visibleArcs.reduce((total, arcKey) => total + arcLineWidths[arcKey], 0);
+            const totalArcWidth = visibleArcs.reduce((total, arcKey) => total + (arcLineWidths[arcKey] || 0), 0);
             const totalGap = (numVisible > 0) ? (numVisible - 1) * renderedGap : 0;
             const totalHeight = totalArcWidth + totalGap;
 
             let currentRadius = (baseRadius + totalHeight) / 2;
 
             for (const arcKey of arcOrder) {
-                if (settings.arcVisibility[arcKey]) {
+                if (isArcVisible(arcKey)) {
                     const lineWidth = arcLineWidths[arcKey];
                     dimensions[`${arcKey}LineWidth`] = lineWidth;
                     dimensions[`${arcKey}Radius`] = currentRadius - (lineWidth / 2);
