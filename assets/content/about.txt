@@ -1,2 +1,10 @@
-This is placeholder text for the "About Polar Clock Pro" section.
-It describes the application's "Data as Art" and "Productivity by Design" philosophy.
+About Polar Clock Pro
+Polar Clock Pro is a modern, minimalist time-telling application that reimagines the traditional clock face. Instead of hands, it visualizes the passage of time through a series of concentric, animated data arcs. It is designed to be a beautiful and functional productivity tool that helps users track, manage, and master their time, all within an ambient digital art interface.
+
+The project is guided by two core themes: "Data as Art" and "Productivity by Design."
+
+Data as Art: The application's purpose is not just to tell time, but to present it beautifully. Every visual element serves the dual purpose of conveying information clearly and contributing to a clean, uncluttered aesthetic.
+
+Productivity by Design: This is not a passive clock. It is an active tool designed to assist a user's workflow. Features are built to support structured work methodologies and encourage focused time management.
+
+The design philosophy emphasizes minimalism, fluidity, and user control.
