@@ -1,0 +1,12 @@
+Frequently Asked Questions (FAQ)
+Q: What is Polar Clock Pro?
+A: Polar Clock Pro is a minimalist time-telling application guided by the themes of "Data as Art" and "Productivity by Design." It visualizes the passage of time through a series of concentric data arcs representing seconds, minutes, hours, day of the month, and month of the year. It's also an active productivity tool designed to help you manage your time effectively with built-in features.
+
+Q: How do I change the settings?
+A: All settings and productivity tools can be accessed via the non-intrusive, accordion-style settings panel. From there, you can access structured work timers, toggle the visibility of certain data arcs, and change the visual style of the separators between the arcs.
+
+Q: Can I customize which time arcs are displayed?
+A: Yes. To help you simplify the clock face to your preference, you can toggle the visibility of non-essential data arcs. Currently, the "Week of the Year" arc can be hidden or shown using its toggle in the settings panel.
+
+Q: What is the Pomodoro Technique feature?
+A: It's a built-in timer based on the popular Pomodoro time management method. This feature helps you work in focused 25-minute intervals separated by 5-minute short breaks. When activated, the clock's innermost data arc will visually represent the countdown of the current work or break period, integrating the timer directly into the clock face.
