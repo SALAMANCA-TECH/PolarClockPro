@@ -20,10 +20,15 @@ const Clock = (function() {
             case 'minutes':
                 return lastNow.getMinutes() === 59 && now.getMinutes() === 0;
             case 'hours':
-                // This handles both 12-hour (e.g., 11 AM -> 12 PM) and 24-hour (e.g., 23:00 -> 00:00) rollovers.
-                // 11 % 12 === 11, and 12 % 12 === 0.
-                // 23 % 12 === 11, and 0 % 12 === 0.
-                return lastNow.getHours() % 12 === 11 && now.getHours() % 12 === 0;
+                if (settings.is24HourFormat) {
+                    return lastNow.getHours() === 23 && now.getHours() === 0;
+                } else {
+                    // This handles the 12-hour cycle (e.g., 11 AM -> 12 PM or 11 PM -> 12 AM)
+                    const lastHour12 = lastNow.getHours() % 12;
+                    const nowHour12 = now.getHours() % 12;
+                    // Rollover happens when last hour was 11 and current is 0 (midnight/noon)
+                    return lastHour12 === 11 && nowHour12 === 0;
+                }
             case 'day':
                 return now.getDate() === 1 && lastNow.getDate() > 1;
             case 'month':
@@ -342,7 +347,12 @@ const Clock = (function() {
         const dayOfWeekEndAngle = baseStartAngle + (dayOfWeek / 7) * Math.PI * 2;
         const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
         const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
-        const hoursEndAngle = baseStartAngle + (((hours % 12) + minutes / 60) / 12) * Math.PI * 2;
+        let hoursEndAngle;
+        if (settings.is24HourFormat) {
+            hoursEndAngle = baseStartAngle + ((hours + minutes / 60) / 24) * Math.PI * 2;
+        } else {
+            hoursEndAngle = baseStartAngle + ((((hours % 12) || 12) + minutes / 60) / 12) * Math.PI * 2;
+        }
         const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
         const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
         const weekOfYearEndAngle = baseStartAngle + (weekOfYear / totalWeeks) * Math.PI * 2;
