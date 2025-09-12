@@ -104,11 +104,37 @@ const UI = (function() {
         // Feedback form
         const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
         submitFeedbackBtn.addEventListener('click', () => {
-            const title = document.getElementById('feedbackTitle').value;
-            const message = document.getElementById('feedbackMessage').value;
-            const subject = `Feedback report: ${title || 'Feedback Report'}`;
-            const mailtoLink = `mailto:Salamanca-Tech42@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-            window.location.href = mailtoLink;
+            const submitButton = document.getElementById('submitFeedbackBtn');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            const params = {
+                from_name: "Polar Clock Pro User", // Anonymous user
+                subject: document.getElementById('feedbackTitle').value,
+                message: document.getElementById('feedbackMessage').value,
+                reply_to: "no-reply@example.com", // Default no-reply
+            };
+
+            // IMPORTANT: Replace with your EmailJS credentials below
+            const serviceID = "YOUR_SERVICE_ID";
+            const templateID = "YOUR_TEMPLATE_ID";
+            const publicKey = "YOUR_PUBLIC_KEY";
+
+            emailjs.send(serviceID, templateID, params, publicKey)
+                .then(res => {
+                    console.log("EmailJS response:", res);
+                    document.getElementById('feedbackTitle').value = "";
+                    document.getElementById('feedbackMessage').value = "";
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    alert("Feedback sent successfully!");
+                })
+                .catch(err => {
+                    console.error("EmailJS error:", err);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    alert("Failed to send feedback. Please try again later.");
+                });
         });
     }
 
