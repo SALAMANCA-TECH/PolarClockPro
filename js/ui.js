@@ -115,11 +115,12 @@ const UI = (function() {
                 reply_to: "no-reply@example.com", // Default no-reply
             };
 
-            // IMPORTANT: Replace with your EmailJS credentials below
+            // Refactored EmailJS configuration for clarity
             const serviceID = "YOUR_SERVICE_ID";
-            const templateID = "YOUR_TEMPLATE_ID";
+            const templateID = 'YOUR_TEMPLATE_ID'; // A variable for the Template ID
             const publicKey = "YOUR_PUBLIC_KEY";
 
+            // The send function now uses the templateID variable
             emailjs.send(serviceID, templateID, params, publicKey)
                 .then(res => {
                     console.log("EmailJS response:", res);
