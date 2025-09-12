@@ -1443,15 +1443,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
             document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
             ['modeStandard', 'modePercentage', 'modeRemainder'].forEach(id => document.getElementById(id).classList.remove('active'));
-            const activeModeButton = document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`);
-            if (activeModeButton) {
-                activeModeButton.classList.add('active');
-            }
+            document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
-            const activePresetButton = document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`);
-            if (activePresetButton) {
-                activePresetButton.classList.add('active');
-            }
+            document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
             document.getElementById('gradientToggle').checked = settings.useGradient;
             document.getElementById('separatorsShow').classList.toggle('active', settings.showSeparators);
             document.getElementById('separatorsHide').classList.toggle('active', !settings.showSeparators);
