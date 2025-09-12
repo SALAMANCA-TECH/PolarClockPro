@@ -1,3 +1,4 @@
+emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
         main: document.getElementById('mainView'),
@@ -6,6 +7,7 @@ const UI = (function() {
         about: document.getElementById('aboutView'),
     };
     const navButtons = {
+        goToClock: document.getElementById('goToClockBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToTools: document.getElementById('goToToolsBtn'),
         goToAlarms: document.getElementById('goToAlarmsBtn'),
@@ -96,20 +98,53 @@ const UI = (function() {
             fetch(`assets/content/${id}.txt`)
                 .then(response => response.text())
                 .then(text => {
-                    document.getElementById(`${id}-content`).innerText = text;
+                    const contentElement = document.getElementById(`${id}-content`);
+                    contentElement.innerHTML = `<div class="scrollable-content">${text}</div>`;
                 })
                 .catch(error => console.error(`Error fetching ${id}.txt:`, error));
         });
 
         // Feedback form
-        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
-        submitFeedbackBtn.addEventListener('click', () => {
-            const title = document.getElementById('feedbackTitle').value;
-            const message = document.getElementById('feedbackMessage').value;
-            const subject = `Feedback report: ${title || 'Feedback Report'}`;
-            const mailtoLink = `mailto:Salamanca-Tech42@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-            window.location.href = mailtoLink;
-        });
+        const feedbackForm = document.getElementById('feedbackForm');
+        if (feedbackForm) {
+            const statusMessage = document.getElementById('feedbackStatus');
+            feedbackForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const submitButton = this.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Submitting...';
+                }
+                if(statusMessage) {
+                    statusMessage.textContent = ''; // Clear previous status
+                }
+
+                const serviceID = 'service_hnc4xxb';
+                const templateID = 'template_5lqcgtd';
+
+                emailjs.sendForm(serviceID, templateID, this)
+                    .then(() => {
+                        if(statusMessage) {
+                            statusMessage.textContent = 'Feedback sent successfully!';
+                            statusMessage.style.color = '#4CAF50'; // Green for success
+                        }
+                        feedbackForm.reset(); // Clear the form
+                    }, (err) => {
+                        if(statusMessage) {
+                            statusMessage.textContent = 'Failed to send feedback. Please try again later.';
+                            statusMessage.style.color = '#F44336'; // Red for error
+                        }
+                        console.error('EmailJS error:', err);
+                    })
+                    .finally(() => {
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Submit';
+                        }
+                    });
+            });
+        }
     }
 
     let settingsAccordionInitialized = false;
@@ -149,6 +184,10 @@ const UI = (function() {
     return {
         init: function(clockModule) {
             Clock = clockModule; // Store the reference
+            navButtons.goToClock.addEventListener('click', () => {
+                showView(views.main);
+                document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
+            });
             navButtons.goToSettings.addEventListener('click', () => {
                 showView(views.settings);
                 initSettingsAccordion();

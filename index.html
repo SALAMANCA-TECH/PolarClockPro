@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polar Clock Pro</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <!-- DEPENDENCIES: Tailwind CSS for styling and Phosphor Icons for UI icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -407,6 +408,11 @@
     .accordion-content p {
         margin: 15px 0;
     }
+    .scrollable-content {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 15px; /* Add some padding for the scrollbar */
+    }
     .feedback-form {
         display: flex;
         flex-direction: column;
@@ -503,6 +509,10 @@
         }
     }
     </style>
+    <!-- EmailJS SDK for feedback form -->
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
 </head>
 <body>
     <!-- Canvas Container for the Clock -->
@@ -526,10 +536,11 @@
         <!-- Main Navigation View -->
         <div id="mainView" class="ui-content">
             <div class="main-nav-buttons">
+                <button id="goToClockBtn" class="main-nav-button"><i class="ph ph-clock"></i></button>
                 <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
                 <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
-                <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
                 <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
+                <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
             </div>
         </div>
 
@@ -632,6 +643,55 @@
             </div>
         </div>
 
+        <!-- About View -->
+        <div id="aboutView" class="ui-content" style="display: none;">
+            <div class="view-header">
+                <button id="backToMainFromAbout" class="back-button">Back</button>
+                <h2 class="view-title">About</h2>
+            </div>
+            <div class="accordion">
+                <!-- About Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">About Polar Clock Pro</div>
+                    <div class="accordion-content">
+                        <p id="about-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- How to Use Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">How to Use</div>
+                    <div class="accordion-content">
+                        <p id="how-to-use-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- Pomodoro Technique Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">The Pomodoro Technique</div>
+                    <div class="accordion-content">
+                        <p id="pomodoro-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- FAQ Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">FAQ</div>
+                    <div class="accordion-content">
+                        <p id="faq-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- Feedback Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">Feedback & Suggestions</div>
+                    <div class="accordion-content">
+                        <form id="feedbackForm" class="feedback-form">
+                            <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
+                            <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
+                            <button type="submit" id="submitFeedbackBtn">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings View -->
         <div id="settingsView" class="ui-content" style="display: none;">
             <div class="view-header">
@@ -667,6 +727,30 @@
                                 <button id="modeStandard" class="display-mode-button">Standard</button>
                                 <button id="modePercentage" class="display-mode-button">Percentage</button>
                                 <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>Digital Display</h3>
+                            <div class="setting-toggle">
+                                <span>Time</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="digitalTimeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <span>Date</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="digitalDateToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <span>Circles</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="arcEndCirclesToggle">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -766,55 +850,6 @@
                                     <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- About View -->
-        <div id="aboutView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromAbout" class="back-button">Back</button>
-                <h2 class="view-title">About</h2>
-            </div>
-            <div class="accordion">
-                <!-- About Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">About Polar Clock Pro</div>
-                    <div class="accordion-content">
-                        <p id="about-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- How to Use Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">How to Use</div>
-                    <div class="accordion-content">
-                        <p id="how-to-use-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- Pomodoro Technique Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">The Pomodoro Technique</div>
-                    <div class="accordion-content">
-                        <p id="pomodoro-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- FAQ Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">FAQ</div>
-                    <div class="accordion-content">
-                        <p id="faq-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- Feedback Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">Feedback & Suggestions</div>
-                    <div class="accordion-content">
-                        <div class="feedback-form">
-                            <input type="text" id="feedbackTitle" placeholder="Subject">
-                            <textarea id="feedbackMessage" rows="5" placeholder="Your message..."></textarea>
-                            <button id="submitFeedbackBtn">Submit</button>
                         </div>
                     </div>
                 </div>
