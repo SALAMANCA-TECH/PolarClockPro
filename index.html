@@ -598,14 +598,6 @@
                 </div>
             </div>
             <div class="settings-section">
-                <h3>Label Display</h3>
-                <div class="display-mode-buttons">
-                    <button id="modeStandard" class="display-mode-button">Standard</button>
-                    <button id="modePercentage" class="display-mode-button">Percentage</button>
-                    <button id="modeRemainder" class="display-mode-button">Remainder</button>
-                </div>
-            </div>
-            <div class="settings-section">
                 <h3>Color Scheme</h3>
                 <div class="color-preset-buttons">
                     <button id="presetDefault" class="color-preset-button">Default</button>
@@ -779,7 +771,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let fontSizeMultiplier = (arc.key === 'month' || arc.key === 'week') ? 0.8 : 0.6;
             let circleSizeMultiplier = (arc.key === 'month' || arc.key === 'week') ? 0.85 : 0.7;
-            if (settings.labelDisplayMode === 'percentage') fontSizeMultiplier *= 0.85;
 
             const circleRadius = arc.lineWidth * circleSizeMultiplier;
             ctx.beginPath();
@@ -883,41 +874,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), milliseconds = now.getMilliseconds();
             const daysInMonth = getDaysInMonth(year, month);
 
-            switch (settings.labelDisplayMode) {
-                case 'percentage':
-                    let percent = 0;
-                    const totalMsInDay = 86400000;
-                    const currentMsInDay = (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds;
-                    if (unit === 'seconds') percent = (seconds * 1000 + milliseconds) / 60000 * 100;
-                    if (unit === 'minutes') percent = (minutes * 60000 + seconds * 1000 + milliseconds) / 3600000 * 100;
-                    if (unit === 'hours') percent = ((hours % 12) * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds) / 43200000 * 100;
-                    if (unit === 'day') percent = ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay) * 100;
-                    if (unit === 'month') percent = (month + ((date - 1) * totalMsInDay + currentMsInDay) / (daysInMonth * totalMsInDay)) / 12 * 100;
-                    if (unit === 'week') percent = (getWeekOfYear(now) / 52) * 100;
-                    return `${Math.floor(percent)}%`;
-                case 'remainder':
-                    if (unit === 'seconds') return 59 - seconds;
-                    if (unit === 'minutes') return 59 - minutes;
-                    if (unit === 'hours') return 11 - (hours % 12);
-                    if (unit === 'day') return daysInMonth - date;
-                    if (unit === 'month') return 11 - month;
-                    if (unit === 'week') return 52 - getWeekOfYear(now);
-                    return '';
-                default: // standard
-                    if (unit === 'seconds') return seconds.toString().padStart(2, '0');
-                    if (unit === 'minutes') return minutes.toString().padStart(2, '0');
-                    if (unit === 'hours') {
-                        if (settings.is24HourFormat) {
-                            return hours.toString().padStart(2, '0');
-                        } else {
-                            return (hours % 12 || 12).toString();
-                        }
-                    }
-                    if (unit === 'day') return date.toString();
-                    if (unit === 'month') return (month + 1).toString().padStart(2, '0');
-                    if (unit === 'week') return getWeekOfYear(now);
-                    return '';
+            if (unit === 'seconds') return seconds.toString().padStart(2, '0');
+            if (unit === 'minutes') return minutes.toString().padStart(2, '0');
+            if (unit === 'hours') {
+                if (settings.is24HourFormat) {
+                    return hours.toString().padStart(2, '0');
+                } else {
+                    return (hours % 12 || 12).toString();
+                }
             }
+            if (unit === 'day') return date.toString();
+            if (unit === 'month') return (month + 1).toString().padStart(2, '0');
+            if (unit === 'week') return getWeekOfYear(now);
+            return '';
         };
 
         const drawClock = () => {
@@ -1437,7 +1406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadSettings() {
             const savedSettings = localStorage.getItem('polarClockSettings');
             const defaultSettings = {
-                is24HourFormat: false, labelDisplayMode: 'standard', useGradient: true, colorPreset: 'default',
+                is24HourFormat: false, useGradient: true, colorPreset: 'default',
                 showSeparators: true,
                 separatorMode: 'standard',
                 volume: 1.0, timerSound: 'bell01.mp3', alarmSound: 'bell01.mp3', stopwatchSound: 'Tick_Tock.wav', pomodoroGlowEnabled: true, pomodoroPulseEnabled: true
@@ -1449,8 +1418,6 @@ document.addEventListener('DOMContentLoaded', function() {
         function applySettingsToUI() {
             document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
             document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
-            ['modeStandard', 'modePercentage', 'modeRemainder'].forEach(id => document.getElementById(id).classList.remove('active'));
-            document.getElementById(`mode${settings.labelDisplayMode.charAt(0).toUpperCase() + settings.labelDisplayMode.slice(1)}`).classList.add('active');
             ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind'].forEach(id => document.getElementById(id).classList.remove('active'));
             document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
             document.getElementById('gradientToggle').checked = settings.useGradient;
@@ -1500,9 +1467,6 @@ document.addEventListener('DOMContentLoaded', function() {
         function setupEventListeners() {
             document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
             document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
-            ['standard', 'percentage', 'remainder'].forEach(mode => {
-                document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`).addEventListener('click', () => { settings.labelDisplayMode = mode; saveSettings(); applySettingsToUI(); });
-            });
             ['default', 'neon', 'pastel', 'colorblind'].forEach(preset => {
                 document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
             });
