@@ -641,18 +641,48 @@
         <div id="aboutView" class="ui-content" style="display: none;">
             <div class="view-header">
                 <button id="backToMainFromAbout" class="back-button">Back</button>
-                <h2 class="view-title">About & Feedback</h2>
+                <h2 class="view-title">About</h2>
             </div>
-            <div class="settings-section w-full max-w-xs">
-                <p class="text-center text-gray-400 mb-4">
-                    Polar Clock Pro is a visual timepiece designed to be both beautiful and functional.
-                </p>
-                <h3 class="text-sm uppercase text-gray-400 mt-4">Send Anonymous Feedback</h3>
-                <form id="feedbackForm" class="w-full">
-                    <textarea id="feedbackMessage" name="message" class="w-full bg-slate-700 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="Your feedback..."></textarea>
-                    <button id="submitFeedbackBtn" type="submit" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">Submit</button>
-                    <p id="feedbackStatus" class="text-center text-sm mt-2"></p>
-                </form>
+            <div class="accordion">
+                <!-- About Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">About Polar Clock Pro</div>
+                    <div class="accordion-content">
+                        <p id="about-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- How to Use Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">How to Use</div>
+                    <div class="accordion-content">
+                        <p id="how-to-use-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- Pomodoro Technique Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">The Pomodoro Technique</div>
+                    <div class="accordion-content">
+                        <p id="pomodoro-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- FAQ Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">FAQ</div>
+                    <div class="accordion-content">
+                        <p id="faq-content">Loading...</p>
+                    </div>
+                </div>
+                <!-- Feedback Section -->
+                <div class="accordion-item">
+                    <div class="accordion-header">Feedback & Suggestions</div>
+                    <div class="accordion-content">
+                        <form id="feedbackForm" class="feedback-form">
+                            <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
+                            <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
+                            <button type="submit" id="submitFeedbackBtn">Submit</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -791,55 +821,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- About View -->
-        <div id="aboutView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromAbout" class="back-button">Back</button>
-                <h2 class="view-title">About</h2>
-            </div>
-            <div class="accordion">
-                <!-- About Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">About Polar Clock Pro</div>
-                    <div class="accordion-content">
-                        <p id="about-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- How to Use Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">How to Use</div>
-                    <div class="accordion-content">
-                        <p id="how-to-use-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- Pomodoro Technique Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">The Pomodoro Technique</div>
-                    <div class="accordion-content">
-                        <p id="pomodoro-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- FAQ Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">FAQ</div>
-                    <div class="accordion-content">
-                        <p id="faq-content">Loading...</p>
-                    </div>
-                </div>
-                <!-- Feedback Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">Feedback & Suggestions</div>
-                    <div class="accordion-content">
-                        <form id="feedbackForm" class="feedback-form">
-                            <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
-                            <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
-                            <button type="submit" id="submitFeedbackBtn">Submit</button>
-                        </form>
                     </div>
                 </div>
             </div>
