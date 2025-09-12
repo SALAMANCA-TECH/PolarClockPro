@@ -1,4 +1,4 @@
-emailjs.init({ publicKey: 'YOUR_PUBLIC_KEY' });
+emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
         main: document.getElementById('mainView'),
@@ -105,33 +105,41 @@ const UI = (function() {
         // Feedback form
         const feedbackForm = document.getElementById('feedbackForm');
         if (feedbackForm) {
+            const statusMessage = document.getElementById('feedbackStatus');
             feedbackForm.addEventListener('submit', function(event) {
                 event.preventDefault(); // Prevent default form submission
 
-                const submitButton = this.querySelector('button');
+                const submitButton = this.querySelector('button[type="submit"]');
                 if (submitButton) {
                     submitButton.disabled = true;
                     submitButton.textContent = 'Submitting...';
                 }
+                if(statusMessage) {
+                    statusMessage.textContent = ''; // Clear previous status
+                }
 
                 const serviceID = 'service_hnc4xxb';
-                const templateID = 'YOUR_TEMPLATE_ID';
+                const templateID = 'template_5lqcgtd';
 
                 emailjs.sendForm(serviceID, templateID, this)
                     .then(() => {
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Submit';
+                        if(statusMessage) {
+                            statusMessage.textContent = 'Feedback sent successfully!';
+                            statusMessage.style.color = '#4CAF50'; // Green for success
                         }
-                        alert('Feedback sent successfully!');
                         feedbackForm.reset(); // Clear the form
                     }, (err) => {
+                        if(statusMessage) {
+                            statusMessage.textContent = 'Failed to send feedback. Please try again later.';
+                            statusMessage.style.color = '#F44336'; // Red for error
+                        }
+                        console.error('EmailJS error:', err);
+                    })
+                    .finally(() => {
                         if (submitButton) {
                             submitButton.disabled = false;
                             submitButton.textContent = 'Submit';
                         }
-                        alert('Failed to send feedback. Error: ' + JSON.stringify(err));
-                        console.error('EmailJS error:', err);
                     });
             });
         }
