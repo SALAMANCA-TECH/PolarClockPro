@@ -7,6 +7,7 @@ const UI = (function() {
         about: document.getElementById('aboutView'),
     };
     const navButtons = {
+        goToClock: document.getElementById('goToClockBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToTools: document.getElementById('goToToolsBtn'),
         goToAlarms: document.getElementById('goToAlarmsBtn'),
@@ -183,6 +184,10 @@ const UI = (function() {
     return {
         init: function(clockModule) {
             Clock = clockModule; // Store the reference
+            navButtons.goToClock.addEventListener('click', () => {
+                showView(views.main);
+                document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
+            });
             navButtons.goToSettings.addEventListener('click', () => {
                 showView(views.settings);
                 initSettingsAccordion();

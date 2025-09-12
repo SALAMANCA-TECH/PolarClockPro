@@ -37,6 +37,67 @@ const Clock = (function() {
         }
     };
 
+    const drawTimer = () => {
+        if (!settings.currentColors || !globalState.timer) {
+            return;
+        }
+
+        const { remainingSeconds, totalSeconds } = globalState.timer;
+
+        // If the timer hasn't started, draw empty arcs
+        if (totalSeconds === 0) {
+            const emptyArcs = [
+                { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, text: '00' },
+                { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, text: '00' },
+                { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, text: '00' }
+            ];
+            emptyArcs.forEach(arc => {
+                 if (arc.radius > 0) {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, baseStartAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawLabel({ ...arc, text: arc.text });
+                 }
+            });
+            return;
+        }
+
+
+        const remaining = Math.max(0, remainingSeconds);
+        const hours = Math.floor(remaining / 3600);
+        const minutes = Math.floor((remaining % 3600) / 60);
+        const seconds = Math.floor(remaining % 60);
+
+        // Inverse fill: arcs shrink as time passes.
+        const hoursProgress = (hours + (minutes / 60) + (seconds / 3600)) / (totalSeconds / 3600);
+        const minutesProgress = (minutes + (seconds / 60)) / 60;
+        const secondsProgress = seconds / 60;
+
+        const hoursStartAngle = baseStartAngle + (1 - hoursProgress) * Math.PI * 2;
+        const minutesStartAngle = baseStartAngle + (1 - minutesProgress) * Math.PI * 2;
+        const secondsStartAngle = baseStartAngle + (1 - secondsProgress) * Math.PI * 2;
+        const fullCircleEndAngle = baseStartAngle + Math.PI * 2;
+
+
+        const arcs = [
+            { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, startAngle: hoursStartAngle, endAngle: fullCircleEndAngle, text: hours.toString().padStart(2, '0') },
+            { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, startAngle: minutesStartAngle, endAngle: fullCircleEndAngle, text: minutes.toString().padStart(2, '0') },
+            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, startAngle: secondsStartAngle, endAngle: fullCircleEndAngle, text: seconds.toString().padStart(2, '0') }
+        ];
+
+        arcs.forEach(arc => {
+            if (arc.radius > 0 && settings.currentColors) {
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                drawLabel({ ...arc, text: arc.text });
+            }
+        });
+
+        // Draw separators if enabled
+        if (settings.showSeparators) {
+            drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
+            drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+            drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+        }
+    };
+
     const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
         if (startAngle >= endAngle - 0.01 || radius <= 0) return;
 
@@ -300,12 +361,6 @@ const Clock = (function() {
             { key: 'weekOfYear', radius: dimensions.weekOfYearRadius, colors: settings.currentColors.weekOfYear, lineWidth: dimensions.weekOfYearLineWidth, endAngle: weekOfYearEndAngle }
         ];
 
-        if (globalState.timer && globalState.timer.totalSeconds > 0 && dimensions.timerRadius > 0) {
-            const timerProgress = globalState.timer.remainingSeconds / globalState.timer.totalSeconds;
-            const timerStartAngle = baseStartAngle + (1 - timerProgress) * Math.PI * 2;
-            drawArc(dimensions.centerX, dimensions.centerY, dimensions.timerRadius, timerStartAngle, baseStartAngle + Math.PI * 2, '#FF8A80', '#D50000', 30);
-        }
-
         const nowMs = now.getTime();
         arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
@@ -528,6 +583,8 @@ const Clock = (function() {
             drawPomodoro();
         } else if (globalState.mode === 'stopwatch') {
             drawStopwatch();
+        } else if (globalState.mode === 'timer') {
+            drawTimer();
         } else {
             drawClock();
         }
