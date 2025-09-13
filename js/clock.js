@@ -405,9 +405,17 @@ const Clock = (function() {
                     }
                 }
 
-                const anim = resetAnimations[arc.key];
-                let isAnimatingThisFrame = false;
+                // ALWAYS draw the primary arc representing the current time.
+                // This is the "Arc B" that starts immediately.
+                if (settings.inverseMode && globalState.mode === 'clock') {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                } else {
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                }
 
+                // If a wipe animation is active for this arc, draw it on top.
+                // This is the "Arc A" that is finishing its cycle.
+                const anim = resetAnimations[arc.key];
                 if (anim && anim.isAnimating) {
                     const elapsed = nowMs - anim.startTime;
                     if (elapsed < animationDuration) {
@@ -421,17 +429,8 @@ const Clock = (function() {
                             const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
                             drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
                         }
-                        isAnimatingThisFrame = true;
                     } else {
                         anim.isAnimating = false;
-                    }
-                }
-
-                if (!isAnimatingThisFrame) {
-                    if (settings.inverseMode && globalState.mode === 'clock') {
-                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
-                    } else {
-                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                     }
                 }
 
