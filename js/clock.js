@@ -396,9 +396,11 @@ const Clock = (function() {
         ];
 
         const nowMs = now.getTime();
-        arcs.filter(arc => settings.arcVisibility[arc.key]).forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
+        const visibleArcs = arcs.filter(arc => settings.arcVisibility[arc.key]);
 
+        // First, draw all the arcs.
+        visibleArcs.forEach(arc => {
+            if (arc.radius > 0 && settings.currentColors) {
                 if (hasCompletedCycle(arc.key, now, lastNow)) {
                     if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
                         resetAnimations[arc.key] = { isAnimating: true, startTime: nowMs };
@@ -406,26 +408,22 @@ const Clock = (function() {
                 }
 
                 // ALWAYS draw the primary arc representing the current time.
-                // This is the "Arc B" that starts immediately.
                 if (settings.inverseMode && globalState.mode === 'clock') {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
                 } else {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                 }
 
-                // If a wipe animation is active for this arc, draw it on top.
-                // This is the "Arc A" that is finishing its cycle.
+                // If a wipe animation is active, draw it on top.
                 const anim = resetAnimations[arc.key];
                 if (anim && anim.isAnimating) {
                     const elapsed = nowMs - anim.startTime;
                     if (elapsed < animationDuration) {
                         const progress = elapsed / animationDuration;
                         if (settings.inverseMode && globalState.mode === 'clock') {
-                            // In inverse mode, the arc "fills up" from the top to represent the new cycle's remainder
                             const animatedEndAngle = baseStartAngle + (progress * Math.PI * 2);
                             drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
                         } else {
-                            // In normal mode, the arc "wipes" itself clean by the tail chasing the head
                             const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
                             drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
                         }
@@ -434,12 +432,12 @@ const Clock = (function() {
                     }
                 }
 
+                // Get the label text ready for the next step.
                 arc.text = getLabelText(arc.key, now);
-                drawLabel(arc);
             }
         });
 
-        // --- Draw Separators ---
+        // Second, draw the separators over the arcs.
         if (settings.showSeparators) {
             const isRulerMode = settings.separatorMode === 'ruler';
 
@@ -476,6 +474,13 @@ const Clock = (function() {
             if (settings.arcVisibility.dayOfWeek && settings.separatorVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
             if (settings.arcVisibility.weekOfYear && settings.separatorVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
+
+        // Finally, draw the labels (and their circles) on top of everything.
+        visibleArcs.forEach(arc => {
+            if (arc.radius > 0 && settings.currentColors) {
+                drawLabel(arc);
+            }
+        });
 
         lastNow = now;
 
