@@ -454,16 +454,14 @@
             top: 0;
             width: 380px;
             z-index: 100;
-            background-color: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            /* The panel is no longer a flex item in this view, so flex-basis is not needed. */
+            /* By default, the container is transparent and positioned as an overlay. */
+            /* The nav buttons inside are still clickable without affecting the clock layout. */
         }
 
         body.panel-open .ui-container {
-            transform: translateX(0);
+            background-color: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
     }
 
