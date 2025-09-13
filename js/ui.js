@@ -116,40 +116,60 @@ const UI = (function() {
         const feedbackForm = document.getElementById('feedbackForm');
         if (feedbackForm) {
             const statusMessage = document.getElementById('feedbackStatus');
+            const messageTextarea = document.getElementById('feedbackMessage');
+
             feedbackForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent default form submission
+                event.preventDefault();
 
                 const submitButton = this.querySelector('button[type="submit"]');
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'Submitting...';
+                statusMessage.textContent = '';
+                statusMessage.style.color = 'inherit';
+
+                // 1. Validation: No empty messages
+                if (messageTextarea.value.trim() === '') {
+                    statusMessage.textContent = 'Message cannot be empty.';
+                    statusMessage.style.color = '#F44336'; // Red for error
+                    return;
                 }
-                if(statusMessage) {
-                    statusMessage.textContent = ''; // Clear previous status
+
+                // 2. Rate Limiting
+                const now = new Date().getTime();
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                let submissionTimestamps = JSON.parse(localStorage.getItem('feedbackSubmissions')) || [];
+
+                // Filter out submissions older than 24 hours
+                submissionTimestamps = submissionTimestamps.filter(timestamp => now - timestamp < twentyFourHours);
+
+                if (submissionTimestamps.length >= 3) {
+                    statusMessage.textContent = 'You have reached the submission limit for today.';
+                    statusMessage.style.color = '#F44336';
+                    return;
                 }
+
+                // Disable button and show submitting message
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
 
                 const serviceID = 'service_hnc4xxb';
                 const templateID = 'template_5lqcgtd';
 
                 emailjs.sendForm(serviceID, templateID, this)
                     .then(() => {
-                        if(statusMessage) {
-                            statusMessage.textContent = 'Feedback sent successfully!';
-                            statusMessage.style.color = '#4CAF50'; // Green for success
-                        }
-                        feedbackForm.reset(); // Clear the form
+                        statusMessage.textContent = 'Feedback sent successfully!';
+                        statusMessage.style.color = '#4CAF50';
+                        feedbackForm.reset();
+
+                        // Add new timestamp and update localStorage
+                        submissionTimestamps.push(now);
+                        localStorage.setItem('feedbackSubmissions', JSON.stringify(submissionTimestamps));
                     }, (err) => {
-                        if(statusMessage) {
-                            statusMessage.textContent = 'Failed to send feedback. Please try again later.';
-                            statusMessage.style.color = '#F44336'; // Red for error
-                        }
+                        statusMessage.textContent = 'Failed to send feedback. Please try again later.';
+                        statusMessage.style.color = '#F44336';
                         console.error('EmailJS error:', err);
                     })
                     .finally(() => {
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Submit';
-                        }
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Submit';
                     });
             });
         }
