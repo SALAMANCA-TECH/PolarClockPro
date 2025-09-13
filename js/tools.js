@@ -49,7 +49,8 @@ const Tools = (function() {
             isMutedThisCycle: false,
             isSnoozing: false,
             lastMinuteSoundPlayed: false,
-            currentAudio: null
+            currentAudio: null,
+            endOfCycleSoundPlayed: false
         },
         pomodoro: {
             isRunning: false,
@@ -131,6 +132,10 @@ const Tools = (function() {
         if (state.timer.remainingSeconds > 0) {
             state.timer.isRunning = true;
             setTimerInputsDisabled(true);
+            // Reset the sound played flag whenever the timer starts/resumes
+            if (state.timer.remainingSeconds > 58) {
+                state.timer.endOfCycleSoundPlayed = false;
+            }
         }
         updateButtonStates();
     }
@@ -152,6 +157,7 @@ const Tools = (function() {
         state.timer.isMutedThisCycle = false;
         state.timer.isSnoozing = false;
         state.timer.lastMinuteSoundPlayed = false;
+        state.timer.endOfCycleSoundPlayed = false;
         if (state.timer.currentAudio) {
             state.timer.currentAudio.pause();
             state.timer.currentAudio = null;
@@ -206,6 +212,7 @@ const Tools = (function() {
         state.timer.remainingSeconds += 300; // Add 5 minutes
         state.timer.isSnoozing = true;
         state.timer.alarmPlaying = false;
+        state.timer.endOfCycleSoundPlayed = false; // Allow sound to play again after snooze
         startTimer(); // This will set isRunning and update UI correctly
         updateTimerUI(); // Ensure alarm controls are hidden
         updateButtonStates(); // Ensure button text is correct
@@ -647,6 +654,23 @@ const Tools = (function() {
                         timeInputs.classList.remove('snoozed');
                     }
                 }
+
+                // End-of-cycle sound cue at 58 seconds
+                if (
+                    Math.floor(state.timer.remainingSeconds) === 58 &&
+                    !state.timer.endOfCycleSoundPlayed &&
+                    !state.timer.isMutedThisCycle
+                ) {
+                    if (state.timer.currentAudio) {
+                        state.timer.currentAudio.pause();
+                    }
+                    const audio = playSound('long_break_end.mp3');
+                    if (audio) {
+                        state.timer.currentAudio = audio;
+                    }
+                    state.timer.endOfCycleSoundPlayed = true;
+                }
+
                 updateTimerUI();
             }
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
