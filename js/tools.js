@@ -46,7 +46,7 @@ const Tools = (function() {
             remainingSeconds: 0,
             isRunning: false,
             isInterval: false,
-            style: true,
+            style: false,
             alarmPlaying: false,
             isMuted: false,
             isSnoozing: false,
@@ -113,6 +113,7 @@ const Tools = (function() {
         if (!state.timer.isRunning) {
             state.timer.remainingSeconds = finalTotalSeconds;
         }
+        document.dispatchEvent(new CustomEvent('statechange'));
     }
 
 
@@ -575,8 +576,14 @@ const Tools = (function() {
         // Timer
         toggleTimerBtn.addEventListener('click', toggleTimer);
         resetTimerBtn.addEventListener('click', resetTimer);
-        intervalToggle.addEventListener('change', (e) => state.timer.isInterval = e.target.checked);
-        timerStyleToggle.addEventListener('change', (e) => state.timer.style = e.target.checked);
+        intervalToggle.addEventListener('change', (e) => {
+            state.timer.isInterval = e.target.checked;
+            document.dispatchEvent(new CustomEvent('statechange'));
+        });
+        timerStyleToggle.addEventListener('change', (e) => {
+            state.timer.style = e.target.checked;
+            document.dispatchEvent(new CustomEvent('statechange'));
+        });
         timerDaysInput.addEventListener('blur', normalizeTimerInputs);
         timerHoursInput.addEventListener('blur', normalizeTimerInputs);
         timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
