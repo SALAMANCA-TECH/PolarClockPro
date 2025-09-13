@@ -48,7 +48,6 @@ const Tools = (function() {
             remainingSeconds: 25 * 60,
             alarmPlaying: false,
             isMuted: false,
-            isSnoozed: false,
             hasStarted: false,
             continuous: false,
             workDuration: 25,
@@ -246,7 +245,6 @@ const Tools = (function() {
         state.pomodoro.remainingSeconds = state.pomodoro.workDuration * 60;
         state.pomodoro.alarmPlaying = false;
         state.pomodoro.isMuted = false;
-        state.pomodoro.isSnoozed = false;
         state.pomodoro.hasStarted = false;
         state.pomodoro.isOneMinuteWarningPlayed = false;
         state.pomodoro.lastMinuteSoundPlayed = false;
@@ -283,7 +281,7 @@ const Tools = (function() {
     }
 
     function endCycle() {
-        state.pomodoro.isSnoozed = false;
+        state.pomodoro.isSnoozing = false;
         state.pomodoro.alarmPlaying = false;
         startNextPomodoroPhase(true);
         updatePomodoroDashboard();
@@ -295,7 +293,7 @@ const Tools = (function() {
         let duration = state.pomodoro.workDuration * 60;
 
         // Determine next phase only if not snoozing
-        if (!state.pomodoro.isSnoozed) {
+        if (!state.pomodoro.isSnoozing) {
             if (state.pomodoro.phase === 'work') {
                 state.pomodoro.cycles++;
                 if (state.pomodoro.cycles > 0 && state.pomodoro.cycles % 4 === 0) {
@@ -342,7 +340,7 @@ const Tools = (function() {
     }
 
     function updatePomodoroDashboard() {
-        const { phase, remainingSeconds, workDuration, shortBreakDuration, longBreakDuration, isRunning, hasStarted, isSnoozed } = state.pomodoro;
+        const { phase, remainingSeconds, workDuration, shortBreakDuration, longBreakDuration, isRunning, hasStarted, isSnoozing } = state.pomodoro;
 
         // Update the time for all three displays
         pomodoroWorkDisplay.textContent = formatToHHMMSS(phase === 'work' ? remainingSeconds : workDuration * 60);
@@ -356,7 +354,7 @@ const Tools = (function() {
         // Set class for the active phase
         const activeDisplay = phase === 'work' ? pomodoroWorkDisplay : (phase === 'shortBreak' ? pomodoroShortBreakDisplay : pomodoroLongBreakDisplay);
 
-        if (isSnoozed) {
+        if (isSnoozing) {
             activeDisplay.classList.add('snoozed');
         } else if (isRunning) {
             activeDisplay.classList.add('active');
@@ -366,8 +364,13 @@ const Tools = (function() {
 
         // Update the main status title
         let statusText = "Work Session";
-        if (phase === 'shortBreak') statusText = "Short Break";
-        if (phase === 'longBreak') statusText = "Long Break";
+        if (isSnoozing) {
+            statusText = "Snoozing";
+        } else if (phase === 'shortBreak') {
+            statusText = "Short Break";
+        } else if (phase === 'longBreak') {
+            statusText = "Long Break";
+        }
         statusDisplay.textContent = statusText;
     }
 
@@ -554,7 +557,7 @@ const Tools = (function() {
                     } else {
                         state.pomodoro.remainingSeconds = 0;
                         state.pomodoro.alarmPlaying = true;
-                        if (!state.pomodoro.isMuted) {
+                        if (!state.pomodoro.isMuted && !state.pomodoro.isMutedThisCycle) {
                             playSound(settings.timerSound || 'bell01.mp3');
                         }
                         updatePomodoroUI();
