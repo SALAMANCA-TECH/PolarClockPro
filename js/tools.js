@@ -226,6 +226,24 @@ const Tools = (function() {
         resetTimer();
     }
 
+    function restartTimer() {
+        // Stop any currently playing sound
+        if (state.timer.currentAudio) {
+            state.timer.currentAudio.pause();
+            state.timer.currentAudio = null;
+        }
+
+        // Reset state for a new run, preserving the total duration
+        state.timer.remainingSeconds = state.timer.totalSeconds;
+        state.timer.alarmPlaying = false;
+        state.timer.isSnoozing = false;
+        state.timer.isMutedThisCycle = false;
+        state.timer.endOfCycleSoundPlayed = false;
+
+        // Start the timer again
+        startTimer();
+    }
+
     // Stopwatch Functions
     function toggleStopwatch() {
         state.stopwatch.isRunning ? pauseStopwatch() : startStopwatch();
@@ -493,8 +511,11 @@ const Tools = (function() {
 
         if (!mainControls || !alarmControls) return;
 
-        mainControls.style.display = state.timer.alarmPlaying ? 'none' : 'flex';
-        alarmControls.style.display = state.timer.alarmPlaying ? 'flex' : 'none';
+        // Show alarm controls if the timer is actually ringing, OR if it's in the last 58 seconds of a timer that was originally longer than 58s.
+        const showAlarmControls = state.timer.alarmPlaying || (state.timer.remainingSeconds <= 58 && state.timer.totalSeconds > 58);
+
+        mainControls.style.display = showAlarmControls ? 'none' : 'flex';
+        alarmControls.style.display = showAlarmControls ? 'flex' : 'none';
     }
 
     // Shared Functions
@@ -538,7 +559,7 @@ const Tools = (function() {
         if(timerSnoozeBtn) timerSnoozeBtn.addEventListener('click', snoozeTimer);
 
         const timerStopBtn = document.getElementById('timerStopBtn');
-        if(timerStopBtn) timerStopBtn.addEventListener('click', stopTimerAlarm);
+        if(timerStopBtn) timerStopBtn.addEventListener('click', restartTimer);
 
 
         // Stopwatch
