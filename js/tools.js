@@ -46,7 +46,7 @@ const Tools = (function() {
             isRunning: false,
             isInterval: false,
             alarmPlaying: false,
-            isMutedThisCycle: false,
+            isMuted: false,
             isSnoozing: false,
             lastMinuteSoundPlayed: false,
             currentAudio: null,
@@ -154,7 +154,7 @@ const Tools = (function() {
 
         // Reset new state flags
         state.timer.alarmPlaying = false;
-        state.timer.isMutedThisCycle = false;
+        state.timer.isMuted = false;
         state.timer.isSnoozing = false;
         state.timer.lastMinuteSoundPlayed = false;
         state.timer.endOfCycleSoundPlayed = false;
@@ -179,18 +179,20 @@ const Tools = (function() {
 
     function timerFinished() {
         if (state.timer.isInterval) {
-            if (!state.timer.isMutedThisCycle) {
-                playSound(settings.timerSound);
+            const audio = playSound(settings.timerSound);
+            if (audio && state.timer.isMuted) {
+                audio.muted = true;
             }
             state.timer.remainingSeconds = state.timer.totalSeconds;
         } else {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
             state.timer.remainingSeconds = 0;
-            if (!state.timer.isMutedThisCycle) {
-                const audio = playSound(settings.timerSound);
-                if (audio) {
-                    state.timer.currentAudio = audio;
+            const audio = playSound(settings.timerSound);
+            if (audio) {
+                state.timer.currentAudio = audio;
+                if (state.timer.isMuted) {
+                    audio.muted = true;
                 }
             }
             updateTimerUI();
@@ -198,10 +200,15 @@ const Tools = (function() {
     }
 
     function muteTimerAudio() {
+        state.timer.isMuted = !state.timer.isMuted;
         if (state.timer.currentAudio) {
-            state.timer.currentAudio.pause();
+            state.timer.currentAudio.muted = state.timer.isMuted;
         }
-        state.timer.isMutedThisCycle = true;
+        // Also update the button's visual state to give feedback
+        const timerMuteBtn = document.getElementById('timerMuteBtn');
+        if (timerMuteBtn) {
+            timerMuteBtn.classList.toggle('active', state.timer.isMuted);
+        }
     }
 
     function snoozeTimer() {
@@ -237,7 +244,7 @@ const Tools = (function() {
         state.timer.remainingSeconds = state.timer.totalSeconds;
         state.timer.alarmPlaying = false;
         state.timer.isSnoozing = false;
-        state.timer.isMutedThisCycle = false;
+        state.timer.isMuted = false;
         state.timer.endOfCycleSoundPlayed = false;
 
         // Start the timer again
@@ -679,8 +686,7 @@ const Tools = (function() {
                 // End-of-cycle sound cue at 58 seconds
                 if (
                     Math.floor(state.timer.remainingSeconds) === 58 &&
-                    !state.timer.endOfCycleSoundPlayed &&
-                    !state.timer.isMutedThisCycle
+                    !state.timer.endOfCycleSoundPlayed
                 ) {
                     if (state.timer.currentAudio) {
                         state.timer.currentAudio.pause();
@@ -688,6 +694,9 @@ const Tools = (function() {
                     const audio = playSound('long_break_end.mp3');
                     if (audio) {
                         state.timer.currentAudio = audio;
+                        if (state.timer.isMuted) {
+                            audio.muted = true;
+                        }
                     }
                     state.timer.endOfCycleSoundPlayed = true;
                 }
