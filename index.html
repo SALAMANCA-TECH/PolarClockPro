@@ -16,7 +16,7 @@
     /* General page styling */
     body {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
@@ -448,23 +448,22 @@
 
     /* --- Desktop Overlay for UI Panel --- */
     @media (min-width: 769px) {
-        body.panel-open .ui-container {
+        .ui-container {
             position: absolute;
             right: 0;
             top: 0;
-            width: 380px; /* Explicitly set width to match original flex-basis */
-            z-index: 100; /* Ensure it's on top of the canvas */
-            background-color: rgba(26, 26, 26, 0.85); /* Semi-transparent background */
-            backdrop-filter: blur(10px); /* Frosted glass effect */
-            -webkit-backdrop-filter: blur(10px); /* Safari support */
-
-            /* Override flex properties that push the layout */
-            flex-basis: auto;
+            width: 380px;
+            z-index: 100;
+            background-color: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            /* The panel is no longer a flex item in this view, so flex-basis is not needed. */
         }
 
-        body.panel-open .canvas-container {
-            /* Ensure the canvas container takes up the full width behind the overlay */
-            flex-basis: 100%;
+        body.panel-open .ui-container {
+            transform: translateX(0);
         }
     }
 
