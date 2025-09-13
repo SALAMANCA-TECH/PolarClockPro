@@ -80,25 +80,66 @@
     }
 
     /* --- UI STYLES --- */
-    #mainView {
+    #tool-select-menu {
+        position: absolute;
+        bottom: 100%; /* Position above the footer */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        border-radius: 10px;
+        padding: 10px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: flex-start; /* Position at the top */
-        padding-top: 2rem; /* Add some space from the top */
-        height: 100vh; /* Full height for vertical centering */
-        flex-basis: 100px; /* Give it a bit of space */
-        flex-shrink: 0;
+        gap: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+        z-index: 199;
+    }
+    .tool-select-button {
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        width: 100%;
+        text-align: left;
+    }
+    .tool-select-button:hover {
+        background-color: #555;
+    }
+
+    footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+        box-sizing: border-box;
+        z-index: 200;
     }
     .view-panel {
         display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(18, 18, 18, 0.98);
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 1.5rem;
-        width: 100%;
+        z-index: 300;
+        overflow-y: auto;
+        padding: 2rem;
+        box-sizing: border-box;
     }
 
-    .tab-buttons, .format-buttons, .display-mode-buttons, .color-preset-buttons, .main-nav-buttons {
+    .format-buttons, .display-mode-buttons, .color-preset-buttons, .main-nav-buttons {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -455,109 +496,71 @@
     }
 
 
-    /* --- Desktop Overlay for UI Panel --- */
+    #controlsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    /* --- DESKTOP LAYOUT --- */
     @media (min-width: 769px) {
-        #mainView {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 100px; /* Only for the buttons */
-            z-index: 100;
-            background: transparent;
+        body {
+            flex-direction: row;
         }
-
-        .view-panel {
+        #controlsContainer {
             position: absolute;
             right: 0;
-            top: 0;
-            width: 380px;
-            height: 100vh;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 380px; /* Width of the controls panel */
             padding: 2rem;
-            overflow-y: auto;
+            height: 100vh;
+            justify-content: center;
             box-sizing: border-box;
-            z-index: 101; /* Above main view */
-            background-color: transparent;
-            display: none; /* Keep hidden by default */
         }
-
-        body.panel-open .view-panel {
-            display: flex; /* Show the active panel */
-            background-color: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+        .canvas-container {
+            padding-right: 380px; /* Make space for the controls */
+            box-sizing: border-box;
         }
     }
 
-    /* --- RESPONSIVE DESIGN --- */
+    /* --- MOBILE LAYOUT --- */
     @media (max-width: 768px) {
         body {
             flex-direction: column;
-            justify-content: flex-start;
-            height: auto;
             overflow-y: auto;
+            height: auto;
+            padding-bottom: 80px; /* Space for the footer */
         }
-
-        body:not(.panel-open) .canvas-container {
-            order: 1;
+        .canvas-container {
+            order: 2;
             width: 90vw;
-            height: 90vw;
-            margin-top: 5vh;
-            margin-bottom: 5vh;
+            height: 90vw; /* Maintain aspect ratio */
+            margin-top: 2rem;
             flex-grow: 0;
-            transition: all 0.4s ease-in-out;
+            flex-shrink: 0;
         }
-
-        #mainView {
-            order: 2;
-            height: auto;
-            flex-basis: auto;
-            padding: 1rem;
-        }
-
-        .view-panel {
-            order: 2;
-            width: 100%;
-            height: auto;
-            padding: 1rem;
-            background-color: transparent !important;
-            border-left: none !important;
-            backdrop-filter: none !important;
-        }
-
-        /* --- Active Mobile State --- */
-        body.panel-open {
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        body.panel-open .canvas-container {
+        #controlsContainer {
             order: 1;
-            flex: 0 0 25%;
-            height: 25vh;
             width: 100%;
-            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
         }
-
-        body.panel-open .view-panel {
-            display: flex; /* Show the active panel */
-            order: 2;
-            flex: 1 1 75%;
-            width: 100%;
-            height: 75vh;
-            justify-content: flex-start;
-            overflow-y: auto;
+        footer {
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
         }
-
         .main-nav-buttons {
-            flex-direction: row;
-            flex-wrap: wrap;
             gap: 5px;
         }
-
         .main-nav-button {
             flex-grow: 1;
-            font-size: 1rem;
+            font-size: 1.2rem;
+            height: 50px;
+        }
+        .view-panel {
+            padding: 1rem;
         }
     }
     </style>
@@ -583,29 +586,9 @@
         </div>
     </div>
 
-    <!-- Main Navigation View -->
-    <div id="mainView">
-        <div class="main-nav-buttons">
-            <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
-            <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
-            <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
-            <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
-        </div>
-    </div>
-
-    <!-- Tools View -->
-    <div id="toolsView" class="view-panel" style="display: none;">
-        <div class="view-header">
-            <button id="backToMainFromTools" class="back-button">Back</button>
-        </div>
-        <div class="tab-buttons">
-            <button id="defaultTab" class="tab-button">Default</button>
-            <button id="timerTab" class="tab-button">Timer</button>
-            <button id="pomodoroTab" class="tab-button">Pomodoro</button>
-            <button id="stopwatchTab" class="tab-button">Stopwatch</button>
-        </div>
+    <div id="controlsContainer">
         <!-- Timer Panel -->
-        <div id="timerPanel" class="ui-panel">
+        <div id="timerPanel" class="ui-panel panel-hidden">
              <div class="time-inputs">
                 <div class="input-group">
                     <input type="number" id="timerDays" placeholder="0" min="0" value="0">
@@ -642,7 +625,6 @@
                     <input type="checkbox" id="intervalToggle">
                     <span class="slider"></span>
                 </label>
-            </div>
             </div>
         </div>
         <!-- Pomodoro Panel -->
@@ -963,11 +945,25 @@
     </div>
     <div id="audio-failure-message" class="hidden">Audio Failure</div>
 
+    <footer>
+        <div id="tool-select-menu" class="panel-hidden">
+            <button class="tool-select-button" data-mode="timer">Timer</button>
+            <button class="tool-select-button" data-mode="pomodoro">Pomodoro</button>
+            <button class="tool-select-button" data-mode="stopwatch">Stopwatch</button>
+            <button class="tool-select-button" data-mode="clock">Clock Only</button>
+        </div>
+        <div class="main-nav-buttons">
+            <button id="toggleControlsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
+            <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
+            <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
+            <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
+        </div>
+    </footer>
+
 <script src="js/clock.js" defer></script>
     <script src="js/ui.js" defer></script>
     <script src="js/tools.js" defer></script>
     <script src="js/settings.js" defer></script>
     <script src="js/main.js" defer></script>
-</head>
 </body>
 </html>
