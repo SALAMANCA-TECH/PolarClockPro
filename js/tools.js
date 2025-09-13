@@ -7,6 +7,7 @@ const Tools = (function() {
     const timerMinutesInput = document.getElementById('timerMinutes');
     const timerSecondsInput = document.getElementById('timerSeconds');
     const intervalToggle = document.getElementById('intervalToggle');
+    const timerStyleToggle = document.getElementById('timerStyleToggle');
 
     const toggleStopwatchBtn = document.getElementById('toggleStopwatchBtn');
     const lapStopwatchBtn = document.getElementById('lapStopwatch');
@@ -45,6 +46,7 @@ const Tools = (function() {
             remainingSeconds: 0,
             isRunning: false,
             isInterval: false,
+            style: true,
             alarmPlaying: false,
             isMuted: false,
             isSnoozing: false,
@@ -574,6 +576,7 @@ const Tools = (function() {
         toggleTimerBtn.addEventListener('click', toggleTimer);
         resetTimerBtn.addEventListener('click', resetTimer);
         intervalToggle.addEventListener('change', (e) => state.timer.isInterval = e.target.checked);
+        timerStyleToggle.addEventListener('change', (e) => state.timer.style = e.target.checked);
         timerDaysInput.addEventListener('blur', normalizeTimerInputs);
         timerHoursInput.addEventListener('blur', normalizeTimerInputs);
         timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
@@ -667,6 +670,10 @@ const Tools = (function() {
                     state.stopwatch.isRunning = false;
                 }
             }
+
+            // After state is loaded, ensure UI reflects the state
+            intervalToggle.checked = state.timer.isInterval;
+            timerStyleToggle.checked = state.timer.style;
 
             setupAllEventListeners();
             updateLapDisplay();
