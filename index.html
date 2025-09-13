@@ -71,6 +71,10 @@
         opacity: 0.8;
     }
 
+    .panel-hidden {
+        display: none !important;
+    }
+
     /* --- UI STYLES --- */
     #mainView {
         display: flex;
@@ -513,7 +517,7 @@
 
         /* --- Active Mobile State --- */
         body.panel-open {
-            flex-direction: column-reverse;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
@@ -534,10 +538,6 @@
             height: 75vh;
             justify-content: flex-start;
             overflow-y: auto;
-        }
-
-        body.panel-open #mainView {
-            display: none; /* Hide main nav when a panel is open */
         }
 
         .main-nav-buttons {
@@ -590,8 +590,7 @@
             <button id="backToMainFromTools" class="back-button">Back</button>
         </div>
         <div class="tab-buttons">
-            <button id="defaultTab" class="tab-button">Default</button>
-            <button id="timerTab" class="tab-button active">Timer</button>
+            <button id="timerTab" class="tab-button">Timer</button>
             <button id="pomodoroTab" class="tab-button">Pomodoro</button>
             <button id="stopwatchTab" class="tab-button">Stopwatch</button>
         </div>
@@ -637,7 +636,7 @@
             </div>
         </div>
         <!-- Pomodoro Panel -->
-        <div id="pomodoroPanel" class="ui-panel" style="display: none;">
+        <div id="pomodoroPanel" class="ui-panel panel-hidden">
             <div class="settings-section">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold" id="pomodoroStatus">Work Session</h3>
@@ -678,7 +677,7 @@
             <!-- This settings section is now replaced by the modal -->
         </div>
         <!-- Stopwatch Panel -->
-        <div id="stopwatchPanel" class="ui-panel" style="display: none;">
+        <div id="stopwatchPanel" class="ui-panel panel-hidden">
             <div class="control-buttons">
                 <button id="toggleStopwatchBtn">Start</button>
                 <button id="lapStopwatch">Lap</button>
