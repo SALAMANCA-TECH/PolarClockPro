@@ -107,7 +107,8 @@ const Clock = (function() {
             }
 
             const angle = progress * Math.PI * 2;
-            const startAngle = baseStartAngle - angle;
+            const startAngle = baseStartAngle;
+            const endAngle = baseStartAngle + angle;
 
             drawnArcs.push({
                 key: unit,
@@ -115,7 +116,7 @@ const Clock = (function() {
                 colors: settings.currentColors[unit],
                 lineWidth: dimensions[`${unit}LineWidth`],
                 startAngle: startAngle,
-                endAngle: baseStartAngle,
+                endAngle: endAngle,
                 text: text
             });
         });
