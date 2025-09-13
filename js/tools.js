@@ -183,7 +183,18 @@ const Tools = (function() {
             if (audio && state.timer.isMuted) {
                 audio.muted = true;
             }
+            // Reset for the next cycle
             state.timer.remainingSeconds = state.timer.totalSeconds;
+            state.timer.endOfCycleSoundPlayed = false;
+
+            // Deactivate mute for the next cycle
+            if (state.timer.isMuted) {
+                state.timer.isMuted = false;
+                const timerMuteBtn = document.getElementById('timerMuteBtn');
+                if (timerMuteBtn) {
+                    timerMuteBtn.classList.remove('active');
+                }
+            }
         } else {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
@@ -220,6 +231,16 @@ const Tools = (function() {
         state.timer.isSnoozing = true;
         state.timer.alarmPlaying = false;
         state.timer.endOfCycleSoundPlayed = false; // Allow sound to play again after snooze
+
+        // Deactivate mute for the next cycle
+        if (state.timer.isMuted) {
+            state.timer.isMuted = false;
+            const timerMuteBtn = document.getElementById('timerMuteBtn');
+            if (timerMuteBtn) {
+                timerMuteBtn.classList.remove('active');
+            }
+        }
+
         startTimer(); // This will set isRunning and update UI correctly
         updateTimerUI(); // Ensure alarm controls are hidden
         updateButtonStates(); // Ensure button text is correct
