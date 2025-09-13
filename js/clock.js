@@ -58,12 +58,15 @@ const Clock = (function() {
         const days = Math.floor(remaining / 86400);
         const hours = Math.floor((remaining % 86400) / 3600);
         const minutes = Math.floor((remaining % 3600) / 60);
+        const months = Math.floor(remaining / (30 * 86400));
 
         const arcsToShow = [];
+        if (totalSeconds >= (30 * 86400)) arcsToShow.push('month');
         if (totalSeconds >= 86400) arcsToShow.push('day');
         if (totalSeconds >= 3600) arcsToShow.push('hours');
         if (totalSeconds >= 60) arcsToShow.push('minutes');
-        arcsToShow.push('seconds');
+        if (totalSeconds > 0) arcsToShow.push('seconds');
+
 
         const fullCircleEndAngle = baseStartAngle + Math.PI * 2;
         const drawnArcs = [];
@@ -125,51 +128,89 @@ const Clock = (function() {
             });
         } else {
             // --- STYLE OFF (Absolute Position Behavior) ---
-            const secondsValue = Math.floor(remaining % 60);
+            if (globalState.timer.isRunning) {
+                // --- Running/Animation Logic (Smooth) ---
+                const secondsValue = remaining % 60;
+                const minutesValue = (remaining % 3600) / 60;
+                const hoursValue = (remaining % 86400) / 3600;
+                const daysValue = remaining / 86400;
 
-            arcsToShow.forEach(unit => {
-                let progress;
-                let text;
+                arcsToShow.forEach(unit => {
+                    let progress;
+                    let text;
 
-                switch (unit) {
-                    case 'day':
-                        progress = days / 7; // Assuming a 7-day week for visual representation
-                        text = days.toString();
-                        break;
-                    case 'hours':
-                        // If days > 0 and hours is 0, draw a full circle.
-                        progress = (days > 0 && hours === 0) ? 1 : hours / 24;
-                        text = hours.toString().padStart(2, '0');
-                        break;
-                    case 'minutes':
-                        // If hours > 0 and minutes is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0) && minutes === 0) ? 1 : minutes / 60;
-                        text = minutes.toString().padStart(2, '0');
-                        break;
-                    case 'seconds':
-                        // If minutes > 0 and seconds is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0 || minutes > 0) && secondsValue === 0) ? 1 : secondsValue / 60;
-                        text = secondsValue.toString().padStart(2, '0');
-                        break;
-                    default:
-                        progress = 0;
-                        text = '0';
-                }
-
-                const angle = progress * Math.PI * 2;
-                const startAngle = baseStartAngle;
-                const endAngle = baseStartAngle + angle;
-
-                drawnArcs.push({
-                    key: unit,
-                    radius: dimensions[`${unit}Radius`],
-                    colors: settings.currentColors[unit],
-                    lineWidth: dimensions[`${unit}LineWidth`],
-                    startAngle: startAngle,
-                    endAngle: endAngle,
-                    text: text
+                    switch (unit) {
+                        case 'month':
+                            progress = (remaining / (30 * 86400)) / 12;
+                            text = months.toString();
+                            break;
+                        case 'day':
+                            progress = daysValue / 30;
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            const maxHours = settings.is24HourFormat ? 24 : 12;
+                            progress = hoursValue / maxHours;
+                            text = (settings.is24HourFormat ? hours : (hours % 12 || 12)).toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = minutesValue / 60;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = secondsValue / 60;
+                            text = Math.floor(secondsValue).toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0;
+                            text = '0';
+                    }
+                    const angle = progress * Math.PI * 2;
+                    drawnArcs.push({
+                        key: unit, radius: dimensions[`${unit}Radius`], colors: settings.currentColors[unit], lineWidth: dimensions[`${unit}LineWidth`],
+                        startAngle: baseStartAngle, endAngle: baseStartAngle + angle, text: text
+                    });
                 });
-            });
+            } else {
+                // --- Paused/Preview Logic (Static with Full Arcs) ---
+                const secondsValue = Math.floor(remaining % 60);
+                arcsToShow.forEach(unit => {
+                    let progress;
+                    let text;
+                    switch (unit) {
+                        case 'month':
+                            progress = months / 12;
+                            text = months.toString();
+                            break;
+                        case 'day':
+                            progress = days / 30;
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            const maxHours = settings.is24HourFormat ? 24 : 12;
+                            let displayHours = hours;
+                            if (!settings.is24HourFormat) { displayHours = hours % 12 || 12; }
+                            progress = (months > 0 || days > 0) && hours === 0 ? 1 : hours / maxHours;
+                            text = displayHours.toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = (months > 0 || days > 0 || hours > 0) && minutes === 0 ? 1 : minutes / 60;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = (months > 0 || days > 0 || hours > 0 || minutes > 0) && secondsValue === 0 ? 1 : secondsValue / 60;
+                            text = secondsValue.toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0; text = '0';
+                    }
+                    const angle = progress * Math.PI * 2;
+                    drawnArcs.push({
+                        key: unit, radius: dimensions[`${unit}Radius`], colors: settings.currentColors[unit], lineWidth: dimensions[`${unit}LineWidth`],
+                        startAngle: baseStartAngle, endAngle: baseStartAngle + angle, text: text
+                    });
+                });
+            }
         }
 
         drawnArcs.forEach(arc => {
@@ -181,12 +222,33 @@ const Clock = (function() {
 
         // Draw separators if enabled
         if (settings.showSeparators) {
+            const isRulerMode = settings.separatorMode === 'ruler';
             drawnArcs.forEach(arc => {
                 if (arc.radius > 0 && settings.separatorVisibility[arc.key]) {
-                    let count = 60;
-                    if (arc.key === 'hours') count = 24;
-                    if (arc.key === 'day') count = 7; // Arbitrary, but better than nothing
-                    drawSeparators(arc.radius, count, arc.lineWidth);
+                    let count = 0;
+                    switch (arc.key) {
+                        case 'month':
+                            count = 12;
+                            break;
+                        case 'day':
+                            count = 30; // Approximation for timer
+                            break;
+                        case 'hours':
+                            count = settings.is24HourFormat ? 24 : 12;
+                            break;
+                        case 'minutes':
+                        case 'seconds':
+                            count = 60;
+                            break;
+                    }
+
+                    if (count > 0) {
+                        if (isRulerMode && (arc.key === 'minutes' || arc.key === 'seconds')) {
+                            drawRulerSeparators(arc.radius, count, arc.lineWidth);
+                        } else {
+                            drawSeparators(arc.radius, count, arc.lineWidth);
+                        }
+                    }
                 }
             });
         }
@@ -715,6 +777,7 @@ const Clock = (function() {
 
             const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek'];
             const arcLineWidths = {
+                month: renderedLineWidth,
                 day: renderedLineWidth,
                 hours: renderedLineWidth,
                 minutes: renderedLineWidth,
@@ -728,13 +791,19 @@ const Clock = (function() {
                 if (globalState.mode === 'timer' && globalState.timer) {
                     const { totalSeconds } = globalState.timer;
                     if (totalSeconds === 0) return false;
+                    const secondsInMinute = 60;
+                    const secondsInHour = secondsInMinute * 60;
+                    const secondsInDay = secondsInHour * 24;
+                    const secondsInMonth = secondsInDay * 30; // Approximation
                     switch (arcKey) {
+                        case 'month':
+                            return totalSeconds >= secondsInMonth;
                         case 'day':
-                            return totalSeconds >= 86400;
+                            return totalSeconds >= secondsInDay;
                         case 'hours':
-                            return totalSeconds >= 3600;
+                            return totalSeconds >= secondsInHour;
                         case 'minutes':
-                            return totalSeconds >= 60;
+                            return totalSeconds >= secondsInMinute;
                         case 'seconds':
                             return totalSeconds > 0;
                         default:
