@@ -72,22 +72,17 @@
     }
 
     /* --- UI STYLES --- */
-    .ui-container {
-        height: 100vh;
-        flex-basis: 380px; /* Set a stable, fixed width */
-        flex-shrink: 0;   /* Prevent the panel from shrinking */
-        padding: 2rem;
-        overflow-y: auto;
-        background-color: #1a1a1a;
-        border-left: 1px solid #333;
+    #mainView {
         display: flex;
         flex-direction: column;
         align-items: center;
-        box-sizing: border-box;
+        justify-content: center; /* Center nav buttons */
+        height: 100vh; /* Full height for vertical centering */
+        flex-basis: 100px; /* Give it a bit of space */
+        flex-shrink: 0;
     }
-
-    .ui-content {
-        display: flex;
+    .view-panel {
+        display: none; /* Hidden by default */
         flex-direction: column;
         align-items: center;
         gap: 1.5rem;
@@ -448,17 +443,31 @@
 
     /* --- Desktop Overlay for UI Panel --- */
     @media (min-width: 769px) {
-        .ui-container {
+        #mainView {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 100px; /* Only for the buttons */
+            z-index: 100;
+            background: transparent;
+        }
+
+        .view-panel {
             position: absolute;
             right: 0;
             top: 0;
             width: 380px;
-            z-index: 100;
-            /* By default, the container is transparent and positioned as an overlay. */
-            /* The nav buttons inside are still clickable without affecting the clock layout. */
+            height: 100vh;
+            padding: 2rem;
+            overflow-y: auto;
+            box-sizing: border-box;
+            z-index: 101; /* Above main view */
+            background-color: transparent;
+            display: none; /* Keep hidden by default */
         }
 
-        body.panel-open .ui-container {
+        body.panel-open .view-panel {
+            display: flex; /* Show the active panel */
             background-color: rgba(26, 26, 26, 0.85);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -475,21 +484,26 @@
         }
 
         .canvas-container {
-            order: 1; /* Clock on top by default */
+            order: 1;
             width: 90vw;
             height: 90vw;
-            max-width: 100%;
             margin-top: 5vh;
             margin-bottom: 5vh;
             flex-grow: 0;
             transition: all 0.4s ease-in-out;
         }
 
-        .ui-container {
-            order: 2; /* UI on bottom by default */
-            min-width: 100%;
+        #mainView {
+            order: 2;
             height: auto;
-            flex-grow: 0;
+            flex-basis: auto;
+            padding: 1rem;
+        }
+
+        .view-panel {
+            order: 2;
+            width: 100%;
+            height: auto;
             padding: 1rem;
             background-color: transparent !important;
             border-left: none !important;
@@ -498,26 +512,31 @@
 
         /* --- Active Mobile State --- */
         body.panel-open {
-            flex-direction: column-reverse; /* Reverse the layout direction */
+            flex-direction: column-reverse;
             height: 100vh;
             overflow: hidden;
         }
 
         body.panel-open .canvas-container {
-            order: 1; /* Now order 1 is at the top of the reversed layout */
+            order: 1;
             flex: 0 0 25%;
             height: 25vh;
             width: 100%;
             margin: 0;
         }
 
-        body.panel-open .ui-container {
-            order: 2; /* And order 2 is at the bottom */
+        body.panel-open .view-panel {
+            display: flex; /* Show the active panel */
+            order: 2;
             flex: 1 1 75%;
-            min-width: 100%;
+            width: 100%;
             height: 75vh;
             justify-content: flex-start;
             overflow-y: auto;
+        }
+
+        body.panel-open #mainView {
+            display: none; /* Hide main nav when a panel is open */
         }
 
         .main-nav-buttons {
@@ -554,336 +573,333 @@
         </div>
     </div>
 
-    <!-- UI Container for Controls -->
-    <div class="ui-container">
-        <!-- Main Navigation View -->
-        <div id="mainView" class="ui-content">
-            <div class="main-nav-buttons">
-                <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
-                <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
-                <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
-                <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
+    <!-- Main Navigation View -->
+    <div id="mainView">
+        <div class="main-nav-buttons">
+            <button id="goToToolsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
+            <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
+            <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
+            <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
+        </div>
+    </div>
+
+    <!-- Tools View -->
+    <div id="toolsView" class="view-panel" style="display: none;">
+        <div class="view-header">
+            <button id="backToMainFromTools" class="back-button">Back</button>
+        </div>
+        <div class="tab-buttons">
+            <button id="defaultTab" class="tab-button">Default</button>
+            <button id="timerTab" class="tab-button active">Timer</button>
+            <button id="pomodoroTab" class="tab-button">Pomodoro</button>
+            <button id="stopwatchTab" class="tab-button">Stopwatch</button>
+        </div>
+        <!-- Timer Panel -->
+        <div id="timerPanel" class="ui-panel">
+             <div class="time-inputs">
+                <div class="input-group">
+                    <input type="number" id="timerDays" placeholder="0" min="0" value="0">
+                    <label>Days</label>
+                </div>
+                <span>:</span>
+                <div class="input-group">
+                    <input type="number" id="timerHours" placeholder="0" min="0" value="0">
+                    <label>Hours</label>
+                </div>
+                <span>:</span>
+                <div class="input-group">
+                    <input type="number" id="timerMinutes" placeholder="00" min="0" value="0">
+                    <label>Minutes</label>
+                </div>
+                <span>:</span>
+                <div class="input-group">
+                    <input type="number" id="timerSeconds" placeholder="00" min="0" value="0">
+                    <label>Seconds</label>
+                </div>
+            </div>
+            <div class="control-buttons" id="timer-main-controls">
+                <button id="toggleTimerBtn">Start</button>
+                <button id="resetTimer">Reset</button>
+            </div>
+            <div class="control-buttons" id="timerAlarmControls" style="display: none;">
+                <button id="timerMuteBtn" class="control-btn"><i class="ph ph-speaker-slash"></i></button>
+                <button id="timerSnoozeBtn" class="control-btn"><i class="ph ph-bell-z"></i></button>
+                <button id="timerStopBtn" class="control-btn">Stop</button>
+            </div>
+             <div class="setting-toggle">
+                <span>Repeat</span>
+                <label class="switch">
+                    <input type="checkbox" id="intervalToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
             </div>
         </div>
-
-        <!-- Tools View -->
-        <div id="toolsView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromTools" class="back-button">Back</button>
-            </div>
-            <div class="tab-buttons">
-                <button id="defaultTab" class="tab-button">Default</button>
-                <button id="timerTab" class="tab-button active">Timer</button>
-                <button id="pomodoroTab" class="tab-button">Pomodoro</button>
-                <button id="stopwatchTab" class="tab-button">Stopwatch</button>
-            </div>
-            <!-- Timer Panel -->
-            <div id="timerPanel" class="ui-panel">
-                 <div class="time-inputs">
-                    <div class="input-group">
-                        <input type="number" id="timerDays" placeholder="0" min="0" value="0">
-                        <label>Days</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="timerHours" placeholder="0" min="0" value="0">
-                        <label>Hours</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="timerMinutes" placeholder="00" min="0" value="0">
-                        <label>Minutes</label>
-                    </div>
-                    <span>:</span>
-                    <div class="input-group">
-                        <input type="number" id="timerSeconds" placeholder="00" min="0" value="0">
-                        <label>Seconds</label>
-                    </div>
+        <!-- Pomodoro Panel -->
+        <div id="pomodoroPanel" class="ui-panel" style="display: none;">
+            <div class="settings-section">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-lg font-semibold" id="pomodoroStatus">Work Session</h3>
+                    <button id="pomodoroInfoBtn" class="bg-transparent border-none text-gray-400 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V5.31c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zm1.328 1.41a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V6.92c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zM8 4a.5.5 0 0 1 .5.5v1.25a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zm0 4.5a.5.5 0 0 1 .5-.5v2.25a.5.5 0 0 1-1 0V9a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="control-buttons" id="timer-main-controls">
-                    <button id="toggleTimerBtn">Start</button>
-                    <button id="resetTimer">Reset</button>
-                </div>
-                <div class="control-buttons" id="timerAlarmControls" style="display: none;">
-                    <button id="timerMuteBtn" class="control-btn"><i class="ph ph-speaker-slash"></i></button>
-                    <button id="timerSnoozeBtn" class="control-btn"><i class="ph ph-bell-z"></i></button>
-                    <button id="timerStopBtn" class="control-btn">Stop</button>
-                </div>
-                 <div class="setting-toggle">
-                    <span>Repeat</span>
-                    <label class="switch">
-                        <input type="checkbox" id="intervalToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+                <div id="pomodoroDashboard" class="flex flex-col items-center gap-2 w-full max-w-xs">
+                    <div class="pomodoro-display-item">
+                        <span class="pomodoro-display-label">Work</span>
+                        <span id="pomodoroWorkDisplay" class="pomodoro-display-time">00:25:00</span>
+                    </div>
+                    <div class="pomodoro-display-item">
+                        <span class="pomodoro-display-label">Short Break</span>
+                        <span id="pomodoroShortBreakDisplay" class="pomodoro-display-time">00:05:00</span>
+                    </div>
+                    <div class="pomodoro-display-item">
+                        <span class="pomodoro-display-label">Long Break</span>
+                        <span id="pomodoroLongBreakDisplay" class="pomodoro-display-time">00:15:00</span>
+                    </div>
                 </div>
             </div>
-            <!-- Pomodoro Panel -->
-            <div id="pomodoroPanel" class="ui-panel" style="display: none;">
-                <div class="settings-section">
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-lg font-semibold" id="pomodoroStatus">Work Session</h3>
-                        <button id="pomodoroInfoBtn" class="bg-transparent border-none text-gray-400 hover:text-white transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V5.31c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zm1.328 1.41a.237.237 0 0 0 .241.247h.825c.138 0 .248-.11.248-.247V6.92c0-.138-.11-.247-.248-.247h-.825a.237.237 0 0 0-.241.247zM8 4a.5.5 0 0 1 .5.5v1.25a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zm0 4.5a.5.5 0 0 1 .5-.5v2.25a.5.5 0 0 1-1 0V9a.5.5 0 0 1 .5-.5z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="pomodoroDashboard" class="flex flex-col items-center gap-2 w-full max-w-xs">
-                        <div class="pomodoro-display-item">
-                            <span class="pomodoro-display-label">Work</span>
-                            <span id="pomodoroWorkDisplay" class="pomodoro-display-time">00:25:00</span>
-                        </div>
-                        <div class="pomodoro-display-item">
-                            <span class="pomodoro-display-label">Short Break</span>
-                            <span id="pomodoroShortBreakDisplay" class="pomodoro-display-time">00:05:00</span>
-                        </div>
-                        <div class="pomodoro-display-item">
-                            <span class="pomodoro-display-label">Long Break</span>
-                            <span id="pomodoroLongBreakDisplay" class="pomodoro-display-time">00:15:00</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="control-buttons" id="pomodoro-main-controls">
-                    <button id="togglePomodoroBtn">Start</button>
-                    <button id="resetPomodoro" style="display: none;">Reset</button>
-                    <button id="customPomodoroBtn">Custom</button>
-                </div>
-                <div class="control-buttons" id="pomodoroActions" style="display: none;">
-                    <button id="pomodoroMuteBtn"><i class="ph ph-speaker-slash"></i></button>
-                    <button id="pomodoroSnoozeBtn"><i class="ph ph-bell-z"></i></button>
-                </div>
-                <div class="control-buttons" id="pomodoroAlarmControls" style="display: none;">
-                    <button id="nextCyclePomodoroBtn">Next Cycle</button>
-                </div>
-                <!-- This settings section is now replaced by the modal -->
+            <div class="control-buttons" id="pomodoro-main-controls">
+                <button id="togglePomodoroBtn">Start</button>
+                <button id="resetPomodoro" style="display: none;">Reset</button>
+                <button id="customPomodoroBtn">Custom</button>
             </div>
-            <!-- Stopwatch Panel -->
-            <div id="stopwatchPanel" class="ui-panel" style="display: none;">
-                <div class="control-buttons">
-                    <button id="toggleStopwatchBtn">Start</button>
-                    <button id="lapStopwatch">Lap</button>
-                    <button id="resetStopwatch">Reset</button>
-                </div>
-                <div class="settings-section w-full max-w-xs">
-                    <h3 class="text-sm uppercase text-gray-400 mt-4">Catch Up Time</h3>
-                    <div class="flex items-center justify-center gap-2">
-                        <input type="number" id="catchUpMinutes" class="time-input-small" placeholder="Min" min="0">
-                        <input type="number" id="catchUpSeconds" class="time-input-small" placeholder="Sec" min="0" max="59">
-                        <button id="addCatchUpTimeBtn" class="control-btn">Add Time</button>
-                    </div>
-                </div>
-                <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
+            <div class="control-buttons" id="pomodoroActions" style="display: none;">
+                <button id="pomodoroMuteBtn"><i class="ph ph-speaker-slash"></i></button>
+                <button id="pomodoroSnoozeBtn"><i class="ph ph-bell-z"></i></button>
             </div>
+            <div class="control-buttons" id="pomodoroAlarmControls" style="display: none;">
+                <button id="nextCyclePomodoroBtn">Next Cycle</button>
+            </div>
+            <!-- This settings section is now replaced by the modal -->
         </div>
-
-        <!-- About View -->
-        <div id="aboutView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromAbout" class="back-button">Back</button>
-                <h2 class="view-title">About</h2>
+        <!-- Stopwatch Panel -->
+        <div id="stopwatchPanel" class="ui-panel" style="display: none;">
+            <div class="control-buttons">
+                <button id="toggleStopwatchBtn">Start</button>
+                <button id="lapStopwatch">Lap</button>
+                <button id="resetStopwatch">Reset</button>
             </div>
-            <div class="accordion">
-                <!-- About Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">About Polar Clock Pro</div>
-                    <div class="accordion-content">
-                        <p id="about-content">Loading...</p>
-                    </div>
+            <div class="settings-section w-full max-w-xs">
+                <h3 class="text-sm uppercase text-gray-400 mt-4">Catch Up Time</h3>
+                <div class="flex items-center justify-center gap-2">
+                    <input type="number" id="catchUpMinutes" class="time-input-small" placeholder="Min" min="0">
+                    <input type="number" id="catchUpSeconds" class="time-input-small" placeholder="Sec" min="0" max="59">
+                    <button id="addCatchUpTimeBtn" class="control-btn">Add Time</button>
                 </div>
-                <!-- How to Use Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">How to Use</div>
-                    <div class="accordion-content">
-                        <p id="how-to-use-content">Loading...</p>
-                    </div>
+            </div>
+            <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
+        </div>
+    </div>
+
+    <!-- About View -->
+    <div id="aboutView" class="view-panel" style="display: none;">
+        <div class="view-header">
+            <button id="backToMainFromAbout" class="back-button">Back</button>
+            <h2 class="view-title">About</h2>
+        </div>
+        <div class="accordion">
+            <!-- About Section -->
+            <div class="accordion-item">
+                <div class="accordion-header">About Polar Clock Pro</div>
+                <div class="accordion-content">
+                    <p id="about-content">Loading...</p>
                 </div>
-                <!-- Pomodoro Technique Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">The Pomodoro Technique</div>
-                    <div class="accordion-content">
-                        <p id="pomodoro-content">Loading...</p>
-                    </div>
+            </div>
+            <!-- How to Use Section -->
+            <div class="accordion-item">
+                <div class="accordion-header">How to Use</div>
+                <div class="accordion-content">
+                    <p id="how-to-use-content">Loading...</p>
                 </div>
-                <!-- FAQ Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">FAQ</div>
-                    <div class="accordion-content">
-                        <p id="faq-content">Loading...</p>
-                    </div>
+            </div>
+            <!-- Pomodoro Technique Section -->
+            <div class="accordion-item">
+                <div class="accordion-header">The Pomodoro Technique</div>
+                <div class="accordion-content">
+                    <p id="pomodoro-content">Loading...</p>
                 </div>
-                <!-- Feedback Section -->
-                <div class="accordion-item">
-                    <div class="accordion-header">Feedback & Suggestions</div>
-                    <div class="accordion-content">
-                        <form id="feedbackForm" class="feedback-form">
-                            <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
-                            <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
-                            <button type="submit" id="submitFeedbackBtn">Submit</button>
-                        </form>
-                    </div>
+            </div>
+            <!-- FAQ Section -->
+            <div class="accordion-item">
+                <div class="accordion-header">FAQ</div>
+                <div class="accordion-content">
+                    <p id="faq-content">Loading...</p>
+                </div>
+            </div>
+            <!-- Feedback Section -->
+            <div class="accordion-item">
+                <div class="accordion-header">Feedback & Suggestions</div>
+                <div class="accordion-content">
+                    <form id="feedbackForm" class="feedback-form">
+                        <input type="text" id="feedbackTitle" name="subject" placeholder="Subject">
+                        <textarea id="feedbackMessage" name="message" rows="5" placeholder="Your message..."></textarea>
+                        <button type="submit" id="submitFeedbackBtn">Submit</button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Settings View -->
-        <div id="settingsView" class="ui-content" style="display: none;">
-            <div class="view-header">
-                <button id="backToMainFromSettings" class="back-button">Back</button>
-                <h2 class="view-title">Settings</h2>
+    <!-- Settings View -->
+    <div id="settingsView" class="view-panel" style="display: none;">
+        <div class="view-header">
+            <button id="backToMainFromSettings" class="back-button">Back</button>
+            <h2 class="view-title">Settings</h2>
+        </div>
+
+        <div class="accordion">
+            <!-- Section 1: Clock & Time -->
+            <div class="accordion-item">
+                <button class="accordion-header">Clock & Time</button>
+                <div class="accordion-content">
+                    <div class="settings-section">
+                        <h3>Time Format</h3>
+                        <div class="format-buttons">
+                            <button id="format12" class="format-button">12 Hour</button>
+                            <button id="format24" class="format-button">24 Hour</button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Inverse Mode</h3>
+                        <div class="setting-toggle">
+                            <span>Inverse Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="inverseModeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Label Display</h3>
+                        <div class="display-mode-buttons">
+                            <button id="modeStandard" class="display-mode-button">Standard</button>
+                            <button id="modePercentage" class="display-mode-button">Percentage</button>
+                            <button id="modeRemainder" class="display-mode-button">Remainder</button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Digital Display</h3>
+                        <div class="setting-toggle">
+                            <span>Time</span>
+                            <label class="switch">
+                                <input type="checkbox" id="digitalTimeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Date</span>
+                            <label class="switch">
+                                <input type="checkbox" id="digitalDateToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Circles</span>
+                            <label class="switch">
+                                <input type="checkbox" id="arcEndCirclesToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="accordion">
-                <!-- Section 1: Clock & Time -->
-                <div class="accordion-item">
-                    <button class="accordion-header">Clock & Time</button>
-                    <div class="accordion-content">
-                        <div class="settings-section">
-                            <h3>Time Format</h3>
-                            <div class="format-buttons">
-                                <button id="format12" class="format-button">12 Hour</button>
-                                <button id="format24" class="format-button">24 Hour</button>
-                            </div>
+            <!-- Section 2: Visuals & Colors -->
+            <div class="accordion-item">
+                <button class="accordion-header">Visuals & Colors</button>
+                <div class="accordion-content">
+                    <div class="settings-section">
+                        <h3>Color Scheme</h3>
+                        <div class="color-preset-buttons">
+                            <button id="presetDefault" class="color-preset-button">Default</button>
+                            <button id="presetNeon" class="color-preset-button">Neon</button>
+                            <button id="presetPastel" class="color-preset-button">Pastel</button>
+                            <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                            <button id="presetCandy" class="color-preset-button">Candy</button>
                         </div>
-                        <div class="settings-section">
-                            <h3>Inverse Mode</h3>
-                            <div class="setting-toggle">
-                                <span>Inverse Mode</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="inverseModeToggle">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="settings-section">
-                            <h3>Label Display</h3>
-                            <div class="display-mode-buttons">
-                                <button id="modeStandard" class="display-mode-button">Standard</button>
-                                <button id="modePercentage" class="display-mode-button">Percentage</button>
-                                <button id="modeRemainder" class="display-mode-button">Remainder</button>
-                            </div>
-                        </div>
-                        <div class="settings-section">
-                            <h3>Digital Display</h3>
-                            <div class="setting-toggle">
-                                <span>Time</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="digitalTimeToggle">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="setting-toggle">
-                                <span>Date</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="digitalDateToggle">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="setting-toggle">
-                                <span>Circles</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="arcEndCirclesToggle">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
+                        <div class="setting-toggle">
+                            <span>Gradient</span>
+                            <label class="switch">
+                                <input type="checkbox" id="gradientToggle">
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Section 2: Visuals & Colors -->
-                <div class="accordion-item">
-                    <button class="accordion-header">Visuals & Colors</button>
-                    <div class="accordion-content">
-                        <div class="settings-section">
-                            <h3>Color Scheme</h3>
-                            <div class="color-preset-buttons">
-                                <button id="presetDefault" class="color-preset-button">Default</button>
-                                <button id="presetNeon" class="color-preset-button">Neon</button>
-                                <button id="presetPastel" class="color-preset-button">Pastel</button>
-                                <button id="presetColorblind" class="color-preset-button">Colorblind</button>
-                                <button id="presetCandy" class="color-preset-button">Candy</button>
+            <!-- Section 3: Customize Arcs -->
+            <div class="accordion-item">
+                <button class="accordion-header">Customize Arcs</button>
+                <div class="accordion-content">
+                    <div class="settings-section">
+                        <h3>Separators</h3>
+                        <div class="flex w-full justify-center gap-4">
+                            <div class="flex-1">
+                                <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
+                                <div class="format-buttons">
+                                    <button id="separatorsShow" class="format-button">Show</button>
+                                    <button id="separatorsHide" class="format-button">Hide</button>
+                                </div>
                             </div>
-                            <div class="setting-toggle">
-                                <span>Gradient</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="gradientToggle">
-                                    <span class="slider"></span>
-                                </label>
+                            <div class="flex-1">
+                                <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
+                                <div class="format-buttons">
+                                    <button id="modeStandardSeparators" class="format-button">Standard</button>
+                                    <button id="modeRuler" class="format-button">Ruler</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Section 3: Customize Arcs -->
-                <div class="accordion-item">
-                    <button class="accordion-header">Customize Arcs</button>
-                    <div class="accordion-content">
-                        <div class="settings-section">
-                            <h3>Separators</h3>
-                            <div class="flex w-full justify-center gap-4">
-                                <div class="flex-1">
-                                    <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
-                                    <div class="format-buttons">
-                                        <button id="separatorsShow" class="format-button">Show</button>
-                                        <button id="separatorsHide" class="format-button">Hide</button>
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
-                                    <div class="format-buttons">
-                                        <button id="modeStandardSeparators" class="format-button">Standard</button>
-                                        <button id="modeRuler" class="format-button">Ruler</button>
-                                    </div>
-                                </div>
+                    <div class="settings-section">
+                        <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
+                            <div class="flex-1 text-center">
+                                <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
                             </div>
                         </div>
-                        <div class="settings-section">
-                            <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
-                                <div class="flex-1 text-center">
-                                    <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
-                                </div>
-                                <div class="flex-1 text-center">
-                                    <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
-                                </div>
+                        <div class="w-full max-w-xs space-y-2">
+                            <!-- Combined Toggles -->
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Day of Week</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
                             </div>
-                            <div class="w-full max-w-xs space-y-2">
-                                <!-- Combined Toggles -->
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Day of Week</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Month</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Day</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Hours</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Minutes</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Seconds</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="flex-1 text-left">Week of Year</span>
-                                    <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
-                                    <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
-                                </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Month</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Day</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Hours</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Minutes</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Seconds</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Week of Year</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
                             </div>
                         </div>
                     </div>
