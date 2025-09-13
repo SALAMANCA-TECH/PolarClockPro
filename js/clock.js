@@ -69,57 +69,108 @@ const Clock = (function() {
         const drawnArcs = [];
         const largestUnit = arcsToShow[0];
 
-        arcsToShow.forEach(unit => {
-            let progress;
-            let text;
+        // NEW: Conditional logic based on timer style
+        if (globalState.timer.style) {
+            // --- STYLE ON (Default Behavior) ---
+            arcsToShow.forEach(unit => {
+                let progress;
+                let text;
 
-            if (unit === largestUnit) {
-                progress = remaining / totalSeconds;
-            } else {
+                if (unit === largestUnit) {
+                    progress = remaining / totalSeconds;
+                } else {
+                    switch (unit) {
+                        case 'hours':
+                            progress = (remaining % 86400) / 86400;
+                            break;
+                        case 'minutes':
+                            progress = (remaining % 3600) / 3600;
+                            break;
+                        case 'seconds':
+                            progress = (remaining % 60) / 60;
+                            break;
+                        default:
+                            progress = 0;
+                    }
+                }
+
                 switch (unit) {
+                    case 'day':
+                        text = days.toString();
+                        break;
                     case 'hours':
-                        progress = (remaining % 86400) / 86400;
+                        text = hours.toString().padStart(2, '0');
                         break;
                     case 'minutes':
-                        progress = (remaining % 3600) / 3600;
+                        text = minutes.toString().padStart(2, '0');
                         break;
                     case 'seconds':
-                        progress = (remaining % 60) / 60;
+                        text = Math.floor(remaining % 60).toString().padStart(2, '0');
+                        break;
+                }
+
+                const angle = progress * Math.PI * 2;
+                const startAngle = baseStartAngle;
+                const endAngle = baseStartAngle + angle;
+
+                drawnArcs.push({
+                    key: unit,
+                    radius: dimensions[`${unit}Radius`],
+                    colors: settings.currentColors[unit],
+                    lineWidth: dimensions[`${unit}LineWidth`],
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    text: text
+                });
+            });
+        } else {
+            // --- STYLE OFF (Absolute Position Behavior) ---
+            const secondsValue = Math.floor(remaining % 60);
+
+            arcsToShow.forEach(unit => {
+                let progress;
+                let text;
+
+                switch (unit) {
+                    case 'day':
+                        progress = days / 7; // Assuming a 7-day week for visual representation
+                        text = days.toString();
+                        break;
+                    case 'hours':
+                        // If days > 0 and hours is 0, draw a full circle.
+                        progress = (days > 0 && hours === 0) ? 1 : hours / 24;
+                        text = hours.toString().padStart(2, '0');
+                        break;
+                    case 'minutes':
+                        // If hours > 0 and minutes is 0, draw a full circle.
+                        progress = ((days > 0 || hours > 0) && minutes === 0) ? 1 : minutes / 60;
+                        text = minutes.toString().padStart(2, '0');
+                        break;
+                    case 'seconds':
+                        // If minutes > 0 and seconds is 0, draw a full circle.
+                        progress = ((days > 0 || hours > 0 || minutes > 0) && secondsValue === 0) ? 1 : secondsValue / 60;
+                        text = secondsValue.toString().padStart(2, '0');
                         break;
                     default:
                         progress = 0;
+                        text = '0';
                 }
-            }
 
-            switch (unit) {
-                case 'day':
-                    text = days.toString();
-                    break;
-                case 'hours':
-                    text = hours.toString().padStart(2, '0');
-                    break;
-                case 'minutes':
-                    text = minutes.toString().padStart(2, '0');
-                    break;
-                case 'seconds':
-                    text = Math.floor(remaining % 60).toString().padStart(2, '0');
-                    break;
-            }
+                const angle = progress * Math.PI * 2;
+                const startAngle = baseStartAngle;
+                const endAngle = baseStartAngle + angle;
 
-            const angle = progress * Math.PI * 2;
-            const startAngle = baseStartAngle;
-            const endAngle = baseStartAngle + angle;
-
-            drawnArcs.push({
-                key: unit,
-                radius: dimensions[`${unit}Radius`],
-                colors: settings.currentColors[unit],
-                lineWidth: dimensions[`${unit}LineWidth`],
-                startAngle: startAngle,
-                endAngle: endAngle,
-                text: text
+                drawnArcs.push({
+                    key: unit,
+                    radius: dimensions[`${unit}Radius`],
+                    colors: settings.currentColors[unit],
+                    lineWidth: dimensions[`${unit}LineWidth`],
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    text: text
+                });
             });
-        });
+        }
 
         drawnArcs.forEach(arc => {
             if (arc.radius > 0 && arc.colors) {
