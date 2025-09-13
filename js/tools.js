@@ -66,9 +66,9 @@ const Tools = (function() {
             isOneMinuteWarningPlayed: false,
             actionButtonsVisible: false,
             lastMinuteSoundPlayed: false,
-            isMutedThisCycle: false,
             isSnoozing: false,
-            currentAudio: null
+            currentAudio: null,
+            endOfCycleSoundPlayed: false
         },
         stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] }
     };
@@ -297,6 +297,15 @@ const Tools = (function() {
 
         state.pomodoro.isRunning = !state.pomodoro.isRunning;
 
+        // Handle audio pausing/resuming
+        if (state.pomodoro.currentAudio) {
+            if (state.pomodoro.isRunning) {
+                state.pomodoro.currentAudio.play();
+            } else {
+                state.pomodoro.currentAudio.pause();
+            }
+        }
+
         if (state.pomodoro.isRunning && !state.pomodoro.hasStarted) {
             state.pomodoro.hasStarted = true;
         }
@@ -319,9 +328,9 @@ const Tools = (function() {
         state.pomodoro.hasStarted = false;
         state.pomodoro.isOneMinuteWarningPlayed = false;
         state.pomodoro.lastMinuteSoundPlayed = false;
-        state.pomodoro.isMutedThisCycle = false;
         state.pomodoro.isSnoozing = false;
         state.pomodoro.actionButtonsVisible = false;
+        state.pomodoro.endOfCycleSoundPlayed = false;
         if (state.pomodoro.currentAudio) {
             state.pomodoro.currentAudio.pause();
             state.pomodoro.currentAudio = null;
@@ -337,18 +346,25 @@ const Tools = (function() {
 
 
     function mutePomodoroAudio() {
+        state.pomodoro.isMuted = !state.pomodoro.isMuted;
         if (state.pomodoro.currentAudio) {
-            state.pomodoro.currentAudio.pause();
+            state.pomodoro.currentAudio.muted = state.pomodoro.isMuted;
         }
-        state.pomodoro.isMutedThisCycle = true;
+        // Also update the button's visual state to give feedback
+        mutePomodoroBtn.classList.toggle('active', state.pomodoro.isMuted);
     }
 
     function snoozePomodoro() {
         if (state.pomodoro.currentAudio) {
             state.pomodoro.currentAudio.pause();
+            state.pomodoro.currentAudio = null;
         }
         state.pomodoro.remainingSeconds += 300; // Add 5 minutes
         state.pomodoro.isSnoozing = true;
+        state.pomodoro.endOfCycleSoundPlayed = false; // Allow sound to play again.
+        // By resetting this flag, we ensure that if the timer counts down
+        // to 58 seconds again in this same (extended) cycle, the warning
+        // sound will replay as requested.
     }
 
     function endCycle() {
@@ -384,9 +400,9 @@ const Tools = (function() {
         state.pomodoro.remainingSeconds = duration;
         state.pomodoro.isOneMinuteWarningPlayed = false;
         state.pomodoro.lastMinuteSoundPlayed = false;
-        state.pomodoro.isMutedThisCycle = false;
         state.pomodoro.isSnoozing = false;
         state.pomodoro.actionButtonsVisible = false;
+        state.pomodoro.endOfCycleSoundPlayed = false;
         if (state.pomodoro.currentAudio) {
             state.pomodoro.currentAudio.pause();
             state.pomodoro.currentAudio = null;
@@ -636,15 +652,53 @@ const Tools = (function() {
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;
 
+                // End-of-cycle sound cue at 58 seconds
+                if (
+                    Math.floor(state.pomodoro.remainingSeconds) === 58 &&
+                    !state.pomodoro.endOfCycleSoundPlayed
+                ) {
+                    let soundFile = '';
+                    switch (state.pomodoro.phase) {
+                        case 'work':
+                            soundFile = 'work_end.mp3';
+                            break;
+                        case 'shortBreak':
+                            soundFile = 'short_break_end.mp3';
+                            break;
+                        case 'longBreak':
+                            soundFile = 'long_break_end.mp3';
+                            break;
+                    }
+
+                    if (soundFile) {
+                        // If there's an existing sound, stop it before playing the new one.
+                        if (state.pomodoro.currentAudio) {
+                            state.pomodoro.currentAudio.pause();
+                        }
+                        const audio = playSound(soundFile);
+                        if (audio) {
+                            state.pomodoro.currentAudio = audio;
+                            // Respect global mute state
+                            if (state.pomodoro.isMuted) {
+                                audio.muted = true;
+                            }
+                        }
+                    }
+                    state.pomodoro.endOfCycleSoundPlayed = true;
+                }
+
                 const pomodoroActions = document.getElementById('pomodoroActions');
                 if (state.pomodoro.remainingSeconds <= 60 && state.pomodoro.remainingSeconds >= 0) {
                     if (pomodoroActions.style.display === 'none') {
                         pomodoroActions.style.display = 'flex';
                     }
-                    if (!state.pomodoro.lastMinuteSoundPlayed && !state.pomodoro.isMutedThisCycle) {
+                    if (!state.pomodoro.lastMinuteSoundPlayed) {
                         const audio = playSound(settings.timerSound);
                         if (audio) {
                             state.pomodoro.currentAudio = audio;
+                            if (state.pomodoro.isMuted) {
+                                audio.muted = true;
+                            }
                         }
                         state.pomodoro.lastMinuteSoundPlayed = true;
                     }
@@ -661,7 +715,7 @@ const Tools = (function() {
                     } else {
                         state.pomodoro.remainingSeconds = 0;
                         state.pomodoro.alarmPlaying = true;
-                        if (!state.pomodoro.isMuted && !state.pomodoro.isMutedThisCycle) {
+                        if (!state.pomodoro.isMuted) {
                             playSound(settings.timerSound || 'bell01.mp3');
                         }
                         updatePomodoroUI();
