@@ -16,7 +16,6 @@ const UI = (function() {
         backFromAbout: document.getElementById('backToMainFromAbout'),
     };
     const toolTabs = {
-        default: document.getElementById('defaultTab'),
         timer: document.getElementById('timerTab'),
         pomodoro: document.getElementById('pomodoroTab'),
         stopwatch: document.getElementById('stopwatchTab'),
@@ -51,9 +50,9 @@ const UI = (function() {
     }
 
     function showToolsPanel(panelToShow, tabToActivate) {
-        Object.values(toolPanels).forEach(p => p.style.display = 'none');
+        Object.values(toolPanels).forEach(p => p.classList.add('panel-hidden'));
         if (panelToShow) {
-            panelToShow.style.display = 'flex';
+            panelToShow.classList.remove('panel-hidden');
         }
         handleActiveButton(tabToActivate, Object.values(toolTabs));
 
@@ -198,8 +197,8 @@ const UI = (function() {
             });
             navButtons.goToTools.addEventListener('click', () => {
                 showView(views.tools);
-                // When navigating to tools, default to the main clock view.
-                showToolsPanel(null, toolTabs.default);
+                // When navigating to tools, default to the timer view.
+                showToolsPanel(toolPanels.timer, toolTabs.timer);
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
@@ -216,7 +215,6 @@ const UI = (function() {
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             // Unified tool tab event listeners
-            toolTabs.default.addEventListener('click', () => showToolsPanel(null, toolTabs.default));
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
             toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
             toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
