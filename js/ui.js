@@ -16,6 +16,7 @@ const UI = (function() {
         backFromAbout: document.getElementById('backToMainFromAbout'),
     };
     const toolTabs = {
+        default: document.getElementById('defaultTab'),
         timer: document.getElementById('timerTab'),
         pomodoro: document.getElementById('pomodoroTab'),
         stopwatch: document.getElementById('stopwatchTab'),
@@ -215,6 +216,7 @@ const UI = (function() {
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             // Unified tool tab event listeners
+            toolTabs.default.addEventListener('click', () => showToolsPanel(null, toolTabs.default));
             toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
             toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
             toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
