@@ -446,6 +446,28 @@
     }
 
 
+    /* --- Desktop Overlay for UI Panel --- */
+    @media (min-width: 769px) {
+        body.panel-open .ui-container {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 380px; /* Explicitly set width to match original flex-basis */
+            z-index: 100; /* Ensure it's on top of the canvas */
+            background-color: rgba(26, 26, 26, 0.85); /* Semi-transparent background */
+            backdrop-filter: blur(10px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+
+            /* Override flex properties that push the layout */
+            flex-basis: auto;
+        }
+
+        body.panel-open .canvas-container {
+            /* Ensure the canvas container takes up the full width behind the overlay */
+            flex-basis: 100%;
+        }
+    }
+
     /* --- RESPONSIVE DESIGN --- */
     @media (max-width: 768px) {
         body {
