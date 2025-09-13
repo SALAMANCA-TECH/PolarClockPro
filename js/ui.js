@@ -1,71 +1,45 @@
 emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
-        main: document.getElementById('mainView'),
         settings: document.getElementById('settingsView'),
-        tools: document.getElementById('toolsView'),
         about: document.getElementById('aboutView'),
     };
     const navButtons = {
+        toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
-        goToTools: document.getElementById('goToToolsBtn'),
         goToAlarms: document.getElementById('goToAlarmsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromSettings: document.getElementById('backToMainFromSettings'),
-        backFromTools: document.getElementById('backToMainFromTools'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
-    };
-    const toolTabs = {
-        default: document.getElementById('defaultTab'),
-        timer: document.getElementById('timerTab'),
-        pomodoro: document.getElementById('pomodoroTab'),
-        stopwatch: document.getElementById('stopwatchTab'),
     };
     const toolPanels = {
         timer: document.getElementById('timerPanel'),
         pomodoro: document.getElementById('pomodoroPanel'),
         stopwatch: document.getElementById('stopwatchPanel'),
     };
+    const toolSelectMenu = document.getElementById('tool-select-menu');
+    const toolSelectButtons = document.querySelectorAll('.tool-select-button');
+
     const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
     const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
     const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
 
-    let Clock; // To hold the clock module reference
-
     function showView(viewToShow) {
-        // The clock is always visible in the desktop layout, so we no longer need to pause it.
-        // The panel-open class will be used for mobile-specific layout changes.
-        if (viewToShow === views.main) {
-            document.body.classList.remove('panel-open');
-        } else {
-            document.body.classList.add('panel-open');
-        }
-
         Object.values(views).forEach(v => v.style.display = 'none');
-        viewToShow.style.display = 'flex';
+        if (viewToShow) {
+            viewToShow.style.display = 'flex';
+        }
     }
 
-    function handleActiveButton(clickedButton, buttonGroup) {
-        buttonGroup.forEach(button => button.classList.remove('active'));
-        clickedButton.classList.add('active');
-    }
-
-    function showToolsPanel(panelToShow, tabToActivate) {
+    function updateToolPanelVisibility(mode) {
         Object.values(toolPanels).forEach(p => p.classList.add('panel-hidden'));
-        if (panelToShow) {
-            panelToShow.classList.remove('panel-hidden');
+        if (mode && toolPanels[mode]) {
+            toolPanels[mode].classList.remove('panel-hidden');
         }
-        handleActiveButton(tabToActivate, Object.values(toolTabs));
+    }
 
-        let mode = 'clock'; // Default mode
-        if (panelToShow) {
-            mode = panelToShow.id.replace('Panel', '').toLowerCase();
-        }
-
-        const event = new CustomEvent('modechange', {
-            detail: { mode: mode }
-        });
-        document.dispatchEvent(event);
+    function toggleToolMenu() {
+        toolSelectMenu.classList.toggle('panel-hidden');
     }
 
     let aboutPageInitialized = false;
@@ -74,13 +48,12 @@ const UI = (function() {
         if (aboutPageInitialized) return;
         aboutPageInitialized = true;
 
-        // Accordion logic
-        const accordionItems = document.querySelectorAll('.accordion-item');
+        const accordionItems = document.querySelectorAll('#aboutView .accordion-item');
         accordionItems.forEach(item => {
             const header = item.querySelector('.accordion-header');
             const content = item.querySelector('.accordion-content');
             header.addEventListener('click', () => {
-                // Close other items
+                const wasActive = item.classList.contains('active');
                 accordionItems.forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
@@ -88,9 +61,8 @@ const UI = (function() {
                         otherItem.querySelector('.accordion-content').style.padding = '0 15px';
                     }
                 });
-                // Open clicked item
-                item.classList.toggle('active');
-                if (item.classList.contains('active')) {
+                if (!wasActive) {
+                    item.classList.add('active');
                     content.style.maxHeight = content.scrollHeight + "px";
                     content.style.padding = '15px';
                 } else {
@@ -100,72 +72,48 @@ const UI = (function() {
             });
         });
 
-        // Content fetching
         const contentIds = ['about', 'how-to-use', 'pomodoro', 'faq'];
         contentIds.forEach(id => {
             fetch(`assets/content/${id}.txt`)
                 .then(response => response.text())
                 .then(text => {
-                    const contentElement = document.getElementById(`${id}-content`);
-                    contentElement.innerHTML = `<div class="scrollable-content">${text}</div>`;
+                    document.getElementById(`${id}-content`).innerHTML = `<div class="scrollable-content">${text}</div>`;
                 })
                 .catch(error => console.error(`Error fetching ${id}.txt:`, error));
         });
 
-        // Feedback form
         const feedbackForm = document.getElementById('feedbackForm');
         if (feedbackForm) {
             const statusMessage = document.getElementById('feedbackStatus');
             const messageTextarea = document.getElementById('feedbackMessage');
-
             feedbackForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-
                 const submitButton = this.querySelector('button[type="submit"]');
                 statusMessage.textContent = '';
-                statusMessage.style.color = 'inherit';
-
-                // 1. Validation: No empty messages
                 if (messageTextarea.value.trim() === '') {
                     statusMessage.textContent = 'Message cannot be empty.';
-                    statusMessage.style.color = '#F44336'; // Red for error
+                    statusMessage.style.color = '#F44336';
                     return;
                 }
-
-                // 2. Rate Limiting
-                const now = new Date().getTime();
-                const twentyFourHours = 24 * 60 * 60 * 1000;
                 let submissionTimestamps = JSON.parse(localStorage.getItem('feedbackSubmissions')) || [];
-
-                // Filter out submissions older than 24 hours
-                submissionTimestamps = submissionTimestamps.filter(timestamp => now - timestamp < twentyFourHours);
-
+                submissionTimestamps = submissionTimestamps.filter(timestamp => new Date().getTime() - timestamp < 24 * 60 * 60 * 1000);
                 if (submissionTimestamps.length >= 3) {
                     statusMessage.textContent = 'You have reached the submission limit for today.';
                     statusMessage.style.color = '#F44336';
                     return;
                 }
-
-                // Disable button and show submitting message
                 submitButton.disabled = true;
                 submitButton.textContent = 'Submitting...';
-
-                const serviceID = 'service_hnc4xxb';
-                const templateID = 'template_5lqcgtd';
-
-                emailjs.sendForm(serviceID, templateID, this)
+                emailjs.sendForm('service_hnc4xxb', 'template_5lqcgtd', this)
                     .then(() => {
                         statusMessage.textContent = 'Feedback sent successfully!';
                         statusMessage.style.color = '#4CAF50';
                         feedbackForm.reset();
-
-                        // Add new timestamp and update localStorage
-                        submissionTimestamps.push(now);
+                        submissionTimestamps.push(new Date().getTime());
                         localStorage.setItem('feedbackSubmissions', JSON.stringify(submissionTimestamps));
                     }, (err) => {
                         statusMessage.textContent = 'Failed to send feedback. Please try again later.';
                         statusMessage.style.color = '#F44336';
-                        console.error('EmailJS error:', err);
                     })
                     .finally(() => {
                         submitButton.disabled = false;
@@ -185,41 +133,41 @@ const UI = (function() {
         accordionItems.forEach(item => {
             const header = item.querySelector('.accordion-header');
             const content = item.querySelector('.accordion-content');
-
             header.addEventListener('click', () => {
                 const wasActive = item.classList.contains('active');
-
-                // Close all items before opening a new one
                 accordionItems.forEach(otherItem => {
                     otherItem.classList.remove('active');
                     otherItem.querySelector('.accordion-content').style.maxHeight = null;
-                    // Reset padding when closing
                     if (otherItem.querySelector('.accordion-content').style.padding) {
                         otherItem.querySelector('.accordion-content').style.padding = '0 15px';
                     }
                 });
-
-                // If the clicked item wasn't active, open it.
                 if (!wasActive) {
                     item.classList.add('active');
                     content.style.maxHeight = content.scrollHeight + "px";
-                    content.style.padding = '15px'; // Set padding when opening
+                    content.style.padding = '15px';
                 }
             });
         });
     }
 
     return {
-        init: function(clockModule) {
-            Clock = clockModule; // Store the reference
+        init: function() {
+            navButtons.toggleControls.addEventListener('click', toggleToolMenu);
+
+            toolSelectButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const mode = button.dataset.mode;
+                    document.dispatchEvent(new CustomEvent('modechange', {
+                        detail: { mode: mode }
+                    }));
+                    toolSelectMenu.classList.add('panel-hidden'); // Hide menu after selection
+                });
+            });
+
             navButtons.goToSettings.addEventListener('click', () => {
                 showView(views.settings);
                 initSettingsAccordion();
-            });
-            navButtons.goToTools.addEventListener('click', () => {
-                showView(views.tools);
-                // When navigating to tools, default to the timer view.
-                showToolsPanel(toolPanels.timer, toolTabs.timer);
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
@@ -227,24 +175,25 @@ const UI = (function() {
             });
 
             navButtons.backFromSettings.addEventListener('click', () => {
-                showView(views.main);
-                document.dispatchEvent(new CustomEvent('modechange', { detail: { mode: 'clock' } }));
+                views.settings.style.display = 'none';
             });
-            navButtons.backFromTools.addEventListener('click', () => showView(views.main));
-            navButtons.backFromAbout.addEventListener('click', () => showView(views.main));
+            navButtons.backFromAbout.addEventListener('click', () => {
+                views.about.style.display = 'none';
+            });
 
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
-            // Unified tool tab event listeners
-            toolTabs.default.addEventListener('click', () => showToolsPanel(null, toolTabs.default));
-            toolTabs.timer.addEventListener('click', () => showToolsPanel(toolPanels.timer, toolTabs.timer));
-            toolTabs.pomodoro.addEventListener('click', () => showToolsPanel(toolPanels.pomodoro, toolTabs.pomodoro));
-            toolTabs.stopwatch.addEventListener('click', () => showToolsPanel(toolPanels.stopwatch, toolTabs.stopwatch));
-
-
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
-        },
-        handleActiveButton: handleActiveButton
+
+            document.addEventListener('modechange', (e) => {
+                updateToolPanelVisibility(e.detail.mode);
+            });
+
+            const savedState = JSON.parse(localStorage.getItem('polarClockState'));
+            if (savedState && savedState.mode) {
+                updateToolPanelVisibility(savedState.mode);
+            }
+        }
     };
 })();
