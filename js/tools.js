@@ -2,7 +2,6 @@ const Tools = (function() {
     // --- DOM Element Selections ---
     const toggleTimerBtn = document.getElementById('toggleTimerBtn');
     const resetTimerBtn = document.getElementById('resetTimer');
-    const timerMonthsInput = document.getElementById('timerMonths');
     const timerDaysInput = document.getElementById('timerDays');
     const timerHoursInput = document.getElementById('timerHours');
     const timerMinutesInput = document.getElementById('timerMinutes');
@@ -80,7 +79,6 @@ const Tools = (function() {
     // --- Private Functions ---
 
     function setTimerInputsDisabled(disabled) {
-        timerMonthsInput.disabled = disabled;
         timerDaysInput.disabled = disabled;
         timerHoursInput.disabled = disabled;
         timerMinutesInput.disabled = disabled;
@@ -89,17 +87,13 @@ const Tools = (function() {
 
     // Timer Functions
     function normalizeTimerInputs() {
-        const months = parseInt(timerMonthsInput.value) || 0;
         const days = parseInt(timerDaysInput.value) || 0;
         const hours = parseInt(timerHoursInput.value) || 0;
         const minutes = parseInt(timerMinutesInput.value) || 0;
         const seconds = parseInt(timerSecondsInput.value) || 0;
 
-        // Approximate months as 30 days for calculation
-        let totalSeconds = (months * 30 * 86400) + (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+        let totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
 
-        const newMonths = Math.floor(totalSeconds / (30 * 86400));
-        totalSeconds %= (30 * 86400);
         const newDays = Math.floor(totalSeconds / 86400);
         totalSeconds %= 86400;
         const newHours = Math.floor(totalSeconds / 3600);
@@ -107,13 +101,12 @@ const Tools = (function() {
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
 
-        timerMonthsInput.value = newMonths;
         timerDaysInput.value = newDays;
         timerHoursInput.value = newHours;
         timerMinutesInput.value = newMinutes;
         timerSecondsInput.value = newSeconds;
 
-        const finalTotalSeconds = (newMonths * 30 * 86400) + (newDays * 86400) + (newHours * 3600) + (newMinutes * 60) + newSeconds;
+        const finalTotalSeconds = (newDays * 86400) + (newHours * 3600) + (newMinutes * 60) + newSeconds;
         state.timer.totalSeconds = finalTotalSeconds;
         // Only reset remaining seconds if the timer isn't running.
         // This prevents overwriting the countdown when an input is blurred.
@@ -173,7 +166,6 @@ const Tools = (function() {
             state.timer.currentAudio = null;
         }
 
-        timerMonthsInput.value = "0";
         timerDaysInput.value = "0";
         timerHoursInput.value = "0";
         timerMinutesInput.value = "0";
@@ -592,7 +584,6 @@ const Tools = (function() {
             state.timer.style = e.target.checked;
             document.dispatchEvent(new CustomEvent('statechange'));
         });
-        timerMonthsInput.addEventListener('blur', normalizeTimerInputs);
         timerDaysInput.addEventListener('blur', normalizeTimerInputs);
         timerHoursInput.addEventListener('blur', normalizeTimerInputs);
         timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
@@ -707,13 +698,11 @@ const Tools = (function() {
 
                 // Update input fields in real-time
                 const remaining = Math.max(0, state.timer.remainingSeconds);
-                const months = Math.floor(remaining / (30 * 86400));
-                const days = Math.floor((remaining % (30 * 86400)) / 86400);
+                const days = Math.floor(remaining / 86400);
                 const hours = Math.floor((remaining % 86400) / 3600);
                 const minutes = Math.floor((remaining % 3600) / 60);
                 const seconds = Math.floor(remaining % 60);
 
-                timerMonthsInput.value = months;
                 timerDaysInput.value = days;
                 timerHoursInput.value = hours;
                 timerMinutesInput.value = minutes;
