@@ -40,7 +40,17 @@ const Tools = (function() {
     // --- Module State ---
     let settings = {};
     const state = {
-        timer: { totalSeconds: 0, remainingSeconds: 0, isRunning: false, isInterval: false },
+        timer: {
+            totalSeconds: 0,
+            remainingSeconds: 0,
+            isRunning: false,
+            isInterval: false,
+            alarmPlaying: false,
+            isMutedThisCycle: false,
+            isSnoozing: false,
+            lastMinuteSoundPlayed: false,
+            currentAudio: null
+        },
         pomodoro: {
             isRunning: false,
             phase: 'work',
@@ -104,6 +114,10 @@ const Tools = (function() {
 
 
     function toggleTimer() {
+        if (state.timer.alarmPlaying) {
+            stopTimerAlarm();
+            return;
+        }
         state.timer.isRunning ? pauseTimer() : startTimer();
     }
 
@@ -132,20 +146,77 @@ const Tools = (function() {
         setTimerInputsDisabled(false);
         state.timer.totalSeconds = 0;
         state.timer.remainingSeconds = 0;
+
+        // Reset new state flags
+        state.timer.alarmPlaying = false;
+        state.timer.isMutedThisCycle = false;
+        state.timer.isSnoozing = false;
+        state.timer.lastMinuteSoundPlayed = false;
+        if (state.timer.currentAudio) {
+            state.timer.currentAudio.pause();
+            state.timer.currentAudio = null;
+        }
+
         timerDaysInput.value = "0";
         timerHoursInput.value = "0";
         timerMinutesInput.value = "0";
         timerSecondsInput.value = "0";
+
+        const timeInputs = document.querySelector('.time-inputs');
+        if (timeInputs) {
+            timeInputs.classList.remove('snoozed');
+        }
+
         updateButtonStates();
+        updateTimerUI();
     }
 
     function timerFinished() {
-        playSound(settings.timerSound);
         if (state.timer.isInterval) {
+            if (!state.timer.isMutedThisCycle) {
+                playSound(settings.timerSound);
+            }
             state.timer.remainingSeconds = state.timer.totalSeconds;
         } else {
-            resetTimer();
+            state.timer.isRunning = false;
+            state.timer.alarmPlaying = true;
+            state.timer.remainingSeconds = 0;
+            if (!state.timer.isMutedThisCycle) {
+                const audio = playSound(settings.timerSound);
+                if (audio) {
+                    state.timer.currentAudio = audio;
+                }
+            }
+            updateTimerUI();
         }
+    }
+
+    function muteTimerAudio() {
+        if (state.timer.currentAudio) {
+            state.timer.currentAudio.pause();
+        }
+        state.timer.isMutedThisCycle = true;
+    }
+
+    function snoozeTimer() {
+        if (state.timer.currentAudio) {
+            state.timer.currentAudio.pause();
+            state.timer.currentAudio = null;
+        }
+        state.timer.remainingSeconds += 300; // Add 5 minutes
+        state.timer.isSnoozing = true;
+        state.timer.alarmPlaying = false;
+        startTimer(); // This will set isRunning and update UI correctly
+        updateTimerUI(); // Ensure alarm controls are hidden
+        updateButtonStates(); // Ensure button text is correct
+    }
+
+    function stopTimerAlarm() {
+        if (state.timer.currentAudio) {
+            state.timer.currentAudio.pause();
+            state.timer.currentAudio = null;
+        }
+        resetTimer();
     }
 
     // Stopwatch Functions
@@ -393,6 +464,16 @@ const Tools = (function() {
         alarmControls.style.display = state.pomodoro.alarmPlaying ? 'flex' : 'none';
     }
 
+    function updateTimerUI() {
+        const mainControls = document.getElementById('timer-main-controls');
+        const alarmControls = document.getElementById('timerAlarmControls');
+
+        if (!mainControls || !alarmControls) return;
+
+        mainControls.style.display = state.timer.alarmPlaying ? 'none' : 'flex';
+        alarmControls.style.display = state.timer.alarmPlaying ? 'flex' : 'none';
+    }
+
     // Shared Functions
     function playSound(soundFile) {
         if (!soundFile) return null;
@@ -425,6 +506,17 @@ const Tools = (function() {
         timerHoursInput.addEventListener('blur', normalizeTimerInputs);
         timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
         timerSecondsInput.addEventListener('blur', normalizeTimerInputs);
+
+        // New Timer Alarm Buttons
+        const timerMuteBtn = document.getElementById('timerMuteBtn');
+        if(timerMuteBtn) timerMuteBtn.addEventListener('click', muteTimerAudio);
+
+        const timerSnoozeBtn = document.getElementById('timerSnoozeBtn');
+        if(timerSnoozeBtn) timerSnoozeBtn.addEventListener('click', snoozeTimer);
+
+        const timerStopBtn = document.getElementById('timerStopBtn');
+        if(timerStopBtn) timerStopBtn.addEventListener('click', stopTimerAlarm);
+
 
         // Stopwatch
         toggleStopwatchBtn.addEventListener('click', toggleStopwatch);
@@ -509,6 +601,7 @@ const Tools = (function() {
             updateButtonStates();
             updatePomodoroDashboard();
             updatePomodoroUI();
+            updateTimerUI();
         },
         update: function(deltaTime) {
             if (state.timer.isRunning) {
@@ -528,6 +621,17 @@ const Tools = (function() {
                 timerHoursInput.value = hours;
                 timerMinutesInput.value = minutes;
                 timerSecondsInput.value = seconds;
+
+                // Snooze visual feedback
+                const timeInputs = document.querySelector('.time-inputs');
+                if (timeInputs) {
+                    if (state.timer.isSnoozing && !timeInputs.classList.contains('snoozed')) {
+                        timeInputs.classList.add('snoozed');
+                    } else if (!state.timer.isSnoozing && timeInputs.classList.contains('snoozed')) {
+                        timeInputs.classList.remove('snoozed');
+                    }
+                }
+                updateTimerUI();
             }
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;

@@ -353,6 +353,10 @@
         color: #FFDB58 !important; /* Mustard Yellow */
     }
 
+    .time-inputs.snoozed input {
+        color: #F44336 !important; /* Red for snoozing */
+    }
+
     .time-input-small {
         width: 60px;
         background: #2a2a2a;
@@ -577,9 +581,14 @@
                         <label>Seconds</label>
                     </div>
                 </div>
-                <div class="control-buttons">
+                <div class="control-buttons" id="timer-main-controls">
                     <button id="toggleTimerBtn">Start</button>
                     <button id="resetTimer">Reset</button>
+                </div>
+                <div class="control-buttons" id="timerAlarmControls" style="display: none;">
+                    <button id="timerMuteBtn" class="control-btn"><i class="ph ph-speaker-slash"></i></button>
+                    <button id="timerSnoozeBtn" class="control-btn"><i class="ph ph-bell-z"></i></button>
+                    <button id="timerStopBtn" class="control-btn">Stop</button>
                 </div>
                  <div class="setting-toggle">
                     <span>Repeat</span>
