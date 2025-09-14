@@ -13,11 +13,6 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/settings.css">
     <style>
-    .three-column-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 5px;
-    }
     /* General page styling */
     body {
         display: flex;
@@ -825,14 +820,15 @@
                     </div>
                     <div class="settings-section">
                         <h3>Color Palettes</h3>
-                        <div class="color-preset-buttons three-column-grid">
-                            <button id="presetRed" class="color-preset-button">Red</button>
-                            <button id="presetOrange" class="color-preset-button">Orange</button>
-                            <button id="presetYellow" class="color-preset-button">Yellow</button>
-                            <button id="presetGreen" class="color-preset-button">Green</button>
-                            <button id="presetBlue" class="color-preset-button">Blue</button>
-                            <button id="presetPurple" class="color-preset-button">Purple</button>
-                        </div>
+                        <select id="colorPaletteSelect" class="w-full p-2 bg-gray-700 text-white rounded-md">
+                            <option value="" disabled selected>Select Palette</option>
+                            <option value="Red">Red</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Yellow">Yellow</option>
+                            <option value="Green">Green</option>
+                            <option value="Blue">Blue</option>
+                            <option value="Purple">Purple</option>
+                        </select>
                     </div>
                     <div class="setting-toggle">
                         <span>Reverse</span>
