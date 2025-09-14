@@ -205,6 +205,11 @@ const UI = (function() {
             const savedState = JSON.parse(localStorage.getItem('polarClockState'));
             if (savedState && savedState.mode) {
                 updateToolPanelVisibility(savedState.mode);
+            } else {
+                // Default to 'clock' mode if no state is saved
+                document.dispatchEvent(new CustomEvent('modechange', {
+                    detail: { mode: 'clock' }
+                }));
             }
         }
     };
