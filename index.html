@@ -1051,10 +1051,10 @@
         function drawMeditative() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const dimensions = { centerX: canvas.width / 2, centerY: canvas.height / 2 };
-            const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
+            const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.7;
             const currentPattern = patterns[meditativeState.pattern];
             const numArcs = currentPattern.length;
-            const renderedLineWidth = (20 / numArcs);
+            const renderedLineWidth = (40 / numArcs);
             const renderedGap = renderedLineWidth * 0.2;
             const totalArcWidth = numArcs * renderedLineWidth;
             const totalGap = (numArcs > 0) ? (numArcs - 1) * renderedGap : 0;
