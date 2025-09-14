@@ -8,7 +8,6 @@ const UI = (function() {
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
-        goToAlarms: document.getElementById('goToAlarmsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromSettings: document.getElementById('backToMainFromSettings'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
@@ -160,6 +159,10 @@ const UI = (function() {
             toolSelectButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const mode = button.dataset.mode;
+                    if (mode === 'alarms') {
+                        window.location.href = 'alarms.html';
+                        return;
+                    }
                     document.dispatchEvent(new CustomEvent('modechange', {
                         detail: { mode: mode }
                     }));
@@ -188,8 +191,6 @@ const UI = (function() {
                     views.pomodoroSettings.style.display = 'none';
                 });
             }
-
-            navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
