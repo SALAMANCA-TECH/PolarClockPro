@@ -112,8 +112,6 @@ const Settings = (function() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
             flowMode: false,
-            showDigitalTime: true,
-            showDigitalDate: true,
             showArcEndCircles: true,
             inverseMode: false,
             reverseMode: false,
@@ -181,11 +179,7 @@ const Settings = (function() {
         document.getElementById('flowModeToggle').checked = settings.flowMode;
 
         // New display toggles
-        document.getElementById('digitalTimeToggle').checked = settings.showDigitalTime;
-        document.getElementById('digitalDateToggle').checked = settings.showDigitalDate;
         document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
-        document.getElementById('digitalTime').style.display = settings.showDigitalTime ? 'block' : 'none';
-        document.getElementById('digitalDate').style.display = settings.showDigitalDate ? 'block' : 'none';
 
 
         // Separator settings
@@ -259,20 +253,6 @@ const Settings = (function() {
         });
 
         // New display toggle listeners
-        document.getElementById('digitalTimeToggle').addEventListener('change', (e) => {
-            settings.showDigitalTime = e.target.checked;
-            saveSettings();
-            applySettingsToUI();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
-
-        document.getElementById('digitalDateToggle').addEventListener('change', (e) => {
-            settings.showDigitalDate = e.target.checked;
-            saveSettings();
-            applySettingsToUI();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
-
         document.getElementById('arcEndCirclesToggle').addEventListener('change', (e) => {
             settings.showArcEndCircles = e.target.checked;
             saveSettings();
