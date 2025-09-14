@@ -174,7 +174,7 @@ const Clock = (function() {
 
         drawnArcs.forEach(arc => {
             if (arc.radius > 0 && arc.colors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors, arc.lineWidth);
                 drawLabel({ ...arc });
             }
         });
@@ -192,39 +192,13 @@ const Clock = (function() {
         }
     };
 
-    const drawArc = (x, y, radius, startAngle, endAngle, colorLight, colorDark, lineWidth) => {
+    const drawArc = (x, y, radius, startAngle, endAngle, color, lineWidth) => {
         if (radius <= 0) return;
 
         // Prevent drawing a full circle if the start and end angles are effectively the same
         if (Math.abs(endAngle - startAngle) < 0.0001) return;
 
-
-        let strokeStyle;
-        if (settings.colorPreset === 'candy') {
-            // Create a gradient that gives a glossy, 3D effect
-            const innerRadius = radius - lineWidth / 2;
-            const outerRadius = radius + lineWidth / 2;
-            const gradient = ctx.createLinearGradient(x - innerRadius, y - innerRadius, x + outerRadius, y + outerRadius);
-
-            // Adding a bright highlight and a subtle shadow
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)'); // Top-left highlight
-            gradient.addColorStop(0.5, colorLight); // Main color
-            gradient.addColorStop(1, colorDark); // Bottom-right shadow
-
-            strokeStyle = gradient;
-        } else {
-            const useGradient = settings && settings.useGradient;
-            if (useGradient) {
-                const gradient = ctx.createConicGradient(baseStartAngle, x, y);
-                gradient.addColorStop(0, colorLight);
-                gradient.addColorStop(1, colorDark);
-                strokeStyle = gradient;
-            } else {
-                strokeStyle = colorLight;
-            }
-        }
-
-        ctx.strokeStyle = strokeStyle;
+        ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.arc(x, y, radius, startAngle, endAngle);
         ctx.lineWidth = lineWidth;
@@ -462,9 +436,9 @@ const Clock = (function() {
 
                 // ALWAYS draw the primary arc representing the current time.
                 if (settings.inverseMode && globalState.mode === 'clock') {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
                 } else {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors, arc.lineWidth);
                 }
 
                 // If a wipe animation is active, draw it on top.
@@ -475,10 +449,10 @@ const Clock = (function() {
                         const progress = elapsed / animationDuration;
                         if (settings.inverseMode && globalState.mode === 'clock') {
                             const animatedEndAngle = baseStartAngle + (progress * Math.PI * 2);
-                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors, arc.lineWidth);
                         } else {
                             const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
-                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
                         }
                     } else {
                         anim.isAnimating = false;
@@ -566,7 +540,7 @@ const Clock = (function() {
 
         arcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors, arc.lineWidth);
                 drawLabel(arc);
             }
         });
@@ -643,7 +617,7 @@ const Clock = (function() {
         // Draw the arcs and their labels
         arcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors.light, arc.colors.dark, arc.lineWidth);
+                drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.startAngle, arc.endAngle, arc.colors, arc.lineWidth);
                 drawLabel({ ...arc, text: arc.text });
             }
         });
