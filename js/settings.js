@@ -74,24 +74,12 @@ const Settings = (function() {
         "seconds": "#e34234",
         "weekOfYear": "#ff6700"
       },
-      "Red": {
-        "dayOfWeek": "#339900",
-        "month": "#ff3300",
-        "day": "#cc0000",
-        "hours": "#ff9933",
-        "minutes": "#ff0066",
-        "seconds": "#6633ff",
-        "weekOfYear": "#006699"
-      },
-      "Blue": {
-        "dayOfWeek": "#006699",
-        "month": "#336699",
-        "day": "#3399cc",
-        "hours": "#0099ff",
-        "minutes": "#0066ff",
-        "seconds": "#3366cc",
-        "weekOfYear": "#003366"
-      }
+      "Red": { "dayOfWeek": "#ff6666", "month": "#ff3333", "day": "#ff0000", "hours": "#cc0000", "minutes": "#990000", "seconds": "#660000", "weekOfYear": "#330000" },
+      "Orange": { "dayOfWeek": "#ffe6cc", "month": "#ffb366", "day": "#ff8000", "hours": "#cc6600", "minutes": "#994d00", "seconds": "#663300", "weekOfYear": "#331a00" },
+      "Yellow": { "dayOfWeek": "#ffffcc", "month": "#ffff66", "day": "#ffff00", "hours": "#cccc00", "minutes": "#999900", "seconds": "#666600", "weekOfYear": "#333300" },
+      "Green": { "dayOfWeek": "#ccffcc", "month": "#66ff66", "day": "#00ff00", "hours": "#00cc00", "minutes": "#009900", "seconds": "#006600", "weekOfYear": "#003300" },
+      "Blue": { "dayOfWeek": "#ccccff", "month": "#6666ff", "day": "#0000ff", "hours": "#0000cc", "minutes": "#000099", "seconds": "#000066", "weekOfYear": "#000033" },
+      "Purple": { "dayOfWeek": "#ffccff", "month": "#ff66ff", "day": "#ff00ff", "hours": "#cc00cc", "minutes": "#990099", "seconds": "#660066", "weekOfYear": "#330033" }
     };
 
     let settings = {};
@@ -148,13 +136,24 @@ const Settings = (function() {
         // Standard settings
         document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
         document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
-        Object.keys(colorThemes).forEach(themeName => {
+        // Update color scheme buttons
+        const colorSchemeButtons = ["Default", "Neon", "Pastel", "Colorblind", "Candy", "Greyscale", "Sunrise", "Sunset"];
+        colorSchemeButtons.forEach(themeName => {
             const buttonId = `preset${themeName}`;
             const button = document.getElementById(buttonId);
             if (button) {
                 button.classList.toggle('active', settings.colorPreset === themeName);
             }
         });
+
+        // Update color palette dropdown
+        const paletteSelect = document.getElementById('colorPaletteSelect');
+        const paletteOptions = ["Red", "Orange", "Yellow", "Green", "Blue", "Purple"];
+        if (paletteOptions.includes(settings.colorPreset)) {
+            paletteSelect.value = settings.colorPreset;
+        } else {
+            paletteSelect.value = ""; // Default to "Select Palette"
+        }
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
 
         // New display toggles
@@ -194,17 +193,26 @@ const Settings = (function() {
         // Standard settings listeners
         document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
         document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
-        Object.keys(colorThemes).forEach(themeName => {
-            const buttonId = `preset${themeName}`;
-            const button = document.getElementById(buttonId);
-            if (button) {
-                button.addEventListener('click', () => {
-                    settings.colorPreset = themeName;
-                    settings.currentColors = colorThemes[themeName];
-                    saveSettings();
-                    applySettingsToUI();
-                    document.dispatchEvent(new CustomEvent('settings-changed'));
-                });
+        const colorButtons = document.querySelectorAll('.color-preset-button');
+        colorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const themeName = button.id.replace('preset', '');
+                settings.colorPreset = themeName;
+                settings.currentColors = colorThemes[themeName];
+                saveSettings();
+                applySettingsToUI();
+                document.dispatchEvent(new CustomEvent('settings-changed'));
+            });
+        });
+
+        document.getElementById('colorPaletteSelect').addEventListener('change', (e) => {
+            const themeName = e.target.value;
+            if (themeName) {
+                settings.colorPreset = themeName;
+                settings.currentColors = colorThemes[themeName];
+                saveSettings();
+                applySettingsToUI();
+                document.dispatchEvent(new CustomEvent('settings-changed'));
             }
         });
         document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
