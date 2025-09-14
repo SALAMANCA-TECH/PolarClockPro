@@ -938,40 +938,38 @@
         </div>
     </div>
 
-    <!-- Pomodoro Settings Modal -->
-    <div id="pomodoroSettingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md text-white relative">
-            <button id="closePomodoroSettingsBtn" class="absolute top-2 right-2 text-gray-400 hover:text-white">
-                <i class="ph ph-x text-2xl"></i>
-            </button>
-            <h3 class="text-xl font-bold mb-4">Custom Cycles</h3>
-            <div class="settings-section w-full max-w-xs mx-auto">
-                <div class="flex justify-between w-full items-center mb-4">
-                    <label for="pomodoroWorkDurationModal">Work Duration (min)</label>
-                    <input type="number" id="pomodoroWorkDurationModal" class="time-input-small" value="25">
-                </div>
-                <div class="flex justify-between w-full items-center mb-4">
-                    <label for="pomodoroShortBreakDurationModal">Short Break (min)</label>
-                    <input type="number" id="pomodoroShortBreakDurationModal" class="time-input-small" value="5">
-                </div>
-                <div class="flex justify-between w-full items-center mb-4">
-                    <label for="pomodoroLongBreakDurationModal">Long Break (min)</label>
-                    <input type="number" id="pomodoroLongBreakDurationModal" class="time-input-small" value="15">
-                </div>
-                <div class="flex justify-between w-full items-center">
-                    <label for="pomodoroContinuousToggleModal">Continuous Mode</label>
-                    <label class="switch">
-                        <input type="checkbox" id="pomodoroContinuousToggleModal">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="control-buttons mt-4">
-                    <button id="cancelPomodoroSettings">Cancel</button>
-                    <button id="submitPomodoroSettings">Submit</button>
-                </div>
+    <!-- Pomodoro Settings View -->
+    <div id="pomodoroSettingsView" class="view-panel" style="display: none;">
+        <div class="view-header">
+            <button id="backToMainFromPomodoroSettings" class="back-button">Back</button>
+            <h2 class="view-title">Pomodoro Settings</h2>
+        </div>
+        <div class="settings-section w-full max-w-xs mx-auto">
+            <div class="flex justify-between w-full items-center mb-4">
+                <label for="pomodoroWorkDuration">Work Duration (min)</label>
+                <input type="number" id="pomodoroWorkDuration" class="time-input-small" value="25">
+            </div>
+            <div class="flex justify-between w-full items-center mb-4">
+                <label for="pomodoroShortBreakDuration">Short Break (min)</label>
+                <input type="number" id="pomodoroShortBreakDuration" class="time-input-small" value="5">
+            </div>
+            <div class="flex justify-between w-full items-center mb-4">
+                <label for="pomodoroLongBreakDuration">Long Break (min)</label>
+                <input type="number" id="pomodoroLongBreakDuration" class="time-input-small" value="15">
+            </div>
+            <div class="flex justify-between w-full items-center">
+                <label for="pomodoroContinuousToggle">Continuous Mode</label>
+                <label class="switch">
+                    <input type="checkbox" id="pomodoroContinuousToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="control-buttons mt-4">
+                <button id="savePomodoroSettings">Save</button>
             </div>
         </div>
     </div>
+
     <div id="audio-failure-message" class="hidden">Audio Failure</div>
 
     <footer>

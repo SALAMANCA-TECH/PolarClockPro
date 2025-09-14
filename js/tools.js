@@ -29,14 +29,11 @@ const Tools = (function() {
     const snoozePomodoroBtn = document.getElementById('pomodoroSnoozeBtn');
     const nextCyclePomodoroBtn = document.getElementById('nextCyclePomodoroBtn');
     const customPomodoroBtn = document.getElementById('customPomodoroBtn');
-    const pomodoroSettingsModal = document.getElementById('pomodoroSettingsModal');
-    const closePomodoroSettingsBtn = document.getElementById('closePomodoroSettingsBtn');
-    const cancelPomodoroSettingsBtn = document.getElementById('cancelPomodoroSettings');
-    const submitPomodoroSettingsBtn = document.getElementById('submitPomodoroSettings');
-    const workDurationModalInput = document.getElementById('pomodoroWorkDurationModal');
-    const shortBreakDurationModalInput = document.getElementById('pomodoroShortBreakDurationModal');
-    const longBreakDurationModalInput = document.getElementById('pomodoroLongBreakDurationModal');
-    const continuousToggleModalInput = document.getElementById('pomodoroContinuousToggleModal');
+    const savePomodoroSettingsBtn = document.getElementById('savePomodoroSettings');
+    const workDurationInput = document.getElementById('pomodoroWorkDuration');
+    const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
+    const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
+    const continuousToggleInput = document.getElementById('pomodoroContinuousToggle');
 
     // --- Module State ---
     let settings = {};
@@ -644,37 +641,37 @@ const Tools = (function() {
         mutePomodoroBtn.addEventListener('click', mutePomodoroAudio);
         snoozePomodoroBtn.addEventListener('click', snoozePomodoro);
         nextCyclePomodoroBtn.addEventListener('click', endCycle);
-        // This listener is for the modal's toggle.
-        continuousToggleModalInput.addEventListener('change', (e) => {
-            state.pomodoro.continuous = e.target.checked;
-        });
+        // Pomodoro Settings Page Logic
+        if (customPomodoroBtn) {
+            customPomodoroBtn.addEventListener('click', () => {
+                // Populate page with current values from state
+                if (workDurationInput) workDurationInput.value = state.pomodoro.workDuration;
+                if (shortBreakDurationInput) shortBreakDurationInput.value = state.pomodoro.shortBreakDuration;
+                if (longBreakDurationInput) longBreakDurationInput.value = state.pomodoro.longBreakDuration;
+                if (continuousToggleInput) continuousToggleInput.checked = state.pomodoro.continuous;
+                // Dispatch event for UI to handle
+                document.dispatchEvent(new CustomEvent('show-pomodoro-settings'));
+            });
+        }
 
-        // Modal Logic
-        customPomodoroBtn.addEventListener('click', () => {
-            // Populate modal with current values from state
-            workDurationModalInput.value = state.pomodoro.workDuration;
-            shortBreakDurationModalInput.value = state.pomodoro.shortBreakDuration;
-            longBreakDurationModalInput.value = state.pomodoro.longBreakDuration;
-            continuousToggleModalInput.checked = state.pomodoro.continuous;
-            pomodoroSettingsModal.classList.remove('hidden');
-        });
+        if (savePomodoroSettingsBtn) {
+            savePomodoroSettingsBtn.addEventListener('click', () => {
+                // Save settings from page to state
+                state.pomodoro.workDuration = parseInt(workDurationInput.value) || 25;
+                state.pomodoro.shortBreakDuration = parseInt(shortBreakDurationInput.value) || 5;
+                state.pomodoro.longBreakDuration = parseInt(longBreakDurationInput.value) || 15;
+                state.pomodoro.continuous = continuousToggleInput.checked;
 
-        const closeModal = () => pomodoroSettingsModal.classList.add('hidden');
-        closePomodoroSettingsBtn.addEventListener('click', closeModal);
-        cancelPomodoroSettingsBtn.addEventListener('click', closeModal);
+                // Reset the pomodoro timer to apply new settings immediately
+                resetPomodoro();
 
-        submitPomodoroSettingsBtn.addEventListener('click', () => {
-            // Save settings from modal to state
-            state.pomodoro.workDuration = parseInt(workDurationModalInput.value) || 25;
-            state.pomodoro.shortBreakDuration = parseInt(shortBreakDurationModalInput.value) || 5;
-            state.pomodoro.longBreakDuration = parseInt(longBreakDurationModalInput.value) || 15;
-            state.pomodoro.continuous = continuousToggleModalInput.checked;
-
-            // Always reset the pomodoro timer to apply new settings immediately
-            resetPomodoro();
-
-            closeModal();
-        });
+                // Hide the settings page by finding its back button and clicking it
+                const backButton = document.getElementById('backToMainFromPomodoroSettings');
+                if (backButton) {
+                    backButton.click();
+                }
+            });
+        }
     }
 
 
