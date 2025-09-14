@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clock module needs settings for rendering and the app state for displaying arcs.
     Clock.init(settings, appState);
     // UI module is now independent of the Clock module.
-    UI.init();
+    UI.init(appState);
     // Tools module needs settings for sounds and the initial state for the tools.
     Tools.init(settings, appState.tools);
 
