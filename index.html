@@ -55,21 +55,16 @@
     /* Digital clock display */
     #digitalDisplay {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 5%;
-        box-sizing: border-box;
-        z-index: 102;
-    }
-
-    #time-date-wrapper {
-        pointer-events: none;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         text-align: center;
+        line-height: 1.2;
+        pointer-events: none;
+        z-index: 102;
+        display: flex;
+        gap: 1em;
+        align-items: baseline;
     }
 
     #digitalTime {
@@ -78,14 +73,9 @@
     }
 
     #digitalDate {
-        font-size: 0.72em;
-        font-weight: 300;
-        opacity: 0.8;
-    }
-
-    #optionsBtn {
-        margin-top: auto;
-        margin-bottom: auto;
+        font-size: 1.8em;
+        font-weight: 500;
+        opacity: 1;
     }
 
     .panel-hidden {
@@ -121,6 +111,18 @@
     }
     .tool-select-button:hover {
         background-color: #555;
+    }
+
+    footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+        box-sizing: border-box;
+        z-index: 200;
     }
     .view-panel {
         display: none; /* Hidden by default */
@@ -504,23 +506,6 @@
         align-items: center;
     }
 
-    #bottom-toolbar {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        transform-origin: center;
-        transform: translateY(calc(-45vh + 40px)) scale(0.1); /* Move up to center and scale down */
-        opacity: 0;
-    }
-
-    #bottom-toolbar.visible {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-
-    /* Reposition the tool select menu */
-    #tool-select-menu {
-        bottom: 80px; /* main-nav-button height (60) + padding (10*2) */
-    }
-
     /* --- DESKTOP LAYOUT --- */
     @media (min-width: 769px) {
         body {
@@ -565,6 +550,10 @@
             padding: 1rem;
             box-sizing: border-box;
         }
+        footer {
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+        }
         .main-nav-buttons {
             gap: 5px;
         }
@@ -590,29 +579,12 @@
             <div id="active-clock-name" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 1.5em; color: #fff; z-index: 10;"></div>
             <canvas id="polarClockCanvas"></canvas>
             <div id="digitalDisplay">
-                <div id="time-date-wrapper">
-                    <div id="digitalTime"></div>
-                    <div id="digitalDate"></div>
-                </div>
-                <button id="optionsBtn" class="main-nav-button"><i class="ph ph-dots-three-outline"></i></button>
+                <div id="digitalTime"></div>
+                <!-- FIX: Added the missing ID to this div -->
+                <div id="digitalDate"></div>
             </div>
             <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
                 <!-- Miniature clocks will be added here -->
-            </div>
-            <div id="bottom-ui-container" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; z-index: 103;">
-                <div id="tool-select-menu" class="panel-hidden">
-                    <button class="tool-select-button" data-mode="clock">Clock Only</button>
-                    <button class="tool-select-button" data-mode="timer">Timer</button>
-                    <button class="tool-select-button" data-mode="pomodoro">Pomodoro</button>
-                    <button class="tool-select-button" data-mode="stopwatch">Stopwatch</button>
-                    <button class="tool-select-button" data-mode="meditative">Meditative</button>
-                    <button id="goToAlarmsBtn" class="tool-select-button" data-mode="alarms">Alarms</button>
-                </div>
-                <div id="bottom-toolbar" class="main-nav-buttons">
-                    <button id="toggleControlsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
-                    <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
-                    <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
-                </div>
             </div>
         </div>
     </div>
@@ -1003,6 +975,21 @@
 
     <div id="audio-failure-message" class="hidden">Audio Failure</div>
 
+    <footer>
+        <div id="tool-select-menu" class="panel-hidden">
+            <button class="tool-select-button" data-mode="clock">Clock Only</button>
+            <button class="tool-select-button" data-mode="timer">Timer</button>
+            <button class="tool-select-button" data-mode="pomodoro">Pomodoro</button>
+            <button class="tool-select-button" data-mode="stopwatch">Stopwatch</button>
+            <button class="tool-select-button" data-mode="meditative">Meditative</button>
+        </div>
+        <div class="main-nav-buttons">
+            <button id="toggleControlsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
+            <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
+            <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
+            <button id="goToAlarmsBtn" class="main-nav-button"><i class="ph ph-bell"></i></button>
+        </div>
+    </footer>
 
 <script src="js/clock.js" defer></script>
     <script src="js/ui.js" defer></script>
