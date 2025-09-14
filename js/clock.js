@@ -470,18 +470,18 @@ const Clock = (function() {
                 // If a wipe animation is active, draw it on top.
                 const anim = resetAnimations[arc.key];
                 if (anim && anim.isAnimating) {
-                    const elapsed = nowMs - anim.startTime;
-                    if (elapsed < animationDuration) {
-                        const progress = elapsed / animationDuration;
-                        if (settings.inverseMode && globalState.mode === 'clock') {
-                            const animatedEndAngle = baseStartAngle + (progress * Math.PI * 2);
-                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, animatedEndAngle, arc.colors, arc.lineWidth);
-                        } else {
+                    // In "inverse" mode, the animation is jarring, so we'll skip it.
+                    if (settings.inverseMode && globalState.mode === 'clock') {
+                        anim.isAnimating = false;
+                    } else {
+                        const elapsed = nowMs - anim.startTime;
+                        if (elapsed < animationDuration) {
+                            const progress = elapsed / animationDuration;
                             const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
                             drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
+                        } else {
+                            anim.isAnimating = false;
                         }
-                    } else {
-                        anim.isAnimating = false;
                     }
                 }
 
