@@ -154,6 +154,15 @@ const UI = (function() {
 
     return {
         init: function() {
+            const optionsBtn = document.getElementById('optionsBtn');
+            const bottomToolbar = document.getElementById('bottom-toolbar');
+
+            if (optionsBtn && bottomToolbar) {
+                optionsBtn.addEventListener('click', () => {
+                    bottomToolbar.classList.toggle('visible');
+                });
+            }
+
             navButtons.toggleControls.addEventListener('click', toggleToolMenu);
 
             toolSelectButtons.forEach(button => {
