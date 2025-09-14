@@ -492,14 +492,14 @@
     }
 
     #bottom-toolbar {
-        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-        max-height: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: center;
+        transform: translateY(calc(-45vh + 40px)) scale(0.1); /* Move up to center and scale down */
         opacity: 0;
-        overflow: hidden;
     }
 
     #bottom-toolbar.visible {
-        max-height: 80px; /* 60px button + 10px padding * 2 */
+        transform: translateY(0) scale(1);
         opacity: 1;
     }
 
@@ -584,7 +584,7 @@
             <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
                 <!-- Miniature clocks will be added here -->
             </div>
-            <div id="bottom-ui-container" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; align-items: center;">
+            <div id="bottom-ui-container" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; z-index: 103;">
                 <div id="tool-select-menu" class="panel-hidden">
                     <button class="tool-select-button" data-mode="clock">Clock Only</button>
                     <button class="tool-select-button" data-mode="timer">Timer</button>
