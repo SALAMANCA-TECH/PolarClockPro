@@ -405,91 +405,72 @@ const Clock = (function() {
         }
     };
 
-    const calculateArcProgress = (now) => {
-        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
-        const dayOfWeek = getDayOfWeek(now);
-        const daysInMonth = getDaysInMonth(year, month);
-        const weekOfYear = getWeekOfYear(now);
-        const totalWeeks = getTotalWeeksInYear(year);
+    const drawClock = () => {
+        if (!settings.currentColors || !globalState.timer) {
+            return;
+        }
 
-        const dayOfWeekProgress = dayOfWeek / 7;
-        const monthProgress = (month + date / daysInMonth) / 12;
-        const dayProgress = (date - 1 + (hours + minutes / 60) / 24) / daysInMonth;
-        const hoursProgress = settings.is24HourFormat ? ((hours + minutes / 60) / 24) : ((((hours % 12) || 12) + minutes / 60) / 12);
-        const minutesProgress = (minutes + seconds / 60) / 60;
-        const secondsProgress = (seconds + now.getMilliseconds() / 1000) / 60;
-        const weekOfYearProgress = weekOfYear / totalWeeks;
-
-        return {
-            dayOfWeek: dayOfWeekProgress,
-            month: monthProgress,
-            day: dayProgress,
-            hours: hoursProgress,
-            minutes: minutesProgress,
-            seconds: secondsProgress,
-            weekOfYear: weekOfYearProgress,
-        };
-    };
-
-    const drawClock = (progressOverrides = null, targetTime = null) => {
-        if (!settings.currentColors) return;
-
-        const now = targetTime || new Date();
-        if (settings.flowMode && !progressOverrides) {
+        const now = new Date();
+        if (settings.flowMode) {
             const minutes = now.getMinutes();
             if (minutes % 5 === 0 && minutes !== lastColorChangeMinute) {
                 Settings.cycleColorPreset();
                 lastColorChangeMinute = minutes;
             }
         }
+        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+        const dayOfWeek = getDayOfWeek(now);
+        const daysInMonth = getDaysInMonth(year, month);
+        const weekOfYear = getWeekOfYear(now);
+        const totalWeeks = getTotalWeeksInYear(year);
 
-        const timeProgress = calculateArcProgress(now);
-        const arcKeys = ['dayOfWeek', 'month', 'day', 'hours', 'minutes', 'seconds', 'weekOfYear'];
+        const dayOfWeekEndAngle = baseStartAngle + (dayOfWeek / 7) * Math.PI * 2;
+        const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
+        const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
+        let hoursEndAngle;
+        if (settings.is24HourFormat) {
+            hoursEndAngle = baseStartAngle + ((hours + minutes / 60) / 24) * Math.PI * 2;
+        } else {
+            hoursEndAngle = baseStartAngle + ((((hours % 12) || 12) + minutes / 60) / 12) * Math.PI * 2;
+        }
+        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
+        const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
+        const weekOfYearEndAngle = baseStartAngle + (weekOfYear / totalWeeks) * Math.PI * 2;
 
-        const arcs = arcKeys.map(key => {
-            let endAngle;
-            if (progressOverrides && progressOverrides[key]) {
-                const animState = progressOverrides[key];
-                const targetP = timeProgress[key];
-                // Interpolate between 0 -> 1 (fill) and 1 -> target (settle)
-                const currentProgress = animState.fill < 1
-                    ? animState.fill
-                    : 1 - (1 - targetP) * animState.settle;
-                endAngle = baseStartAngle + currentProgress * Math.PI * 2;
-            } else {
-                endAngle = baseStartAngle + timeProgress[key] * Math.PI * 2;
-            }
-
-            return {
-                key: key,
-                radius: dimensions[key + 'Radius'],
-                colors: settings.currentColors[key],
-                lineWidth: dimensions[key + 'LineWidth'],
-                endAngle: endAngle
-            };
-        });
+        // Arcs are now always defined and drawn
+        const arcs = [
+            { key: 'dayOfWeek', radius: dimensions.dayOfWeekRadius, colors: settings.currentColors.dayOfWeek, lineWidth: dimensions.dayOfWeekLineWidth, endAngle: dayOfWeekEndAngle },
+            { key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: dimensions.monthLineWidth, endAngle: monthEndAngle },
+            { key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
+            { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
+            { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, endAngle: minutesEndAngle },
+            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle },
+            { key: 'weekOfYear', radius: dimensions.weekOfYearRadius, colors: settings.currentColors.weekOfYear, lineWidth: dimensions.weekOfYearLineWidth, endAngle: weekOfYearEndAngle }
+        ];
 
         const nowMs = now.getTime();
         const visibleArcs = arcs.filter(arc => settings.arcVisibility[arc.key]);
 
         // First, draw all the arcs.
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         visibleArcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
-                if (!progressOverrides && hasCompletedCycle(arc.key, now, lastNow)) {
-                     if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
+                if (hasCompletedCycle(arc.key, now, lastNow)) {
+                    if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
                         resetAnimations[arc.key] = { isAnimating: true, startTime: nowMs };
                     }
                 }
 
+                // ALWAYS draw the primary arc representing the current time.
                 if (settings.inverseMode && globalState.mode === 'clock') {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
                 } else {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors, arc.lineWidth);
                 }
 
+                // If a wipe animation is active, draw it on top.
                 const anim = resetAnimations[arc.key];
                 if (anim && anim.isAnimating) {
+                    // In "inverse" mode, the animation is jarring, so we'll skip it.
                     if (settings.inverseMode && globalState.mode === 'clock') {
                         anim.isAnimating = false;
                     } else {
@@ -503,6 +484,8 @@ const Clock = (function() {
                         }
                     }
                 }
+
+                // Get the label text ready for the next step.
                 arc.text = getLabelText(arc.key, now);
             }
         });
@@ -510,26 +493,42 @@ const Clock = (function() {
         // Second, draw the separators over the arcs.
         if (settings.showSeparators) {
             const isRulerMode = settings.separatorMode === 'ruler';
+
             if (settings.arcVisibility.seconds && settings.separatorVisibility.seconds) {
-                isRulerMode ? drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth) : drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                if (isRulerMode) {
+                    drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                } else {
+                    drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
+                }
             }
+
             if (settings.arcVisibility.minutes && settings.separatorVisibility.minutes) {
-                isRulerMode ? drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth) : drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                if (isRulerMode) {
+                    drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                } else {
+                    drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
+                }
             }
+
+            // Other arcs always use standard separators
             if (settings.arcVisibility.hours && settings.separatorVisibility.hours) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-                if (isRulerMode) drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
+                if (settings.separatorMode === 'ruler') {
+                    drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
+                }
             }
-            if (settings.arcVisibility.day && settings.separatorVisibility.day) drawSeparators(dimensions.dayRadius, getDaysInMonth(now.getFullYear(), now.getMonth()), dimensions.dayLineWidth);
+            if (settings.arcVisibility.day && settings.separatorVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
             if (settings.arcVisibility.month && settings.separatorVisibility.month) {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-                if (isRulerMode) drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
+                if (settings.separatorMode === 'ruler') {
+                    drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
+                }
             }
             if (settings.arcVisibility.dayOfWeek && settings.separatorVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
             if (settings.arcVisibility.weekOfYear && settings.separatorVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
 
-        // Finally, draw the labels.
+        // Finally, draw the labels (and their circles) on top of everything.
         visibleArcs.forEach(arc => {
             if (arc.radius > 0 && settings.currentColors) {
                 drawLabel(arc);
@@ -537,6 +536,7 @@ const Clock = (function() {
         });
 
         lastNow = now;
+
         if (!isFirstFrameDrawn && dimensions.secondsRadius > 0) {
             isFirstFrameDrawn = true;
             canvas.dispatchEvent(new CustomEvent('clockready', { bubbles: true }));
@@ -668,22 +668,18 @@ const Clock = (function() {
         }
     };
 
-    const animate = (progressOverrides = null, targetTime = null) => {
-        // This function is now the single point of drawing
+    const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (globalState.mode === 'pomodoro') {
-            drawPomodoro(); // Needs similar override logic if it were to be animated
+            drawPomodoro();
         } else if (globalState.mode === 'stopwatch') {
-            drawStopwatch(); // Needs similar override logic
+            drawStopwatch();
         } else if (globalState.mode === 'timer') {
-            drawTimer(); // Needs similar override logic
+            drawTimer();
         } else {
-            drawClock(progressOverrides, targetTime);
+            drawClock();
         }
-
-        // Only request another frame if we are in continuous animation mode (not startup)
-        if (!progressOverrides) {
-            animationFrameId = requestAnimationFrame(() => animate());
-        }
+        animationFrameId = requestAnimationFrame(animate);
     };
 
     const publicInterface = {
@@ -691,6 +687,7 @@ const Clock = (function() {
             settings = initialSettings;
             globalState = initialState;
             window.addEventListener('resize', () => this.resize());
+            this.resume();
         },
         pause: function() {
             if (animationFrameId) {
@@ -700,7 +697,7 @@ const Clock = (function() {
         },
         resume: function() {
             if (!animationFrameId) {
-                lastNow = new Date(); // Reset lastNow to prevent large jumps
+                lastNow = new Date();
                 animate();
             }
         },
@@ -732,13 +729,19 @@ const Clock = (function() {
                     const { totalSeconds } = globalState.timer;
                     if (totalSeconds === 0) return false;
                     switch (arcKey) {
-                        case 'day': return totalSeconds >= 86400;
-                        case 'hours': return totalSeconds >= 3600;
-                        case 'minutes': return totalSeconds >= 60;
-                        case 'seconds': return totalSeconds > 0;
-                        default: return false;
+                        case 'day':
+                            return totalSeconds >= 86400;
+                        case 'hours':
+                            return totalSeconds >= 3600;
+                        case 'minutes':
+                            return totalSeconds >= 60;
+                        case 'seconds':
+                            return totalSeconds > 0;
+                        default:
+                            return false; // Do not show other arcs in timer mode
                     }
                 } else {
+                    // Clock mode
                     return settings.arcVisibility[arcKey];
                 }
             };
@@ -762,12 +765,10 @@ const Clock = (function() {
                 }
             }
         },
-        update: function(newSettings, newState, progressOverrides = null, targetTime = null) {
+        update: function(newSettings, newState) {
             settings = newSettings;
             globalState = newState;
-            // Directly call animate for a single frame render.
-            // resume() will be used for continuous animation.
-            animate(progressOverrides, targetTime);
+            this.resume();
         }
     };
 

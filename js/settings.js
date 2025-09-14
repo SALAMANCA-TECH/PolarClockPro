@@ -357,8 +357,6 @@ const Settings = (function() {
         get: function() {
             return settings;
         },
-        save: saveSettings,
-        applyToUI: applySettingsToUI,
         cycleColorPreset: cycleColorPreset
     };
 })();
