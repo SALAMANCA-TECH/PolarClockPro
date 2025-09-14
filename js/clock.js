@@ -12,6 +12,7 @@ const Clock = (function() {
     let animationFrameId = null;
     let resetAnimations = {};
     const animationDuration = 1500; // 1.5 seconds
+    let lastColorChangeMinute = -1;
 
     const hasCompletedCycle = (unit, now, lastNow) => {
         switch (unit) {
@@ -411,6 +412,13 @@ const Clock = (function() {
         }
 
         const now = new Date();
+        if (settings.flowMode) {
+            const minutes = now.getMinutes();
+            if (minutes % 5 === 0 && minutes !== lastColorChangeMinute) {
+                Settings.cycleColorPreset();
+                lastColorChangeMinute = minutes;
+            }
+        }
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
         const dayOfWeek = getDayOfWeek(now);
         const daysInMonth = getDaysInMonth(year, month);
