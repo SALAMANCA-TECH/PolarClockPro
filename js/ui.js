@@ -3,6 +3,7 @@ const UI = (function() {
     const views = {
         settings: document.getElementById('settingsView'),
         about: document.getElementById('aboutView'),
+        pomodoroSettings: document.getElementById('pomodoroSettingsView'),
     };
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
@@ -11,6 +12,7 @@ const UI = (function() {
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromSettings: document.getElementById('backToMainFromSettings'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
+        backFromPomodoroSettings: document.getElementById('backToMainFromPomodoroSettings'),
     };
     const toolPanels = {
         timer: document.getElementById('timerPanel'),
@@ -181,6 +183,12 @@ const UI = (function() {
                 views.about.style.display = 'none';
             });
 
+            if(navButtons.backFromPomodoroSettings) {
+                navButtons.backFromPomodoroSettings.addEventListener('click', () => {
+                    views.pomodoroSettings.style.display = 'none';
+                });
+            }
+
             navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
@@ -188,6 +196,10 @@ const UI = (function() {
 
             document.addEventListener('modechange', (e) => {
                 updateToolPanelVisibility(e.detail.mode);
+            });
+
+            document.addEventListener('show-pomodoro-settings', () => {
+                showView(views.pomodoroSettings);
             });
 
             const savedState = JSON.parse(localStorage.getItem('polarClockState'));
