@@ -207,9 +207,8 @@ const Clock = (function() {
             const innerRadius = radius - lineWidth / 2;
             const outerRadius = radius + lineWidth / 2;
             const gradient = ctx.createLinearGradient(x - innerRadius, y - innerRadius, x + outerRadius, y + outerRadius);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)'); // Highlight
-            gradient.addColorStop(0.5, color);
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)'); // Shadow
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
             strokeStyle = gradient;
         } else if (settings.colorPreset === 'Neon') {
             ctx.shadowColor = color;
