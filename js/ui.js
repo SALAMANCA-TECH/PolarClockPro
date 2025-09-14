@@ -153,7 +153,7 @@ const UI = (function() {
     }
 
     return {
-        init: function() {
+        init: function(appState) {
             const optionsBtn = document.getElementById('optionsBtn');
             const bottomToolbar = document.getElementById('bottom-toolbar');
 
@@ -212,14 +212,12 @@ const UI = (function() {
                 showView(views.pomodoroSettings);
             });
 
-            const savedState = JSON.parse(localStorage.getItem('polarClockState'));
-            if (savedState && savedState.mode) {
-                updateToolPanelVisibility(savedState.mode);
+            // Initialize panel visibility based on the state provided by main.js
+            if (appState && appState.mode) {
+                updateToolPanelVisibility(appState.mode);
             } else {
-                // Default to 'clock' mode if no state is saved
-                document.dispatchEvent(new CustomEvent('modechange', {
-                    detail: { mode: 'clock' }
-                }));
+                // Fallback to clock mode if no state is passed
+                updateToolPanelVisibility('clock');
             }
         }
     };
