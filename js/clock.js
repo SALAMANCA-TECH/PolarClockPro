@@ -198,11 +198,30 @@ const Clock = (function() {
         // Prevent drawing a full circle if the start and end angles are effectively the same
         if (Math.abs(endAngle - startAngle) < 0.0001) return;
 
-        ctx.strokeStyle = color;
+        ctx.save(); // Save the current state
+
+        let strokeStyle = color;
+
+        if (settings.colorPreset === 'Candy') {
+            const innerRadius = radius - lineWidth / 2;
+            const outerRadius = radius + lineWidth / 2;
+            const gradient = ctx.createLinearGradient(x - innerRadius, y - innerRadius, x + outerRadius, y + outerRadius);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)'); // Highlight
+            gradient.addColorStop(0.5, color);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)'); // Shadow
+            strokeStyle = gradient;
+        } else if (settings.colorPreset === 'Neon') {
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+        }
+
+        ctx.strokeStyle = strokeStyle;
         ctx.beginPath();
         ctx.arc(x, y, radius, startAngle, endAngle);
         ctx.lineWidth = lineWidth;
         ctx.stroke();
+
+        ctx.restore(); // Restore the state to remove shadow effects for subsequent draws
     };
 
     const drawLabel = (arc) => {
