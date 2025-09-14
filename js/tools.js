@@ -485,18 +485,42 @@ const Tools = (function() {
     function updatePomodoroDashboard() {
         const { phase, remainingSeconds, workDuration, shortBreakDuration, longBreakDuration, isRunning, hasStarted, isSnoozing } = state.pomodoro;
 
-        // Update the time for all three displays
+        // Update time text content first
         pomodoroWorkDisplay.textContent = formatToHHMMSS(phase === 'work' ? remainingSeconds : workDuration * 60);
         pomodoroShortBreakDisplay.textContent = formatToHHMMSS(phase === 'shortBreak' ? remainingSeconds : shortBreakDuration * 60);
         pomodoroLongBreakDisplay.textContent = formatToHHMMSS(phase === 'longBreak' ? remainingSeconds : longBreakDuration * 60);
+
+        const workItem = pomodoroWorkDisplay.parentElement;
+        const shortBreakItem = pomodoroShortBreakDisplay.parentElement;
+        const longBreakItem = pomodoroLongBreakDisplay.parentElement;
+
+        // Hide all items by default
+        workItem.style.display = 'none';
+        shortBreakItem.style.display = 'none';
+        longBreakItem.style.display = 'none';
 
         // Reset all classes
         const allDisplays = [pomodoroWorkDisplay, pomodoroShortBreakDisplay, pomodoroLongBreakDisplay];
         allDisplays.forEach(display => display.classList.remove('active', 'paused', 'snoozed'));
 
-        // Set class for the active phase
-        const activeDisplay = phase === 'work' ? pomodoroWorkDisplay : (phase === 'shortBreak' ? pomodoroShortBreakDisplay : pomodoroLongBreakDisplay);
+        let activeDisplay;
+        let activeItem;
 
+        // Determine active phase and show the corresponding item
+        if (phase === 'work') {
+            activeDisplay = pomodoroWorkDisplay;
+            activeItem = workItem;
+        } else if (phase === 'shortBreak') {
+            activeDisplay = pomodoroShortBreakDisplay;
+            activeItem = shortBreakItem;
+        } else { // longBreak
+            activeDisplay = pomodoroLongBreakDisplay;
+            activeItem = longBreakItem;
+        }
+
+        activeItem.style.display = 'flex'; // Show the active item
+
+        // Apply class based on state
         if (isSnoozing) {
             activeDisplay.classList.add('snoozed');
         } else if (isRunning) {
@@ -646,10 +670,8 @@ const Tools = (function() {
             state.pomodoro.longBreakDuration = parseInt(longBreakDurationModalInput.value) || 15;
             state.pomodoro.continuous = continuousToggleModalInput.checked;
 
-            // If timer is not running, reset it to apply new duration settings
-            if (!state.pomodoro.isRunning && !state.pomodoro.hasStarted) {
-                resetPomodoro();
-            }
+            // Always reset the pomodoro timer to apply new settings immediately
+            resetPomodoro();
 
             closeModal();
         });
