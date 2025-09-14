@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     Tools.init(settings, appState.tools);
 
     // 4. Set up the main update loop (requestAnimationFrame)
-    const digitalTime = document.getElementById('digitalTime');
-    const digitalDate = document.getElementById('digitalDate');
     let lastFrameTime = 0;
 
     function update(timestamp) {
@@ -44,18 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update the tools module (advances timers, etc.)
         Tools.update(deltaTime);
-
-        // Update the digital clock display
-        if (digitalTime) {
-            digitalTime.textContent = now.toLocaleTimeString([], {
-                hour12: !settings.is24HourFormat,
-                hour: 'numeric',
-                minute: '2-digit'
-            });
-        }
-        if (digitalDate) {
-            digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
-        }
 
         // Get the latest state from the tools module
         const latestToolState = Tools.getState();
