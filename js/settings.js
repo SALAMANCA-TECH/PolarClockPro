@@ -84,6 +84,26 @@ const Settings = (function() {
 
     let settings = {};
 
+    function reverseColors(colors) {
+        const newColors = { ...colors };
+        // Swap dayOfWeek and weekOfYear
+        [newColors.dayOfWeek, newColors.weekOfYear] = [newColors.weekOfYear, newColors.dayOfWeek];
+        // Swap month and seconds
+        [newColors.month, newColors.seconds] = [newColors.seconds, newColors.month];
+        // Swap day and minutes
+        [newColors.day, newColors.minutes] = [newColors.minutes, newColors.day];
+        return newColors;
+    }
+
+    function updateCurrentColors() {
+        const baseColors = colorThemes[settings.colorPreset] || colorThemes.Default;
+        if (settings.reverseMode) {
+            settings.currentColors = reverseColors(baseColors);
+        } else {
+            settings.currentColors = baseColors;
+        }
+    }
+
     function saveSettings() {
         localStorage.setItem('polarClockSettings', JSON.stringify(settings));
     }
@@ -96,6 +116,7 @@ const Settings = (function() {
             showDigitalDate: true,
             showArcEndCircles: true,
             inverseMode: false,
+            reverseMode: false,
             is24HourFormat: false,
             colorPreset: 'Default',
             showSeparators: true,
@@ -128,7 +149,7 @@ const Settings = (function() {
         if (!loaded.arcVisibility) settings.arcVisibility = defaultSettings.arcVisibility;
         if (!loaded.separatorVisibility) settings.separatorVisibility = defaultSettings.separatorVisibility;
 
-        settings.currentColors = colorThemes[settings.colorPreset] || colorThemes.Default;
+        updateCurrentColors();
 
         applySettingsToUI();
     }
@@ -156,6 +177,7 @@ const Settings = (function() {
             paletteSelect.value = ""; // Default to "Select Palette"
         }
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
+        document.getElementById('reverseToggle').checked = settings.reverseMode;
         document.getElementById('flowModeToggle').checked = settings.flowMode;
 
         // New display toggles
@@ -200,7 +222,7 @@ const Settings = (function() {
             button.addEventListener('click', () => {
                 const themeName = button.id.replace('preset', '');
                 settings.colorPreset = themeName;
-                settings.currentColors = colorThemes[themeName];
+                updateCurrentColors();
                 saveSettings();
                 applySettingsToUI();
                 document.dispatchEvent(new CustomEvent('settings-changed'));
@@ -211,7 +233,7 @@ const Settings = (function() {
             const themeName = e.target.value;
             if (themeName) {
                 settings.colorPreset = themeName;
-                settings.currentColors = colorThemes[themeName];
+                updateCurrentColors();
                 saveSettings();
                 applySettingsToUI();
                 document.dispatchEvent(new CustomEvent('settings-changed'));
@@ -219,6 +241,13 @@ const Settings = (function() {
         });
         document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
             settings.inverseMode = e.target.checked;
+            saveSettings();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+
+        document.getElementById('reverseToggle').addEventListener('change', (e) => {
+            settings.reverseMode = e.target.checked;
+            updateCurrentColors();
             saveSettings();
             document.dispatchEvent(new CustomEvent('settings-changed'));
         });
