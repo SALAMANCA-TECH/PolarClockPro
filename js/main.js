@@ -2,36 +2,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // This is the main application orchestrator.
     // It's responsible for initializing all the modules and passing data between them.
 
-    // 1. Initialize Settings: Load settings from localStorage and set up event listeners for settings controls.
+    // --- 1. INITIALIZATION ---
+    // Initialize all modules from the start to ensure a responsive UI.
     Settings.init();
     let settings = Settings.get();
 
-    // 2. Load Application State: Load tool states and other app-wide states from localStorage.
     let appState = {
-        mode: 'clock', // 'clock', 'timer', 'pomodoro', 'stopwatch'
-        tools: {}, // This will hold the state for timer, pomodoro, stopwatch
-        alarms: [] // For advanced alarms
+        mode: 'clock',
+        tools: {},
+        alarms: []
     };
-
     const savedState = localStorage.getItem('polarClockState');
     if (savedState) {
         const loadedState = JSON.parse(savedState);
-        // Safely merge the loaded state into our default structure, ensuring 'tools' is an object
         appState = { ...appState, ...loadedState };
-        if (!appState.tools) {
-            appState.tools = {};
-        }
+        if (!appState.tools) appState.tools = {};
     }
 
-    // 3. Initialize Modules
-    // Clock module needs settings for rendering and the app state for displaying arcs.
     Clock.init(settings, appState);
-    // UI module is now independent of the Clock module.
     UI.init();
-    // Tools module needs settings for sounds and the initial state for the tools.
     Tools.init(settings, appState.tools);
+    Clock.pause(); // Start with the clock paused
 
-    // 4. Set up the main update loop (requestAnimationFrame)
+    // --- 2. MAIN UPDATE LOOP (to be started after animation) ---
     const digitalTime = document.getElementById('digitalTime');
     const digitalDate = document.getElementById('digitalDate');
     let lastFrameTime = 0;
@@ -41,68 +34,115 @@ document.addEventListener('DOMContentLoaded', function() {
         const deltaTime = (timestamp - (lastFrameTime || 0)) / 1000;
         lastFrameTime = timestamp;
 
-        // Update the tools module (advances timers, etc.)
         Tools.update(deltaTime);
 
-        // Update the digital clock display
         if (digitalTime) {
-            digitalTime.textContent = now.toLocaleTimeString([], {
-                hour12: !settings.is24HourFormat,
-                hour: 'numeric',
-                minute: '2-digit'
-            });
+            digitalTime.textContent = now.toLocaleTimeString([], { hour12: !settings.is24HourFormat, hour: 'numeric', minute: '2-digit' });
         }
         if (digitalDate) {
             digitalDate.textContent = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`;
         }
 
-        // Get the latest state from the tools module
         const latestToolState = Tools.getState();
-        // Combine it with the app-level state
         const fullState = { ...appState, ...latestToolState };
 
-        // Update the main clock display
-        Clock.update(settings, fullState);
+        // Use the regular update, without overrides
+        Clock.update(settings, fullState, null);
+        Clock.resume();
 
-        // Continue the loop
         requestAnimationFrame(update);
     }
 
-    // 5. Set up global event listeners for communication between modules
+    // --- 3. GLOBAL EVENT LISTENERS ---
     function saveAppState() {
-        // Get the latest state from tools and merge it before saving
         const latestToolState = Tools.getState();
         appState.tools = latestToolState;
         localStorage.setItem('polarClockState', JSON.stringify(appState));
     }
 
-    document.addEventListener('modechange', (e) => {
-        appState.mode = e.detail.mode;
-        // No need to save state on mode change, it's not critical to persist immediately
-    });
-
-    // The 'statechange' event is fired by Tools whenever its state changes
+    document.addEventListener('modechange', (e) => { appState.mode = e.detail.mode; });
     document.addEventListener('statechange', saveAppState);
+    document.addEventListener('settings-requires-resize', () => { if (Clock && typeof Clock.resize === 'function') Clock.resize(); });
+    document.addEventListener('settings-changed', () => { settings = Settings.get(); });
 
-    // The 'settings-requires-resize' event is fired by Settings when a change requires a clock redraw
-    document.addEventListener('settings-requires-resize', () => {
-        if (Clock && typeof Clock.resize === 'function') {
-            Clock.resize();
+    // --- 4. STARTUP ANIMATION ---
+    function runStartupAnimation() {
+        // --- Phase 0: Apply and save initial settings ---
+        // This is the state the clock will be in after the animation.
+        settings.colorPreset = 'Default';
+        settings.showArcEndCircles = false; // Off for animation
+        Object.keys(settings.arcVisibility).forEach(k => settings.arcVisibility[k] = true);
+
+        // We need to manually trigger the necessary updates that would
+        // normally happen via event listeners in the settings panel.
+        Settings.save(); // Custom function to save current settings state
+        Settings.applyToUI(); // Custom function to update UI from settings state
+        Clock.resize(); // Recalculate dimensions based on new visibility
+
+        const targetTime = new Date(); // Capture target time once
+        let animationStartTime = performance.now();
+
+        const animationOrder = ['dayOfWeek', 'month', 'day', 'hours', 'minutes', 'seconds', 'weekOfYear'];
+        const fillDuration = 1000; // 1s to fill
+        const settleDuration = 1000; // 1s to settle
+        const staggerDelay = 500; // 0.5s between each arc
+
+        const totalDuration = staggerDelay * animationOrder.length + fillDuration + settleDuration;
+
+        function animationLoop(now) {
+            const elapsed = now - animationStartTime;
+
+            let progressOverrides = {};
+            const nowForAngles = new Date(); // Use a single 'now' for all calculations in this frame
+
+            // --- Phase 1 & 2: Fill & Settle ---
+            for (let i = 0; i < animationOrder.length; i++) {
+                const arcKey = animationOrder[i];
+                const arcStartTime = staggerDelay * i;
+
+                if (elapsed >= arcStartTime) {
+                    const arcElapsed = elapsed - arcStartTime;
+
+                    // Fill phase
+                    const fillProgress = Math.min(arcElapsed / fillDuration, 1);
+
+                    // Settle phase
+                    let settleProgress = 0;
+                    if (fillProgress >= 1) {
+                        const settleStartTimeForArc = arcStartTime + fillDuration;
+                        const settleElapsed = elapsed - settleStartTimeForArc;
+                        settleProgress = Math.min(settleElapsed / settleDuration, 1);
+                    }
+
+                    progressOverrides[arcKey] = {
+                        fill: fillProgress,
+                        settle: settleProgress
+                    };
+                }
+            }
+
+            // Update clock with animation state
+            Clock.update(settings, appState, progressOverrides, targetTime);
+
+            if (elapsed < totalDuration) {
+                requestAnimationFrame(animationLoop);
+            } else {
+                // --- Phase 3: Finalization ---
+                settings.showArcEndCircles = true;
+                Settings.save();
+                Settings.applyToUI();
+
+                // Draw one final frame with circles
+                Clock.update(settings, appState, null, targetTime);
+
+                // Start the main update loop
+                requestAnimationFrame(update);
+            }
         }
-    });
 
-    // A generic event for when a setting changes that doesn't require a resize but needs to be re-fetched.
-    document.addEventListener('settings-changed', () => {
-        settings = Settings.get();
-    });
+        requestAnimationFrame(animationLoop);
+    }
 
-    // 6. Start the application
-    requestAnimationFrame(update);
-
-    // A small delay to ensure the canvas has been sized correctly by the browser's layout engine.
-    setTimeout(() => {
-        if (Clock && typeof Clock.resize === 'function') {
-            Clock.resize();
-        }
-    }, 100);
+    // --- 5. START THE APPLICATION ---
+    runStartupAnimation();
 });
