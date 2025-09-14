@@ -91,6 +91,7 @@ const Settings = (function() {
     function loadSettings() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
+            flowMode: false,
             showDigitalTime: true,
             showDigitalDate: true,
             showArcEndCircles: true,
@@ -155,6 +156,7 @@ const Settings = (function() {
             paletteSelect.value = ""; // Default to "Select Palette"
         }
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
+        document.getElementById('flowModeToggle').checked = settings.flowMode;
 
         // New display toggles
         document.getElementById('digitalTimeToggle').checked = settings.showDigitalTime;
@@ -217,6 +219,12 @@ const Settings = (function() {
         });
         document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
             settings.inverseMode = e.target.checked;
+            saveSettings();
+            document.dispatchEvent(new CustomEvent('settings-changed'));
+        });
+
+        document.getElementById('flowModeToggle').addEventListener('change', (e) => {
+            settings.flowMode = e.target.checked;
             saveSettings();
             document.dispatchEvent(new CustomEvent('settings-changed'));
         });
@@ -299,6 +307,19 @@ const Settings = (function() {
         });
     }
 
+    function cycleColorPreset() {
+        const themeNames = Object.keys(colorThemes);
+        const availableThemes = themeNames.filter(name => name !== settings.colorPreset);
+        const randomTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
+
+        settings.colorPreset = randomTheme;
+        settings.currentColors = colorThemes[randomTheme];
+
+        saveSettings();
+        applySettingsToUI();
+        document.dispatchEvent(new CustomEvent('settings-changed'));
+    }
+
     return {
         init: function() {
             loadSettings();
@@ -306,6 +327,7 @@ const Settings = (function() {
         },
         get: function() {
             return settings;
-        }
+        },
+        cycleColorPreset: cycleColorPreset
     };
 })();
