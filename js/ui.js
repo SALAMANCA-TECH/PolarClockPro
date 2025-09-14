@@ -1,12 +1,16 @@
 emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
+        settings: document.getElementById('settingsView'),
+        about: document.getElementById('aboutView'),
         pomodoroSettings: document.getElementById('pomodoroSettingsView'),
     };
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
+        backFromSettings: document.getElementById('backToMainFromSettings'),
+        backFromAbout: document.getElementById('backToMainFromAbout'),
         backFromPomodoroSettings: document.getElementById('backToMainFromPomodoroSettings'),
     };
     const toolPanels = {
@@ -39,6 +43,114 @@ const UI = (function() {
         toolSelectMenu.classList.toggle('panel-hidden');
     }
 
+    let aboutPageInitialized = false;
+
+    function initAboutPage() {
+        if (aboutPageInitialized) return;
+        aboutPageInitialized = true;
+
+        const accordionItems = document.querySelectorAll('#aboutView .accordion-item');
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            header.addEventListener('click', () => {
+                const wasActive = item.classList.contains('active');
+                accordionItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                        otherItem.querySelector('.accordion-content').style.padding = '0 15px';
+                    }
+                });
+                if (!wasActive) {
+                    item.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.style.padding = '15px';
+                } else {
+                    content.style.maxHeight = null;
+                    content.style.padding = '0 15px';
+                }
+            });
+        });
+
+        const contentIds = ['about', 'how-to-use', 'pomodoro', 'faq'];
+        contentIds.forEach(id => {
+            fetch(`assets/content/${id}.txt`)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById(`${id}-content`).innerHTML = `<div class="scrollable-content">${text}</div>`;
+                })
+                .catch(error => console.error(`Error fetching ${id}.txt:`, error));
+        });
+
+        const feedbackForm = document.getElementById('feedbackForm');
+        if (feedbackForm) {
+            const statusMessage = document.getElementById('feedbackStatus');
+            const messageTextarea = document.getElementById('feedbackMessage');
+            feedbackForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const submitButton = this.querySelector('button[type="submit"]');
+                statusMessage.textContent = '';
+                if (messageTextarea.value.trim() === '') {
+                    statusMessage.textContent = 'Message cannot be empty.';
+                    statusMessage.style.color = '#F44336';
+                    return;
+                }
+                let submissionTimestamps = JSON.parse(localStorage.getItem('feedbackSubmissions')) || [];
+                submissionTimestamps = submissionTimestamps.filter(timestamp => new Date().getTime() - timestamp < 24 * 60 * 60 * 1000);
+                if (submissionTimestamps.length >= 3) {
+                    statusMessage.textContent = 'You have reached the submission limit for today.';
+                    statusMessage.style.color = '#F44336';
+                    return;
+                }
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                emailjs.sendForm('service_hnc4xxb', 'template_5lqcgtd', this)
+                    .then(() => {
+                        statusMessage.textContent = 'Feedback sent successfully!';
+                        statusMessage.style.color = '#4CAF50';
+                        feedbackForm.reset();
+                        submissionTimestamps.push(new Date().getTime());
+                        localStorage.setItem('feedbackSubmissions', JSON.stringify(submissionTimestamps));
+                    }, (err) => {
+                        statusMessage.textContent = 'Failed to send feedback. Please try again later.';
+                        statusMessage.style.color = '#F44336';
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Submit';
+                    });
+            });
+        }
+    }
+
+    let settingsAccordionInitialized = false;
+
+    function initSettingsAccordion() {
+        if (settingsAccordionInitialized) return;
+        settingsAccordionInitialized = true;
+
+        const accordionItems = document.querySelectorAll('#settingsView .accordion-item');
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            header.addEventListener('click', () => {
+                const wasActive = item.classList.contains('active');
+                accordionItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                    if (otherItem.querySelector('.accordion-content').style.padding) {
+                        otherItem.querySelector('.accordion-content').style.padding = '0 15px';
+                    }
+                });
+                if (!wasActive) {
+                    item.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.style.padding = '15px';
+                }
+            });
+        });
+    }
 
     return {
         init: function() {
@@ -68,10 +180,19 @@ const UI = (function() {
             });
 
             navButtons.goToSettings.addEventListener('click', () => {
-                window.location.href = 'settings.html';
+                showView(views.settings);
+                initSettingsAccordion();
             });
             navButtons.goToAbout.addEventListener('click', () => {
-                window.location.href = 'about.html';
+                showView(views.about);
+                initAboutPage();
+            });
+
+            navButtons.backFromSettings.addEventListener('click', () => {
+                views.settings.style.display = 'none';
+            });
+            navButtons.backFromAbout.addEventListener('click', () => {
+                views.about.style.display = 'none';
             });
 
             if(navButtons.backFromPomodoroSettings) {

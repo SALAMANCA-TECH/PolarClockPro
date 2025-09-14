@@ -24,38 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 3. Initialize Modules
-    const clock1 = new Clock(document.getElementById('polarClockCanvas'));
-    const clock2 = new Clock(document.getElementById('polarClockCanvas2'));
-
-    clock1.init(settings, appState);
-    clock2.init(settings, appState);
-
+    // Clock module needs settings for rendering and the app state for displaying arcs.
+    Clock.init(settings, appState);
     // UI module is now independent of the Clock module.
     UI.init();
     // Tools module needs settings for sounds and the initial state for the tools.
     Tools.init(settings, appState.tools);
-
-    let layout = 'single';
-
-    function updateLayout() {
-        const isFullscreen = (window.outerWidth >= screen.availWidth && window.outerHeight >= screen.availHeight);
-
-        if (isFullscreen) {
-            layout = 'dual';
-            document.getElementById('polarClockCanvas2').style.display = 'block';
-        } else {
-            layout = 'single';
-            document.getElementById('polarClockCanvas2').style.display = 'none';
-        }
-
-        // after setting the layout, resize the clocks
-        if (clock1 && typeof clock1.resize === 'function') {
-            clock1.resize();
-        }
-        if (clock2 && typeof clock2.resize === 'function') {
-            clock2.resize();
-        }
-    }
 
     // 4. Set up the main update loop (requestAnimationFrame)
     const digitalTime = document.getElementById('digitalTime');
@@ -88,11 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullState = { ...appState, ...latestToolState };
 
         // Update the main clock display
-        clock1.update(settings, fullState);
-        if (layout === 'dual') {
-            clock2.update(settings, fullState);
-        }
-
+        Clock.update(settings, fullState);
 
         // Continue the loop
         requestAnimationFrame(update);
@@ -116,11 +86,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // The 'settings-requires-resize' event is fired by Settings when a change requires a clock redraw
     document.addEventListener('settings-requires-resize', () => {
-        if (clock1 && typeof clock1.resize === 'function') {
-            clock1.resize();
-        }
-        if (clock2 && typeof clock2.resize === 'function') {
-            clock2.resize();
+        if (Clock && typeof Clock.resize === 'function') {
+            Clock.resize();
         }
     });
 
@@ -132,16 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 6. Start the application
     requestAnimationFrame(update);
 
-    window.addEventListener('resize', updateLayout);
-    updateLayout();
-
     // A small delay to ensure the canvas has been sized correctly by the browser's layout engine.
     setTimeout(() => {
-        if (clock1 && typeof clock1.resize === 'function') {
-            clock1.resize();
-        }
-        if (clock2 && typeof clock2.resize === 'function') {
-            clock2.resize();
+        if (Clock && typeof Clock.resize === 'function') {
+            Clock.resize();
         }
     }, 100);
 });
