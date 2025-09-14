@@ -8,7 +8,6 @@ const UI = (function() {
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
-        goToAlarms: document.getElementById('goToAlarmsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromSettings: document.getElementById('backToMainFromSettings'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
@@ -155,11 +154,24 @@ const UI = (function() {
 
     return {
         init: function() {
+            const optionsBtn = document.getElementById('optionsBtn');
+            const bottomToolbar = document.getElementById('bottom-toolbar');
+
+            if (optionsBtn && bottomToolbar) {
+                optionsBtn.addEventListener('click', () => {
+                    bottomToolbar.classList.toggle('visible');
+                });
+            }
+
             navButtons.toggleControls.addEventListener('click', toggleToolMenu);
 
             toolSelectButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const mode = button.dataset.mode;
+                    if (mode === 'alarms') {
+                        window.location.href = 'alarms.html';
+                        return;
+                    }
                     document.dispatchEvent(new CustomEvent('modechange', {
                         detail: { mode: mode }
                     }));
@@ -188,8 +200,6 @@ const UI = (function() {
                     views.pomodoroSettings.style.display = 'none';
                 });
             }
-
-            navButtons.goToAlarms.addEventListener('click', () => { window.location.href = 'alarms.html'; });
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
