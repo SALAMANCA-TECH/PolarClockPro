@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Clock Pro - Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/settings.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .main-container {
+            display: flex;
+            height: 100vh;
+        }
+        .clock-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212;
+            position: relative;
+        }
+        .settings-container {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background-color: #1e293b;
+        }
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+        .settings-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="clock-container">
+            <canvas id="settingsClockCanvas" width="600" height="600"></canvas>
+            <div id="digitalDisplay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; pointer-events: none;">
+                <div id="digitalTime" style="font-size: 2em;"></div>
+                <div id="digitalDate" style="font-size: 1em;"></div>
+            </div>
+        </div>
+        <div class="settings-container">
+            <a href="index.html" class="inline-flex items-center bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 mb-6">
+                <i class="ph ph-arrow-left text-xl mr-2"></i>
+                <span>Back to Clock</span>
+            </a>
+            <h1 class="text-4xl font-bold mb-8">Settings</h1>
+
+            <div class="settings-section">
+                <h3>Clock & Time</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4>Time Format</h4>
+                        <div class="format-buttons">
+                            <button id="format12" class="format-button">12 Hour</button>
+                            <button id="format24" class="format-button">24 Hour</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Inverse Mode</h4>
+                        <div class="setting-toggle">
+                            <span>Inverse Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="inverseModeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Digital Display</h4>
+                        <div class="setting-toggle">
+                            <span>Time</span>
+                            <label class="switch">
+                                <input type="checkbox" id="digitalTimeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Date</span>
+                            <label class="switch">
+                                <input type="checkbox" id="digitalDateToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-toggle">
+                            <span>Circles</span>
+                            <label class="switch">
+                                <input type="checkbox" id="arcEndCirclesToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Visuals & Colors</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4>Color Scheme</h4>
+                        <div class="color-preset-buttons">
+                            <button id="presetDefault" class="color-preset-button">Default</button>
+                            <button id="presetNeon" class="color-preset-button">Neon</button>
+                            <button id="presetPastel" class="color-preset-button">Pastel</button>
+                            <button id="presetColorblind" class="color-preset-button">Colorblind</button>
+                            <button id="presetCandy" class="color-preset-button">Candy</button>
+                            <button id="presetGreyscale" class="color-preset-button">Greyscale</button>
+                            <button id="presetSunrise" class="color-preset-button">Sunrise</button>
+                            <button id="presetSunset" class="color-preset-button">Sunset</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Color Palettes</h4>
+                        <select id="colorPaletteSelect" class="w-full p-2 bg-gray-700 text-white rounded-md">
+                            <option value="" disabled selected>Select Palette</option>
+                            <option value="Red">Red</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Yellow">Yellow</option>
+                            <option value="Green">Green</option>
+                            <option value="Blue">Blue</option>
+                            <option value="Purple">Purple</option>
+                        </select>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Flow</span>
+                        <label class="switch">
+                            <input type="checkbox" id="flowModeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Reverse</span>
+                        <label class="switch">
+                            <input type="checkbox" id="reverseToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Customize Arcs</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4>Separators</h4>
+                        <div class="flex w-full justify-center gap-4">
+                            <div class="flex-1">
+                                <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
+                                <div class="format-buttons">
+                                    <button id="separatorsShow" class="format-button">Show</button>
+                                    <button id="separatorsHide" class="format-button">Hide</button>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
+                                <div class="format-buttons">
+                                    <button id="modeStandardSeparators" class="format-button">Standard</button>
+                                    <button id="modeRuler" class="format-button">Ruler</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
+                            <div class="flex-1 text-center">
+                                <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
+                            </div>
+                        </div>
+                        <div class="w-full max-w-xs space-y-2">
+                            <!-- Combined Toggles -->
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Day of Week</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Month</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Day</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Hours</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Minutes</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Seconds</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex-1 text-left">Week of Year</span>
+                                <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
+                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/clock.js" defer></script>
+    <script src="js/settings.js" defer></script> <!-- This is needed for the settings logic -->
+    <script src="js/settings_page.js" defer></script>
+</body>
+</html>
