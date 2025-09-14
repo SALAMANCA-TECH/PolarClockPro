@@ -1,12 +1,97 @@
 const Settings = (function() {
     const arcKeys = ['dayOfWeek', 'month', 'day', 'hours', 'minutes', 'seconds', 'weekOfYear'];
 
-    const colorPalettes = {
-        default: { dayOfWeek: { light: '#c792ea', dark: '#8f6aaf' }, month: { light: '#D05CE3', dark: '#4A0055' }, day: { light: '#81C784', dark: '#003D00' }, hours: { light: '#FF9E80', dark: '#8C1C00' }, minutes: { light: '#FFF176', dark: '#B45F06' }, seconds: { light: '#81D4FA', dark: '#002E5C' }, weekOfYear: { light: '#f78c6c', dark: '#b56a52' } },
-        neon: { dayOfWeek: { light: '#da70d6', dark: '#8a2be2' }, month: { light: '#ff00ff', dark: '#800080' }, day: { light: '#00ff00', dark: '#008000' }, hours: { light: '#ff0000', dark: '#800000' }, minutes: { light: '#ffff00', dark: '#808000' }, seconds: { light: '#00ffff', dark: '#008080' }, weekOfYear: { light: '#ff7f50', dark: '#ff4500' } },
-        pastel: { dayOfWeek: { light: '#dda0dd', dark: '#9370db' }, month: { light: '#f4a8e1', dark: '#a1428a' }, day: { light: '#a8f4b6', dark: '#42a155' }, hours: { light: '#f4a8a8', dark: '#a14242' }, minutes: { light: '#f4f4a8', dark: '#a1a142' }, seconds: { light: '#a8e1f4', dark: '#428aa1' }, weekOfYear: { light: '#ffdab9', dark: '#ffa07a' } },
-        colorblind: { dayOfWeek: { light: '#d55e00', dark: '#a14242' }, month: { light: '#f7931a', dark: '#a45c05' }, day: { light: '#0072b2', dark: '#003c5c' }, hours: { light: '#d55e00', dark: '#7a3600' }, minutes: { light: '#f0e442', dark: '#8a8326' }, seconds: { light: '#cccccc', dark: '#666666' }, weekOfYear: { light: '#ff7f50', dark: '#ff4500' } },
-        candy: { dayOfWeek: { light: '#E040FB', dark: '#AA00FF' }, month: { light: '#D500F9', dark: '#A000D0' }, day: { light: '#76FF03', dark: '#50D000' }, hours: { light: '#FF3D00', dark: '#D50000' }, minutes: { light: '#FFEA00', dark: '#FFC400' }, seconds: { light: '#00E5FF', dark: '#00B8D4' }, weekOfYear: { light: '#FF9100', dark: '#FF6D00' } }
+    const colorThemes = {
+      "Default": {
+        "dayOfWeek": "#e03a3e",
+        "month": "#f5821f",
+        "day": "#fdb827",
+        "hours": "#61bb46",
+        "minutes": "#009ddc",
+        "seconds": "#963d97",
+        "weekOfYear": "#ffffff"
+      },
+      "Neon": {
+        "dayOfWeek": "#ff9900",
+        "month": "#ff0000",
+        "day": "#9900ff",
+        "hours": "#00ff00",
+        "minutes": "#ff00ff",
+        "seconds": "#ffff00",
+        "weekOfYear": "#00ffff"
+      },
+      "Pastel": {
+        "dayOfWeek": "#ff80ff",
+        "month": "#8080ff",
+        "day": "#80ffff",
+        "hours": "#80ffc0",
+        "minutes": "#ffff80",
+        "seconds": "#ffc080",
+        "weekOfYear": "#ff8080"
+      },
+      "Colorblind": {
+        "dayOfWeek": "#d55e00",
+        "month": "#56b4e9",
+        "day": "#f0e442",
+        "hours": "#0072b2",
+        "minutes": "#009e73",
+        "seconds": "#e69f00",
+        "weekOfYear": "#cc79a7"
+      },
+      "Candy": {
+        "dayOfWeek": "#ffd700",
+        "month": "#ffc0cb",
+        "day": "#ff4500",
+        "hours": "#00bfff",
+        "minutes": "#8a2be2",
+        "seconds": "#ff1493",
+        "weekOfYear": "#9acd32"
+      },
+      "Greyscale": {
+        "dayOfWeek": "#666666",
+        "month": "#777777",
+        "day": "#888888",
+        "hours": "#999999",
+        "minutes": "#aaaaaa",
+        "seconds": "#bbbbbb",
+        "weekOfYear": "#dddddd"
+      },
+      "Sunrise": {
+        "dayOfWeek": "#fcd116",
+        "month": "#ffd700",
+        "day": "#ff8c00",
+        "hours": "#ff5733",
+        "minutes": "#ffb6c1",
+        "seconds": "#e34234",
+        "weekOfYear": "#f08080"
+      },
+      "Sunset": {
+        "dayOfWeek": "#ff007f",
+        "month": "#fd1d53",
+        "day": "#ff5733",
+        "hours": "#ffb400",
+        "minutes": "#ff8c00",
+        "seconds": "#e34234",
+        "weekOfYear": "#ff6700"
+      },
+      "Red": {
+        "dayOfWeek": "#339900",
+        "month": "#ff3300",
+        "day": "#cc0000",
+        "hours": "#ff9933",
+        "minutes": "#ff0066",
+        "seconds": "#6633ff",
+        "weekOfYear": "#006699"
+      },
+      "Blue": {
+        "dayOfWeek": "#006699",
+        "month": "#336699",
+        "day": "#3399cc",
+        "hours": "#0099ff",
+        "minutes": "#0066ff",
+        "seconds": "#3366cc",
+        "weekOfYear": "#003366"
+      }
     };
 
     let settings = {};
@@ -23,8 +108,7 @@ const Settings = (function() {
             showArcEndCircles: true,
             inverseMode: false,
             is24HourFormat: false,
-            useGradient: true,
-            colorPreset: 'default',
+            colorPreset: 'Default',
             showSeparators: true,
             separatorMode: 'standard',
             alarmSound: 'bell01.mp3',
@@ -55,7 +139,7 @@ const Settings = (function() {
         if (!loaded.arcVisibility) settings.arcVisibility = defaultSettings.arcVisibility;
         if (!loaded.separatorVisibility) settings.separatorVisibility = defaultSettings.separatorVisibility;
 
-        settings.currentColors = colorPalettes[settings.colorPreset] || colorPalettes.default;
+        settings.currentColors = colorThemes[settings.colorPreset] || colorThemes.Default;
 
         applySettingsToUI();
     }
@@ -64,9 +148,13 @@ const Settings = (function() {
         // Standard settings
         document.getElementById('format12').classList.toggle('active', !settings.is24HourFormat);
         document.getElementById('format24').classList.toggle('active', settings.is24HourFormat);
-        ['presetDefault', 'presetNeon', 'presetPastel', 'presetColorblind', 'presetCandy'].forEach(id => document.getElementById(id).classList.remove('active'));
-        document.getElementById(`preset${settings.colorPreset.charAt(0).toUpperCase() + settings.colorPreset.slice(1)}`).classList.add('active');
-        document.getElementById('gradientToggle').checked = settings.useGradient;
+        Object.keys(colorThemes).forEach(themeName => {
+            const buttonId = `preset${themeName}`;
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.classList.toggle('active', settings.colorPreset === themeName);
+            }
+        });
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
 
         // New display toggles
@@ -106,13 +194,18 @@ const Settings = (function() {
         // Standard settings listeners
         document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
         document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
-        ['default', 'neon', 'pastel', 'colorblind', 'candy'].forEach(preset => {
-            document.getElementById(`preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`).addEventListener('click', () => { settings.colorPreset = preset; settings.currentColors = colorPalettes[preset]; saveSettings(); applySettingsToUI(); });
-        });
-        document.getElementById('gradientToggle').addEventListener('change', (e) => {
-            settings.useGradient = e.target.checked;
-            saveSettings();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
+        Object.keys(colorThemes).forEach(themeName => {
+            const buttonId = `preset${themeName}`;
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', () => {
+                    settings.colorPreset = themeName;
+                    settings.currentColors = colorThemes[themeName];
+                    saveSettings();
+                    applySettingsToUI();
+                    document.dispatchEvent(new CustomEvent('settings-changed'));
+                });
+            }
         });
         document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
             settings.inverseMode = e.target.checked;

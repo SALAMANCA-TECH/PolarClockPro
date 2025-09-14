@@ -13,6 +13,11 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/settings.css">
     <style>
+    .three-column-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+    }
     /* General page styling */
     body {
         display: flex;
@@ -817,24 +822,10 @@
                             <button id="presetSunrise" class="color-preset-button">Sunrise</button>
                             <button id="presetSunset" class="color-preset-button">Sunset</button>
                         </div>
-                        <div class="setting-toggle">
-                            <span>Reverse</span>
-                            <label class="switch">
-                                <input type="checkbox" id="reverseToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-toggle">
-                            <span>Gradient</span>
-                            <label class="switch">
-                                <input type="checkbox" id="gradientToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
                     <div class="settings-section">
                         <h3>Color Palettes</h3>
-                        <div class="color-preset-buttons">
+                        <div class="color-preset-buttons three-column-grid">
                             <button id="presetRed" class="color-preset-button">Red</button>
                             <button id="presetOrange" class="color-preset-button">Orange</button>
                             <button id="presetYellow" class="color-preset-button">Yellow</button>
@@ -842,6 +833,13 @@
                             <button id="presetBlue" class="color-preset-button">Blue</button>
                             <button id="presetPurple" class="color-preset-button">Purple</button>
                         </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <span>Reverse</span>
+                        <label class="switch">
+                            <input type="checkbox" id="reverseToggle">
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
