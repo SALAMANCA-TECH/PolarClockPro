@@ -75,6 +75,14 @@
         opacity: 0.8;
     }
 
+    #optionsBtn {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+    }
+
     .panel-hidden {
         display: none !important;
     }
@@ -525,7 +533,7 @@
             box-sizing: border-box;
         }
         .canvas-container {
-            padding-right: 380px; /* Make space for the controls */
+            /* padding-right has been removed to center the clock */
             box-sizing: border-box;
         }
     }
@@ -579,7 +587,6 @@
             <div id="digitalDisplay">
                 <div id="digitalTime"></div>
                 <div id="digitalDate"></div>
-                <button id="optionsBtn" class="main-nav-button" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); pointer-events: auto;"><i class="ph ph-dots-three-outline"></i></button>
             </div>
             <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
                 <!-- Miniature clocks will be added here -->
@@ -988,6 +995,7 @@
 
     <div id="audio-failure-message" class="hidden">Audio Failure</div>
 
+    <button id="optionsBtn" class="main-nav-button"><i class="ph ph-dots-three-outline"></i></button>
 
 <script src="js/clock.js" defer></script>
     <script src="js/ui.js" defer></script>
