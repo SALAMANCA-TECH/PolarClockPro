@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!appState.tools) {
             appState.tools = {};
         }
+        appState.mode = 'clock'; // Always start in clock mode
     }
 
     // 3. Initialize Modules
