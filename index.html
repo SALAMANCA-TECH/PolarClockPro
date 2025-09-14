@@ -180,23 +180,7 @@
         transition: background-color 0.3s, border-color 0.3s;
     }
 
-    .options-button-custom {
-        width: 54px;
-        height: 54px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        font-size: 1.5rem;
-        border: 2px solid #444;
-        background-color: transparent;
-        color: #ccc;
-        cursor: pointer;
-        transition: background-color 0.3s, border-color 0.3s;
-    }
-
-    .header-button:hover, .back-button:hover, .main-nav-button:hover, .options-button-custom:hover {
+    .header-button:hover, .back-button:hover, .main-nav-button:hover {
         background-color: #333;
         border-color: #666;
     }
@@ -597,7 +581,7 @@
             <div id="digitalDisplay">
                 <div id="digitalTime"></div>
                 <div id="digitalDate"></div>
-                <button id="optionsBtn" class="options-button-custom" style="position: absolute; top: 80%; left: 50%; transform: translate(-50%, -50%); pointer-events: auto;"><i class="ph ph-dots-three-outline"></i></button>
+                <button id="optionsBtn" class="main-nav-button" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); pointer-events: auto;"><i class="ph ph-dots-three-outline"></i></button>
             </div>
             <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
                 <!-- Miniature clocks will be added here -->
