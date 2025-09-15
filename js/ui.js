@@ -1,7 +1,6 @@
 emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
-        settings: document.getElementById('settingsView'),
         about: document.getElementById('aboutView'),
         pomodoroSettings: document.getElementById('pomodoroSettingsView'),
     };
@@ -9,7 +8,6 @@ const UI = (function() {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
-        backFromSettings: document.getElementById('backToMainFromSettings'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
         backFromPomodoroSettings: document.getElementById('backToMainFromPomodoroSettings'),
     };
@@ -136,7 +134,14 @@ const UI = (function() {
                 });
             }
 
-            navButtons.toggleControls.addEventListener('click', toggleToolMenu);
+            const controlsContainer = document.getElementById('controlsContainer');
+            const settingsPanel = document.getElementById('settings-panel');
+
+            navButtons.toggleControls.addEventListener('click', () => {
+                toolSelectMenu.classList.toggle('panel-hidden');
+                settingsPanel.style.display = 'none'; // Hide settings when showing tools
+                controlsContainer.style.display = 'flex'; // Show controls
+            });
 
             toolSelectButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -153,25 +158,15 @@ const UI = (function() {
             });
 
             navButtons.goToSettings.addEventListener('click', () => {
-                showView(views.settings);
-                if (window.ExampleClock && typeof window.ExampleClock.resize === 'function') {
-                    // Use rAF to ensure the resize is called after the element is visible and sized
-                    requestAnimationFrame(() => {
-                        // A second frame is a robust way to ensure transitions/rendering have completed
-                        requestAnimationFrame(() => {
-                            window.ExampleClock.resize();
-                        });
-                    });
-                }
+                controlsContainer.style.display = 'none';
+                toolSelectMenu.classList.add('panel-hidden');
+                settingsPanel.style.display = 'block';
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
                 initAboutPage();
             });
 
-            navButtons.backFromSettings.addEventListener('click', () => {
-                views.settings.style.display = 'none';
-            });
             navButtons.backFromAbout.addEventListener('click', () => {
                 views.about.style.display = 'none';
             });
