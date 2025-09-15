@@ -240,9 +240,6 @@ const ExampleClock = (function() {
 
         const cssWidth = container.offsetWidth;
         const cssHeight = container.offsetHeight;
-
-        console.log(`ExampleClock resize: container dimensions are ${cssWidth}x${cssHeight}`);
-
         const size = Math.min(cssWidth, cssHeight);
 
         canvas.width = size * dpr;
