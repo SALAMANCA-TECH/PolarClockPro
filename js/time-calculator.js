@@ -1,6 +1,53 @@
 // This script will run once the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- LIVE INPUT FORMATTING ---
+    const durationInput = document.getElementById('duration');
+    const time1Input = document.getElementById('time1');
+    const operandInput = document.getElementById('operand');
+
+    if (durationInput) {
+        durationInput.addEventListener('blur', () => {
+            const value = durationInput.value;
+            let seconds = parseNaturalTime(value);
+            if (seconds === null) {
+                const parts = value.split(':');
+                if (parts.length === 2) {
+                    const hour = parseInt(parts[0], 10);
+                    const minute = parseInt(parts[1], 10);
+                    if (!isNaN(hour) && !isNaN(minute)) {
+                        seconds = hour * 3600 + minute * 60;
+                    }
+                }
+            }
+
+            if (seconds !== null) {
+                const formatted = formatSecondsToHHMM(seconds);
+                if (formatted !== null) {
+                    durationInput.value = formatted;
+                }
+            }
+        });
+    }
+
+    function addFormatterListener(element) {
+        if (element) {
+            element.addEventListener('blur', () => {
+                const value = element.value;
+                const seconds = parseHmsToSeconds(value);
+                if (seconds !== null) {
+                    const formatted = formatSecondsToHms(seconds);
+                    if (!formatted.toLowerCase().includes('error')) {
+                        element.value = formatted;
+                    }
+                }
+            });
+        }
+    }
+
+    addFormatterListener(time1Input);
+    addFormatterListener(operandInput);
+
     // --- LOGIC FOR CALCULATOR 1: ADD DURATION TO TIME ---
     const addTimeButton = document.getElementById('calcAddTime');
     const addTimeResultDiv = document.getElementById('addTimeResult');
@@ -16,6 +63,45 @@ document.addEventListener('DOMContentLoaded', () => {
             addTimeResultDiv.innerHTML = `Result: <span class="font-bold">${result}</span>`;
             addTimeResultDiv.classList.remove('hidden');
         });
+    }
+
+    function parseNaturalTime(timeStr) {
+        if (!timeStr || typeof timeStr !== 'string') return null;
+
+        let totalSeconds = 0;
+        const cleanedStr = timeStr.trim().toLowerCase();
+
+        let naturalLanguageFound = false;
+
+        const hourMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(h|hr|hour|hours)/g);
+        if (hourMatches) {
+            naturalLanguageFound = true;
+            hourMatches.forEach(match => {
+                totalSeconds += parseFloat(match) * 3600;
+            });
+        }
+
+        const minuteMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(m|min|minute|minutes)/g);
+        if (minuteMatches) {
+            naturalLanguageFound = true;
+            minuteMatches.forEach(match => {
+                totalSeconds += parseFloat(match) * 60;
+            });
+        }
+
+        const secondMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(s|sec|second|seconds)/g);
+        if (secondMatches) {
+            naturalLanguageFound = true;
+            secondMatches.forEach(match => {
+                totalSeconds += parseFloat(match);
+            });
+        }
+
+        if (naturalLanguageFound) {
+            return totalSeconds;
+        }
+
+        return null;
     }
 
     function addTime(start, duration, startDay = null) {
@@ -49,14 +135,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialTimestamp = initialDate.getTime();
 
         // 3. Parse Duration and Calculate New Time
-        const durationParts = duration.split(':');
-        if (durationParts.length !== 2) return "Error: Invalid duration format. Use 'hh:mm'.";
-        const durationHour = parseInt(durationParts[0]);
-        const durationMinute = parseInt(durationParts[1]);
+        let durationSeconds = parseNaturalTime(duration);
 
-        if (isNaN(durationHour) || isNaN(durationMinute)) return "Error: Invalid duration values.";
+        if (durationSeconds === null) {
+            // If natural time parsing fails, try the hh:mm format
+            const durationParts = duration.split(':');
+            if (durationParts.length === 2) {
+                const durationHour = parseInt(durationParts[0], 10);
+                const durationMinute = parseInt(durationParts[1], 10);
 
-        const durationMillis = (durationHour * 60 + durationMinute) * 60 * 1000;
+                if (!isNaN(durationHour) && !isNaN(durationMinute)) {
+                    durationSeconds = (durationHour * 3600) + (durationMinute * 60);
+                }
+            }
+        }
+
+        if (durationSeconds === null || isNaN(durationSeconds)) {
+            return "Error: Invalid duration format. Use 'hh:mm' or a natural language format (e.g., '2h 30m').";
+        }
+
+        const durationMillis = durationSeconds * 1000;
         const newTime = new Date(initialTimestamp + durationMillis);
 
         // 4. Calculate Days Passed
@@ -117,18 +215,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function parseHmsToSeconds(timeStr) {
+        let seconds = parseNaturalTime(String(timeStr));
+        if (seconds !== null) {
+            return seconds;
+        }
+
         const parts = String(timeStr).split(':').map(Number);
-        if (parts.length > 3 || parts.some(isNaN)) return null;
+        if (parts.some(isNaN)) return null;
         
-        let seconds = 0;
+        seconds = 0;
         if (parts.length === 1) { // ss
             seconds = parts[0];
         } else if (parts.length === 2) { // mm:ss
             seconds = parts[0] * 60 + parts[1];
         } else if (parts.length === 3) { // hh:mm:ss
             seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+        } else {
+            return null; // Invalid number of parts
         }
         return seconds;
+    }
+
+    function formatSecondsToHHMM(totalSeconds) {
+        if (isNaN(totalSeconds) || totalSeconds === null) return null;
+
+        const sign = totalSeconds < 0 ? "-" : "";
+        totalSeconds = Math.abs(Math.round(totalSeconds));
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+        return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
 
     function formatSecondsToHms(totalSeconds) {
