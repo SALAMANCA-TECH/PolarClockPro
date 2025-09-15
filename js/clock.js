@@ -132,29 +132,53 @@ const Clock = (function() {
                 let progress;
                 let text;
 
-                switch (unit) {
-                    case 'day':
-                        progress = days / 7; // Assuming a 7-day week for visual representation
-                        text = days.toString();
-                        break;
-                    case 'hours':
-                        // If days > 0 and hours is 0, draw a full circle.
-                        progress = (days > 0 && hours === 0) ? 1 : hours / 24;
-                        text = hours.toString().padStart(2, '0');
-                        break;
-                    case 'minutes':
-                        // If hours > 0 and minutes is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0) && minutes === 0) ? 1 : minutes / 60;
-                        text = minutes.toString().padStart(2, '0');
-                        break;
-                    case 'seconds':
-                        // If minutes > 0 and seconds is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0 || minutes > 0) && secondsValue === 0) ? 1 : secondsValue / 60;
-                        text = secondsValue.toString().padStart(2, '0');
-                        break;
-                    default:
-                        progress = 0;
-                        text = '0';
+                if (!globalState.timer.isRunning) {
+                    // When not running, draw based on absolute input values
+                    switch (unit) {
+                        case 'day':
+                            progress = days / 99; // Assume 99 is a reasonable max
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            progress = hours / 24;
+                            text = hours.toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = minutes / 60;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = secondsValue / 60;
+                            text = secondsValue.toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0;
+                            text = '0';
+                    }
+                } else {
+                    // When running, use the original smooth countdown logic
+                    switch (unit) {
+                        case 'day':
+                            // This behavior is a bit undefined, but we'll keep the original logic
+                            progress = (remaining % (86400 * 7)) / (86400 * 7); // Assume a 7-day cycle if days are shown
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            progress = (remaining % 86400) / 86400;
+                            text = hours.toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = (remaining % 3600) / 3600;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = (remaining % 60) / 60;
+                            text = secondsValue.toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0;
+                            text = '0';
+                    }
                 }
 
                 const angle = progress * Math.PI * 2;
@@ -703,10 +727,21 @@ const Clock = (function() {
         },
         resize: function() {
             if (!canvas) return;
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            dimensions.centerX = canvas.width / 2;
-            dimensions.centerY = canvas.height / 2;
+
+            const dpr = window.devicePixelRatio || 1;
+            const cssWidth = canvas.offsetWidth;
+            const cssHeight = canvas.offsetHeight;
+
+            canvas.width = cssWidth * dpr;
+            canvas.height = cssHeight * dpr;
+
+            // Reset transform and then scale
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Use the CSS dimensions for layout calculations
+            dimensions.centerX = cssWidth / 2;
+            dimensions.centerY = cssHeight / 2;
+
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
             const renderedLineWidth = (6 / 57) * baseRadius;

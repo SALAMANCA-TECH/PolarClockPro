@@ -207,111 +207,104 @@ const Settings = (function() {
         });
     }
 
+    function updateExampleClock() {
+        if (window.ExampleClock) {
+            window.ExampleClock.update(settings);
+        }
+    }
+
     function setupEventListeners() {
-        // Standard settings listeners
-        document.getElementById('format12').addEventListener('click', () => { settings.is24HourFormat = false; saveSettings(); applySettingsToUI(); });
-        document.getElementById('format24').addEventListener('click', () => { settings.is24HourFormat = true; saveSettings(); applySettingsToUI(); });
-        const colorButtons = document.querySelectorAll('.color-preset-button');
-        colorButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const themeName = button.id.replace('preset', '');
-                settings.colorPreset = themeName;
-                updateCurrentColors();
+        function createSettingUpdater(updateFunc) {
+            return () => {
+                updateFunc();
                 saveSettings();
                 applySettingsToUI();
                 document.dispatchEvent(new CustomEvent('settings-changed'));
-            });
+                updateExampleClock();
+            };
+        }
+
+        document.getElementById('format12').addEventListener('click', createSettingUpdater(() => { settings.is24HourFormat = false; }));
+        document.getElementById('format24').addEventListener('click', createSettingUpdater(() => { settings.is24HourFormat = true; }));
+
+        const colorButtons = document.querySelectorAll('.color-preset-button');
+        colorButtons.forEach(button => {
+            button.addEventListener('click', createSettingUpdater(() => {
+                const themeName = button.id.replace('preset', '');
+                settings.colorPreset = themeName;
+                updateCurrentColors();
+            }));
         });
 
         document.getElementById('colorPaletteSelect').addEventListener('change', (e) => {
             const themeName = e.target.value;
             if (themeName) {
-                settings.colorPreset = themeName;
-                updateCurrentColors();
-                saveSettings();
-                applySettingsToUI();
-                document.dispatchEvent(new CustomEvent('settings-changed'));
+                createSettingUpdater(() => {
+                    settings.colorPreset = themeName;
+                    updateCurrentColors();
+                })();
             }
         });
-        document.getElementById('inverseModeToggle').addEventListener('change', (e) => {
-            settings.inverseMode = e.target.checked;
-            saveSettings();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
 
-        document.getElementById('reverseToggle').addEventListener('change', (e) => {
-            settings.reverseMode = e.target.checked;
+        document.getElementById('inverseModeToggle').addEventListener('change', createSettingUpdater(() => {
+            settings.inverseMode = document.getElementById('inverseModeToggle').checked;
+        }));
+
+        document.getElementById('reverseToggle').addEventListener('change', createSettingUpdater(() => {
+            settings.reverseMode = document.getElementById('reverseToggle').checked;
             updateCurrentColors();
-            saveSettings();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
+        }));
 
-        document.getElementById('flowModeToggle').addEventListener('change', (e) => {
-            settings.flowMode = e.target.checked;
-            saveSettings();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
+        document.getElementById('flowModeToggle').addEventListener('change', createSettingUpdater(() => {
+            settings.flowMode = document.getElementById('flowModeToggle').checked;
+        }));
 
-        // New display toggle listeners
-        document.getElementById('arcEndCirclesToggle').addEventListener('change', (e) => {
-            settings.showArcEndCircles = e.target.checked;
-            saveSettings();
-            document.dispatchEvent(new CustomEvent('settings-changed'));
-        });
+        document.getElementById('arcEndCirclesToggle').addEventListener('change', createSettingUpdater(() => {
+            settings.showArcEndCircles = document.getElementById('arcEndCirclesToggle').checked;
+        }));
 
-        // Separator mode listeners
-        document.getElementById('modeStandardSeparators').addEventListener('click', () => { settings.separatorMode = 'standard'; saveSettings(); applySettingsToUI(); });
-        document.getElementById('modeRuler').addEventListener('click', () => { settings.separatorMode = 'ruler'; saveSettings(); applySettingsToUI(); });
+        document.getElementById('modeStandardSeparators').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'standard'; }));
+        document.getElementById('modeRuler').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'ruler'; }));
 
-        // Arc visibility listeners
         arcKeys.forEach(key => {
             const toggleId = `toggleArc${key.charAt(0).toUpperCase() + key.slice(1)}`;
             document.getElementById(toggleId).addEventListener('change', (e) => {
                 const numVisible = Object.values(settings.arcVisibility).filter(v => v).length;
                 if (!e.target.checked && numVisible <= 1) {
-                    e.target.checked = true; // Prevent hiding the last arc
+                    e.target.checked = true;
                     return;
                 }
                 settings.arcVisibility[key] = e.target.checked;
                 saveSettings();
                 document.dispatchEvent(new CustomEvent('settings-requires-resize'));
+                updateExampleClock();
             });
         });
 
-        // "Smart" global separator toggle listeners
-        document.getElementById('separatorsShow').addEventListener('click', () => {
+        document.getElementById('separatorsShow').addEventListener('click', createSettingUpdater(() => {
             settings.showSeparators = true;
-            // If the user clicks "Show", assume they want all separators on.
             arcKeys.forEach(key => settings.separatorVisibility[key] = true);
-            saveSettings();
-            applySettingsToUI();
-        });
+        }));
 
-        document.getElementById('separatorsHide').addEventListener('click', () => {
+        document.getElementById('separatorsHide').addEventListener('click', createSettingUpdater(() => {
             settings.showSeparators = false;
-            saveSettings();
-            applySettingsToUI();
-        });
+        }));
 
-        // Per-arc separator visibility listeners
         arcKeys.forEach(key => {
             const toggleId = `toggleSeparator${key.charAt(0).toUpperCase() + key.slice(1)}`;
             document.getElementById(toggleId).addEventListener('change', (e) => {
                 settings.separatorVisibility[key] = e.target.checked;
-
                 if (e.target.checked) {
-                    // If a separator is turned ON, the global setting should also be ON.
                     settings.showSeparators = true;
                 } else {
-                    // If a separator is turned OFF, check if they are all off.
                     const allSeparatorsHidden = arcKeys.every(k => !settings.separatorVisibility[k]);
                     if (allSeparatorsHidden) {
                         settings.showSeparators = false;
                     }
                 }
-
                 saveSettings();
                 applySettingsToUI();
+                updateExampleClock();
             });
         });
     }
