@@ -437,22 +437,26 @@ const Clock = (function() {
         const month = now.getMonth();
         const year = now.getFullYear();
         const daysInMonth = getDaysInMonth(year, month);
-        const dayOfWeek = getDayOfWeek(now);
+        const dayOfWeek = getDayOfWeek(now); // 1-7, Sunday is 7
 
         switch (arcKey) {
-            case 'minutes':
+            case 'seconds':
                 return s === 59;
-            case 'hours':
+            case 'minutes':
                 return m === 59 && s === 59;
+            case 'hours':
+                const isLastHour = settings.is24HourFormat ? (h === 23) : (h === 11 || h === 23);
+                return isLastHour && m === 59 && s === 59;
             case 'day':
-                // The day arc changes only at midnight, regardless of 12/24h format.
-                return h === 23 && m === 59 && s === 59;
+                return d === daysInMonth && h === 23 && m === 59 && s === 59;
             case 'dayOfWeek':
                 return dayOfWeek === 7 && h === 23 && m === 59 && s === 59;
             case 'month':
-                return d === daysInMonth && h === 23 && m === 59 && s === 59;
+                return month === 11 && d === 31 && h === 23 && m === 59 && s === 59;
             case 'weekOfYear':
-                return dayOfWeek === 7 && h === 23 && m === 59 && s === 59;
+                // The week of year arc completes at the very end of the year.
+                // This coincides with the end of the month arc for December.
+                return month === 11 && d === 31 && h === 23 && m === 59 && s === 59;
             default:
                 return false;
         }
