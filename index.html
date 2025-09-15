@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/settings.css">
     <style>
     /* General page styling */
@@ -677,6 +676,11 @@
         gap: 5px;
         width: 100%;
     }
+    .svg-icon {
+        width: 24px;
+        height: 24px;
+        filter: invert(1);
+    }
     </style>
     <!-- EmailJS SDK for feedback form -->
     <script type="text/javascript"
@@ -693,7 +697,7 @@
                 <div id="digitalTime"></div>
                 <div id="digitalDate"></div>
             </div>
-            <button id="optionsBtn" class="main-nav-button"><i class="ph ph-dots-three-outline"></i></button>
+            <button id="optionsBtn" class="main-nav-button"><img src="assets/icons/options-on.svg" class="svg-icon"></button>
             <div id="miniature-clocks-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
                 <!-- Miniature clocks will be added here -->
             </div>
@@ -707,9 +711,9 @@
                     <button id="goToAlarmsBtn" class="tool-select-button" data-mode="alarms">Alarms</button>
                 </div>
                 <div id="bottom-toolbar" class="main-nav-buttons">
-                    <button id="toggleControlsBtn" class="main-nav-button"><i class="ph ph-timer"></i></button>
-                    <button id="goToSettingsBtn" class="main-nav-button"><i class="ph ph-gear"></i></button>
-                    <button id="goToAboutBtn" class="main-nav-button"><i class="ph ph-question"></i></button>
+                    <button id="toggleControlsBtn" class="main-nav-button"><img src="assets/icons/timer.svg" class="svg-icon"></button>
+                    <button id="goToSettingsBtn" class="main-nav-button"><img src="assets/icons/settings.svg" class="svg-icon"></button>
+                    <button id="goToAboutBtn" class="main-nav-button"><img src="assets/icons/about.svg" class="svg-icon"></button>
                 </div>
             </div>
         </div>
@@ -744,8 +748,8 @@
                 <button id="resetTimer">Reset</button>
             </div>
             <div class="control-buttons" id="timerAlarmControls" style="display: none;">
-                <button id="timerMuteBtn" class="control-btn"><i class="ph ph-speaker-slash"></i></button>
-                <button id="timerSnoozeBtn" class="control-btn"><i class="ph ph-bell-z"></i></button>
+                <button id="timerMuteBtn" class="control-btn"><img src="assets/icons/mute-off.svg" class="svg-icon"></button>
+                <button id="timerSnoozeBtn" class="control-btn"><img src="assets/icons/snooze-off.svg" class="svg-icon"></button>
                 <button id="timerStopBtn" class="control-btn">Restart</button>
             </div>
              <div class="setting-toggle">
@@ -796,8 +800,8 @@
                 <button id="customPomodoroBtn">Custom</button>
             </div>
             <div class="control-buttons" id="pomodoroActions" style="display: none;">
-                <button id="pomodoroMuteBtn"><i class="ph ph-speaker-slash"></i></button>
-                <button id="pomodoroSnoozeBtn"><i class="ph ph-bell-z"></i></button>
+                <button id="pomodoroMuteBtn"><img src="assets/icons/mute-off.svg" class="svg-icon"></button>
+                <button id="pomodoroSnoozeBtn"><img src="assets/icons/snooze-off.svg" class="svg-icon"></button>
             </div>
             <div class="control-buttons" id="pomodoroAlarmControls" style="display: none;">
                 <button id="nextCyclePomodoroBtn">Next Cycle</button>
