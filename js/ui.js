@@ -166,9 +166,14 @@ const UI = (function() {
             });
 
             navButtons.goToSettings.addEventListener('click', () => {
-                controlsContainer.style.display = 'none';
-                toolSelectMenu.classList.add('panel-hidden');
-                settingsPanel.style.display = 'block';
+                const isSettingsVisible = settingsPanel.style.display === 'block';
+                if (isSettingsVisible) {
+                    settingsPanel.style.display = 'none';
+                } else {
+                    controlsContainer.style.display = 'none';
+                    toolSelectMenu.classList.add('panel-hidden');
+                    settingsPanel.style.display = 'block';
+                }
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
