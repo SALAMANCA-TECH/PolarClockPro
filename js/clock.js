@@ -132,30 +132,53 @@ const Clock = (function() {
                 let progress;
                 let text;
 
-                switch (unit) {
-                    case 'day':
-                        // Days are discrete units, so no smoothing is needed.
-                        progress = days / 7;
-                        text = days.toString();
-                        break;
-                    case 'hours':
-                        // Smoothly animate the hour arc over its 24-hour cycle.
-                        progress = (remaining % 86400) / 86400;
-                        text = hours.toString().padStart(2, '0');
-                        break;
-                    case 'minutes':
-                        // Smoothly animate the minute arc over its 60-minute cycle.
-                        progress = (remaining % 3600) / 3600;
-                        text = minutes.toString().padStart(2, '0');
-                        break;
-                    case 'seconds':
-                        // Smoothly animate the seconds arc over its 60-second cycle.
-                        progress = (remaining % 60) / 60;
-                        text = secondsValue.toString().padStart(2, '0');
-                        break;
-                    default:
-                        progress = 0;
-                        text = '0';
+                if (!globalState.timer.isRunning) {
+                    // When not running, draw based on absolute input values
+                    switch (unit) {
+                        case 'day':
+                            progress = days / 99; // Assume 99 is a reasonable max
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            progress = hours / 24;
+                            text = hours.toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = minutes / 60;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = secondsValue / 60;
+                            text = secondsValue.toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0;
+                            text = '0';
+                    }
+                } else {
+                    // When running, use the original smooth countdown logic
+                    switch (unit) {
+                        case 'day':
+                            // This behavior is a bit undefined, but we'll keep the original logic
+                            progress = (remaining % (86400 * 7)) / (86400 * 7); // Assume a 7-day cycle if days are shown
+                            text = days.toString();
+                            break;
+                        case 'hours':
+                            progress = (remaining % 86400) / 86400;
+                            text = hours.toString().padStart(2, '0');
+                            break;
+                        case 'minutes':
+                            progress = (remaining % 3600) / 3600;
+                            text = minutes.toString().padStart(2, '0');
+                            break;
+                        case 'seconds':
+                            progress = (remaining % 60) / 60;
+                            text = secondsValue.toString().padStart(2, '0');
+                            break;
+                        default:
+                            progress = 0;
+                            text = '0';
+                    }
                 }
 
                 const angle = progress * Math.PI * 2;

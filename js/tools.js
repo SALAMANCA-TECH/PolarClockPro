@@ -605,10 +605,10 @@ const Tools = (function() {
             state.timer.style = e.target.checked;
             document.dispatchEvent(new CustomEvent('statechange'));
         });
-        timerDaysInput.addEventListener('blur', normalizeTimerInputs);
-        timerHoursInput.addEventListener('blur', normalizeTimerInputs);
-        timerMinutesInput.addEventListener('blur', normalizeTimerInputs);
-        timerSecondsInput.addEventListener('blur', normalizeTimerInputs);
+        timerDaysInput.addEventListener('input', normalizeTimerInputs);
+        timerHoursInput.addEventListener('input', normalizeTimerInputs);
+        timerMinutesInput.addEventListener('input', normalizeTimerInputs);
+        timerSecondsInput.addEventListener('input', normalizeTimerInputs);
 
         // New Timer Alarm Buttons
         const timerMuteBtn = document.getElementById('timerMuteBtn');
