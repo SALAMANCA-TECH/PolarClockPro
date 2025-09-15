@@ -1,9 +1,39 @@
 const Tools = (function() {
     // --- DOM Element Selections ---
-    let toggleTimerBtn, resetTimerBtn, timerDaysInput, timerHoursInput, timerMinutesInput, timerSecondsInput, intervalToggle, timerStyleToggle;
-    let toggleStopwatchBtn, lapStopwatchBtn, resetStopwatchBtn, lapTimesContainer;
-    let catchUpMinutesInput, catchUpSecondsInput, addCatchUpTimeBtn;
-    let statusDisplay, pomodoroWorkDisplay, pomodoroShortBreakDisplay, pomodoroLongBreakDisplay, togglePomodoroBtn, resetPomodoroBtn, pomodoroAlarmControls, mutePomodoroBtn, snoozePomodoroBtn, nextCyclePomodoroBtn, customPomodoroBtn, savePomodoroSettingsBtn, workDurationInput, shortBreakDurationInput, longBreakDurationInput, continuousToggleInput;
+    const toggleTimerBtn = document.getElementById('toggleTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimer');
+    const timerDaysInput = document.getElementById('timerDays');
+    const timerHoursInput = document.getElementById('timerHours');
+    const timerMinutesInput = document.getElementById('timerMinutes');
+    const timerSecondsInput = document.getElementById('timerSeconds');
+    const intervalToggle = document.getElementById('intervalToggle');
+    const timerStyleToggle = document.getElementById('timerStyleToggle');
+
+    const toggleStopwatchBtn = document.getElementById('toggleStopwatchBtn');
+    const lapStopwatchBtn = document.getElementById('lapStopwatch');
+    const resetStopwatchBtn = document.getElementById('resetStopwatch');
+    const lapTimesContainer = document.getElementById('lapTimes');
+
+    const catchUpMinutesInput = document.getElementById('catchUpMinutes');
+    const catchUpSecondsInput = document.getElementById('catchUpSeconds');
+    const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
+
+    const statusDisplay = document.getElementById('pomodoroStatus');
+    const pomodoroWorkDisplay = document.getElementById('pomodoroWorkDisplay');
+    const pomodoroShortBreakDisplay = document.getElementById('pomodoroShortBreakDisplay');
+    const pomodoroLongBreakDisplay = document.getElementById('pomodoroLongBreakDisplay');
+    const togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
+    const resetPomodoroBtn = document.getElementById('resetPomodoro');
+    const pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
+    const mutePomodoroBtn = document.getElementById('pomodoroMuteBtn');
+    const snoozePomodoroBtn = document.getElementById('pomodoroSnoozeBtn');
+    const nextCyclePomodoroBtn = document.getElementById('nextCyclePomodoroBtn');
+    const customPomodoroBtn = document.getElementById('customPomodoroBtn');
+    const savePomodoroSettingsBtn = document.getElementById('savePomodoroSettings');
+    const workDurationInput = document.getElementById('pomodoroWorkDuration');
+    const shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
+    const longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
+    const continuousToggleInput = document.getElementById('pomodoroContinuousToggle');
 
     // --- Module State ---
     let settings = {};
@@ -648,39 +678,6 @@ const Tools = (function() {
     // --- Public API ---
     return {
         init: function(appSettings, initialState) {
-            // DOM Selections moved here for robustness
-            toggleTimerBtn = document.getElementById('toggleTimerBtn');
-            resetTimerBtn = document.getElementById('resetTimer');
-            timerDaysInput = document.getElementById('timerDays');
-            timerHoursInput = document.getElementById('timerHours');
-            timerMinutesInput = document.getElementById('timerMinutes');
-            timerSecondsInput = document.getElementById('timerSeconds');
-            intervalToggle = document.getElementById('intervalToggle');
-            timerStyleToggle = document.getElementById('timerStyleToggle');
-            toggleStopwatchBtn = document.getElementById('toggleStopwatchBtn');
-            lapStopwatchBtn = document.getElementById('lapStopwatch');
-            resetStopwatchBtn = document.getElementById('resetStopwatch');
-            lapTimesContainer = document.getElementById('lapTimes');
-            catchUpMinutesInput = document.getElementById('catchUpMinutes');
-            catchUpSecondsInput = document.getElementById('catchUpSeconds');
-            addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
-            statusDisplay = document.getElementById('pomodoroStatus');
-            pomodoroWorkDisplay = document.getElementById('pomodoroWorkDisplay');
-            pomodoroShortBreakDisplay = document.getElementById('pomodoroShortBreakDisplay');
-            pomodoroLongBreakDisplay = document.getElementById('pomodoroLongBreakDisplay');
-            togglePomodoroBtn = document.getElementById('togglePomodoroBtn');
-            resetPomodoroBtn = document.getElementById('resetPomodoro');
-            pomodoroAlarmControls = document.getElementById('pomodoroAlarmControls');
-            mutePomodoroBtn = document.getElementById('pomodoroMuteBtn');
-            snoozePomodoroBtn = document.getElementById('snoozePomodoroBtn');
-            nextCyclePomodoroBtn = document.getElementById('nextCyclePomodoroBtn');
-            customPomodoroBtn = document.getElementById('customPomodoroBtn');
-            savePomodoroSettingsBtn = document.getElementById('savePomodoroSettings');
-            workDurationInput = document.getElementById('pomodoroWorkDuration');
-            shortBreakDurationInput = document.getElementById('pomodoroShortBreakDuration');
-            longBreakDurationInput = document.getElementById('pomodoroLongBreakDuration');
-            continuousToggleInput = document.getElementById('pomodoroContinuousToggle');
-
             settings = appSettings;
 
             if (initialState) {
