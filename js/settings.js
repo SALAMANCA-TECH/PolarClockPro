@@ -207,12 +207,6 @@ const Settings = (function() {
         });
     }
 
-    function updateExampleClock() {
-        if (window.ExampleClock) {
-            window.ExampleClock.update(settings);
-        }
-    }
-
     function setupEventListeners() {
         function createSettingUpdater(updateFunc) {
             return () => {
@@ -220,7 +214,6 @@ const Settings = (function() {
                 saveSettings();
                 applySettingsToUI();
                 document.dispatchEvent(new CustomEvent('settings-changed'));
-                updateExampleClock();
             };
         }
 
@@ -277,7 +270,6 @@ const Settings = (function() {
                 settings.arcVisibility[key] = e.target.checked;
                 saveSettings();
                 document.dispatchEvent(new CustomEvent('settings-requires-resize'));
-                updateExampleClock();
             });
         });
 
@@ -304,7 +296,6 @@ const Settings = (function() {
                 }
                 saveSettings();
                 applySettingsToUI();
-                updateExampleClock();
             });
         });
     }
