@@ -32,8 +32,17 @@ const UI = (function() {
     }
 
     function updateToolPanelVisibility(mode) {
+        const controlsContainer = document.getElementById('controlsContainer');
+        const settingsPanel = document.getElementById('settings-panel');
+
         Object.values(toolPanels).forEach(p => p.classList.add('panel-hidden'));
-        if (mode && toolPanels[mode]) {
+
+        if (mode === 'clock') {
+            controlsContainer.style.display = 'none';
+            settingsPanel.style.display = 'none';
+        } else if (mode && toolPanels[mode]) {
+            controlsContainer.style.display = 'flex';
+            settingsPanel.style.display = 'none';
             toolPanels[mode].classList.remove('panel-hidden');
         }
     }
@@ -140,7 +149,6 @@ const UI = (function() {
             navButtons.toggleControls.addEventListener('click', () => {
                 toolSelectMenu.classList.toggle('panel-hidden');
                 settingsPanel.style.display = 'none'; // Hide settings when showing tools
-                controlsContainer.style.display = 'flex'; // Show controls
             });
 
             toolSelectButtons.forEach(button => {
@@ -154,6 +162,7 @@ const UI = (function() {
                         detail: { mode: mode }
                     }));
                     toolSelectMenu.classList.add('panel-hidden'); // Hide menu after selection
+                    bottomToolbar.classList.remove('visible');
                 });
             });
 
@@ -161,10 +170,12 @@ const UI = (function() {
                 controlsContainer.style.display = 'none';
                 toolSelectMenu.classList.add('panel-hidden');
                 settingsPanel.style.display = 'block';
+                bottomToolbar.classList.remove('visible');
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
                 initAboutPage();
+                bottomToolbar.classList.remove('visible');
             });
 
             navButtons.backFromAbout.addEventListener('click', () => {
