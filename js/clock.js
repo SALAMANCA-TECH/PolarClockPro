@@ -703,10 +703,21 @@ const Clock = (function() {
         },
         resize: function() {
             if (!canvas) return;
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            dimensions.centerX = canvas.width / 2;
-            dimensions.centerY = canvas.height / 2;
+
+            const dpr = window.devicePixelRatio || 1;
+            const cssWidth = canvas.offsetWidth;
+            const cssHeight = canvas.offsetHeight;
+
+            canvas.width = cssWidth * dpr;
+            canvas.height = cssHeight * dpr;
+
+            // Reset transform and then scale
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Use the CSS dimensions for layout calculations
+            dimensions.centerX = cssWidth / 2;
+            dimensions.centerY = cssHeight / 2;
+
 
             const baseRadius = Math.min(dimensions.centerX, dimensions.centerY) * 0.9;
             const renderedLineWidth = (6 / 57) * baseRadius;
