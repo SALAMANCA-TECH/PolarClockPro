@@ -154,10 +154,13 @@ const UI = (function() {
             navButtons.goToSettings.addEventListener('click', () => {
                 showView(views.settings);
                 if (window.ExampleClock && typeof window.ExampleClock.resize === 'function') {
-                    // A small delay to ensure the view is visible and has dimensions
-                    setTimeout(() => {
-                        window.ExampleClock.resize();
-                    }, 50);
+                    // Use rAF to ensure the resize is called after the element is visible and sized
+                    requestAnimationFrame(() => {
+                        // A second frame is a robust way to ensure transitions/rendering have completed
+                        requestAnimationFrame(() => {
+                            window.ExampleClock.resize();
+                        });
+                    });
                 }
             });
             navButtons.goToAbout.addEventListener('click', () => {
