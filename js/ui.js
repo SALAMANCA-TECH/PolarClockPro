@@ -162,7 +162,6 @@ const UI = (function() {
                         detail: { mode: mode }
                     }));
                     toolSelectMenu.classList.add('panel-hidden'); // Hide menu after selection
-                    bottomToolbar.classList.remove('visible');
                 });
             });
 
@@ -170,12 +169,10 @@ const UI = (function() {
                 controlsContainer.style.display = 'none';
                 toolSelectMenu.classList.add('panel-hidden');
                 settingsPanel.style.display = 'block';
-                bottomToolbar.classList.remove('visible');
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);
                 initAboutPage();
-                bottomToolbar.classList.remove('visible');
             });
 
             navButtons.backFromAbout.addEventListener('click', () => {
