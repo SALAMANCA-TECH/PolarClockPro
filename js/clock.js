@@ -429,6 +429,35 @@ const Clock = (function() {
         }
     };
 
+    const shouldShowAnticipationArc = (arcKey, now) => {
+        const s = now.getSeconds();
+        const m = now.getMinutes();
+        const h = now.getHours();
+        const d = now.getDate();
+        const month = now.getMonth();
+        const year = now.getFullYear();
+        const daysInMonth = getDaysInMonth(year, month);
+        const dayOfWeek = getDayOfWeek(now);
+
+        switch (arcKey) {
+            case 'minutes':
+                return s === 59;
+            case 'hours':
+                return m === 59 && s === 59;
+            case 'day':
+                // The day arc changes only at midnight, regardless of 12/24h format.
+                return h === 23 && m === 59 && s === 59;
+            case 'dayOfWeek':
+                return dayOfWeek === 7 && h === 23 && m === 59 && s === 59;
+            case 'month':
+                return d === daysInMonth && h === 23 && m === 59 && s === 59;
+            case 'weekOfYear':
+                return dayOfWeek === 7 && h === 23 && m === 59 && s === 59;
+            default:
+                return false;
+        }
+    };
+
     const drawClock = () => {
         if (!settings.currentColors || !globalState.timer) {
             return;
@@ -442,24 +471,31 @@ const Clock = (function() {
                 lastColorChangeMinute = minutes;
             }
         }
-        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+        const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), ms = now.getMilliseconds();
         const dayOfWeek = getDayOfWeek(now);
         const daysInMonth = getDaysInMonth(year, month);
         const weekOfYear = getWeekOfYear(now);
         const totalWeeks = getTotalWeeksInYear(year);
 
-        const dayOfWeekEndAngle = baseStartAngle + (dayOfWeek / 7) * Math.PI * 2;
-        const monthEndAngle = baseStartAngle + ((month + date / daysInMonth) / 12) * Math.PI * 2;
-        const dayEndAngle = baseStartAngle + ((date - 1 + (hours + minutes / 60) / 24) / daysInMonth) * Math.PI * 2;
+        const timeProgressInDay = (hours + minutes / 60 + seconds / 3600 + ms / 3600000) / 24;
+        const dayOfWeekProgress = (dayOfWeek - 1 + timeProgressInDay) / 7;
+        const monthProgress = (month + (date - 1 + timeProgressInDay) / daysInMonth) / 12;
+        const dayProgress = (date - 1 + timeProgressInDay) / daysInMonth;
+        const weekOfYearProgress = (weekOfYear - 1 + (dayOfWeek - 1 + timeProgressInDay) / 7) / totalWeeks;
+
+        const dayOfWeekEndAngle = baseStartAngle + dayOfWeekProgress * Math.PI * 2;
+        const monthEndAngle = baseStartAngle + monthProgress * Math.PI * 2;
+        const dayEndAngle = baseStartAngle + dayProgress * Math.PI * 2;
         let hoursEndAngle;
         if (settings.is24HourFormat) {
-            hoursEndAngle = baseStartAngle + ((hours + minutes / 60) / 24) * Math.PI * 2;
+            hoursEndAngle = baseStartAngle + ((hours + minutes / 60 + seconds / 3600) / 24) * Math.PI * 2;
         } else {
-            hoursEndAngle = baseStartAngle + ((((hours % 12) || 12) + minutes / 60) / 12) * Math.PI * 2;
+            const currentHour12 = hours % 12;
+            hoursEndAngle = baseStartAngle + ((currentHour12 + minutes / 60 + seconds / 3600) / 12) * Math.PI * 2;
         }
-        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60) / 60) * Math.PI * 2;
-        const secondsEndAngle = baseStartAngle + ((seconds + now.getMilliseconds() / 1000) / 60) * Math.PI * 2;
-        const weekOfYearEndAngle = baseStartAngle + (weekOfYear / totalWeeks) * Math.PI * 2;
+        const minutesEndAngle = baseStartAngle + ((minutes + seconds / 60 + ms / 60000) / 60) * Math.PI * 2;
+        const secondsEndAngle = baseStartAngle + ((seconds + ms / 1000) / 60) * Math.PI * 2;
+        const weekOfYearEndAngle = baseStartAngle + weekOfYearProgress * Math.PI * 2;
 
         // Arcs are now always defined and drawn
         const arcs = [
@@ -486,6 +522,14 @@ const Clock = (function() {
 
                 // ALWAYS draw the primary arc representing the current time.
                 if (settings.inverseMode && globalState.mode === 'clock') {
+                    // Draw the "anticipation" arc ("Cycle B")
+                    if (shouldShowAnticipationArc(arc.key, now)) {
+                        const anticipationProgress = ms / 1000;
+                        const anticipationEndAngle = baseStartAngle + (anticipationProgress * Math.PI * 2);
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, anticipationEndAngle, arc.colors, arc.lineWidth);
+                    }
+
+                    // Draw the main inverse arc ("Cycle A")
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
                 } else {
                     drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors, arc.lineWidth);
