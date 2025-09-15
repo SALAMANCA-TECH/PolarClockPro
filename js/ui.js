@@ -17,6 +17,7 @@ const UI = (function() {
         timer: document.getElementById('timerPanel'),
         pomodoro: document.getElementById('pomodoroPanel'),
         stopwatch: document.getElementById('stopwatchPanel'),
+        timeCalculator: document.getElementById('timeCalculatorPanel'),
     };
     const toolSelectMenu = document.getElementById('tool-select-menu');
     const toolSelectButtons = document.querySelectorAll('.tool-select-button');
@@ -124,34 +125,6 @@ const UI = (function() {
         }
     }
 
-    let settingsAccordionInitialized = false;
-
-    function initSettingsAccordion() {
-        if (settingsAccordionInitialized) return;
-        settingsAccordionInitialized = true;
-
-        const accordionItems = document.querySelectorAll('#settingsView .accordion-item');
-        accordionItems.forEach(item => {
-            const header = item.querySelector('.accordion-header');
-            const content = item.querySelector('.accordion-content');
-            header.addEventListener('click', () => {
-                const wasActive = item.classList.contains('active');
-                accordionItems.forEach(otherItem => {
-                    otherItem.classList.remove('active');
-                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
-                    if (otherItem.querySelector('.accordion-content').style.padding) {
-                        otherItem.querySelector('.accordion-content').style.padding = '0 15px';
-                    }
-                });
-                if (!wasActive) {
-                    item.classList.add('active');
-                    content.style.maxHeight = content.scrollHeight + "px";
-                    content.style.padding = '15px';
-                }
-            });
-        });
-    }
-
     return {
         init: function(appState) {
             const optionsBtn = document.getElementById('optionsBtn');
@@ -181,7 +154,15 @@ const UI = (function() {
 
             navButtons.goToSettings.addEventListener('click', () => {
                 showView(views.settings);
-                initSettingsAccordion();
+                if (window.ExampleClock && typeof window.ExampleClock.resize === 'function') {
+                    // Use rAF to ensure the resize is called after the element is visible and sized
+                    requestAnimationFrame(() => {
+                        // A second frame is a robust way to ensure transitions/rendering have completed
+                        requestAnimationFrame(() => {
+                            window.ExampleClock.resize();
+                        });
+                    });
+                }
             });
             navButtons.goToAbout.addEventListener('click', () => {
                 showView(views.about);

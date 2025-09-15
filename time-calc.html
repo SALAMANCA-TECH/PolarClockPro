@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Calculator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com" onerror="alert('Failed to load Tailwind CSS. The page may not be styled correctly, but the calculators should still work.')"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to complement Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* A light gray background */
+        }
+        .calculator-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .calculator-card:hover {
+            transform: translateY(-5px);
+        }
+        .result-box {
+            background-color: #eef2ff; /* A light indigo */
+            border-left: 4px solid #6366f1; /* Indigo border */
+            color: #3730a3; /* Darker indigo text */
+        }
+        .btn-primary {
+            background-color: #4f46e5; /* Indigo */
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; /* Darker Indigo */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">Time Calculator</h1>
+            <p class="text-lg text-gray-600 mt-2">Perform time-based calculations with ease.</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Calculator 1: Add Duration to Time -->
+            <div class="calculator-card">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Add Duration to Time</h2>
+                
+                <!-- Start Time -->
+                <div class="mb-4">
+                    <label for="startTime" class="block text-sm font-medium text-gray-700 mb-1">Start Time (e.g., 3:00 PM)</label>
+                    <input type="text" id="startTime" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="3:00 PM">
+                </div>
+
+                <!-- Duration -->
+                <div class="mb-4">
+                    <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Duration (hh:mm)</label>
+                    <input type="text" id="duration" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="3:10">
+                </div>
+
+                <!-- Start Day -->
+                <div class="mb-6">
+                    <label for="startDay" class="block text-sm font-medium text-gray-700 mb-1">Start Day (Optional)</label>
+                    <select id="startDay" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">None</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+
+                <button id="calcAddTime" class="w-full btn-primary py-2 px-4 rounded-md">Calculate</button>
+
+                <div id="addTimeResult" class="mt-6 p-4 rounded-md result-box hidden"></div>
+            </div>
+
+            <!-- Calculator 2: Time Arithmetic -->
+            <div class="calculator-card">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Time Arithmetic</h2>
+
+                <!-- Time 1 -->
+                <div class="mb-4">
+                    <label for="time1" class="block text-sm font-medium text-gray-700 mb-1">Time 1 (hh:mm:ss)</label>
+                    <input type="text" id="time1" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="01:00:00">
+                </div>
+
+                <!-- Operator -->
+                <div class="mb-4">
+                    <label for="operator" class="block text-sm font-medium text-gray-700 mb-1">Operator</label>
+                    <select id="operator" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                        <option value="*">*</option>
+                        <option value="/">/</option>
+                    </select>
+                </div>
+
+                <!-- Operand -->
+                <div class="mb-6">
+                    <label for="operand" class="block text-sm font-medium text-gray-700 mb-1">Operand (Time or Number)</label>
+                    <input type="text" id="operand" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="02:30:15">
+                </div>
+
+                <button id="calcArithmetic" class="w-full btn-primary py-2 px-4 rounded-md">Calculate</button>
+
+                <div id="arithmeticResult" class="mt-6 p-4 rounded-md result-box hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // This script will run once the DOM is fully loaded.
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Time Calculator script loaded and DOM is ready.");
+
+            // --- LOGIC FOR CALCULATOR 1: ADD DURATION TO TIME ---
+            const addTimeButton = document.getElementById('calcAddTime');
+            const addTimeResultDiv = document.getElementById('addTimeResult');
+
+            if (addTimeButton) {
+                addTimeButton.addEventListener('click', () => {
+                    console.log("'Add Duration' button clicked.");
+                    const start = document.getElementById('startTime').value;
+                    const duration = document.getElementById('duration').value;
+                    const startDay = document.getElementById('startDay').value;
+                    
+                    const result = addTime(start, duration, startDay || null);
+                    
+                    addTimeResultDiv.textContent = `Result: ${result}`;
+                    addTimeResultDiv.classList.remove('hidden');
+                });
+            } else {
+                console.error("Could not find the 'calcAddTime' button.");
+            }
+
+            function addTime(start, duration, startDay = null) {
+                // 1. Parse Start Time
+                const startParts = start.trim().split(/[\s:]+/);
+                if (startParts.length !== 3) return "Error: Invalid start time format. Use 'h:mm AM/PM'.";
+                
+                let hour = parseInt(startParts[0]);
+                const minute = parseInt(startParts[1]);
+                const meridian = startParts[2].toUpperCase();
+
+                if (isNaN(hour) || isNaN(minute)) return "Error: Invalid time values.";
+
+                if (meridian === 'PM' && hour !== 12) hour += 12;
+                if (meridian === 'AM' && hour === 12) hour = 0;
+
+                // 2. Create Initial Date Object
+                const initialDate = new Date();
+                initialDate.setHours(hour, minute, 0, 0);
+                const initialDayOfWeek = initialDate.getDay(); // Sunday is 0
+
+                if (startDay) {
+                    const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+                    const startDayIndex = daysOfWeek.indexOf(startDay.toLowerCase());
+                    if (startDayIndex === -1) return "Error: Invalid day of the week.";
+                    
+                    const dayDifference = (startDayIndex - initialDayOfWeek + 7) % 7;
+                    initialDate.setDate(initialDate.getDate() + dayDifference);
+                }
+                
+                const initialTimestamp = initialDate.getTime();
+
+                // 3. Parse Duration and Calculate New Time
+                const durationParts = duration.split(':');
+                if (durationParts.length !== 2) return "Error: Invalid duration format. Use 'hh:mm'.";
+                const durationHour = parseInt(durationParts[0]);
+                const durationMinute = parseInt(durationParts[1]);
+
+                if (isNaN(durationHour) || isNaN(durationMinute)) return "Error: Invalid duration values.";
+
+                const durationMillis = (durationHour * 60 + durationMinute) * 60 * 1000;
+                const newTime = new Date(initialTimestamp + durationMillis);
+
+                // 4. Calculate Days Passed
+                const initialDateOnly = new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate());
+                const newDateOnly = new Date(newTime.getFullYear(), newTime.getMonth(), newTime.getDate());
+                const daysPassed = Math.round((newDateOnly - initialDateOnly) / (1000 * 60 * 60 * 24));
+
+                // 5. Format Output
+                let newHour = newTime.getHours();
+                const newMinute = newTime.getMinutes();
+                let newMeridian = 'AM';
+
+                if (newHour >= 12) {
+                    newMeridian = 'PM';
+                    if (newHour > 12) newHour -= 12;
+                }
+                if (newHour === 0) newHour = 12;
+
+                let formattedTime = `${newHour}:${newMinute.toString().padStart(2, '0')} ${newMeridian}`;
+
+                if (startDay) {
+                    const finalDayName = newTime.toLocaleDateString('en-US', { weekday: 'long' });
+                    formattedTime += `, ${finalDayName}`;
+                }
+
+                if (daysPassed === 1) {
+                    formattedTime += " (next day)";
+                } else if (daysPassed > 1) {
+                    formattedTime += ` (${daysPassed} days later)`;
+                }
+
+                return formattedTime;
+            }
+
+            // --- LOGIC FOR CALCULATOR 2: TIME ARITHMETIC ---
+            const arithmeticButton = document.getElementById('calcArithmetic');
+            const arithmeticResultDiv = document.getElementById('arithmeticResult');
+
+            if (arithmeticButton) {
+                arithmeticButton.addEventListener('click', () => {
+                    console.log("'Time Arithmetic' button clicked.");
+                    const time1 = document.getElementById('time1').value;
+                    const operator = document.getElementById('operator').value;
+                    let operand = document.getElementById('operand').value;
+
+                    if (operator === '*' || operator === '/') {
+                        const numOperand = parseFloat(operand);
+                        if (!isNaN(numOperand)) {
+                            operand = numOperand;
+                        }
+                    }
+                    
+                    const result = calculateTime(time1, operator, operand);
+
+                    arithmeticResultDiv.textContent = `Result: ${result}`;
+                    arithmeticResultDiv.classList.remove('hidden');
+                });
+            } else {
+                console.error("Could not find the 'calcArithmetic' button.");
+            }
+
+
+            function parseHmsToSeconds(timeStr) {
+                const parts = String(timeStr).split(':').map(Number);
+                if (parts.length !== 3 || parts.some(isNaN)) return null;
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            }
+
+            function formatSecondsToHms(totalSeconds) {
+                if (isNaN(totalSeconds)) return "Error: Calculation resulted in an invalid number.";
+                
+                const sign = totalSeconds < 0 ? "-" : "";
+                totalSeconds = Math.abs(Math.round(totalSeconds));
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            function calculateTime(time1, operator, operand) {
+                const initialSeconds = parseHmsToSeconds(time1);
+                if (initialSeconds === null) return "Error: Invalid format for initial time. Use 'hh:mm:ss'.";
+
+                let resultSeconds;
+
+                switch (operator) {
+                    case '+':
+                    case '-':
+                        const operandSeconds = parseHmsToSeconds(operand);
+                        if (operandSeconds === null) return "Error: Invalid format for operand time. Use 'hh:mm:ss'.";
+                        resultSeconds = operator === '+' ? initialSeconds + operandSeconds : initialSeconds - operandSeconds;
+                        break;
+                    case '*':
+                    case '/':
+                        if (typeof operand !== 'number') return "Error: Operand for '*' or '/' must be a number.";
+                        if (operator === '/' && operand === 0) return "Error: Cannot divide by zero.";
+                        resultSeconds = operator === '*' ? initialSeconds * operand : initialSeconds / operand;
+                        break;
+                    default:
+                        return "Error: Invalid operator.";
+                }
+
+                return formatSecondsToHms(resultSeconds);
+            }
+        });
+    </script>
+</body>
+</html>
