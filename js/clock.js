@@ -134,22 +134,23 @@ const Clock = (function() {
 
                 switch (unit) {
                     case 'day':
-                        progress = days / 7; // Assuming a 7-day week for visual representation
+                        // Days are discrete units, so no smoothing is needed.
+                        progress = days / 7;
                         text = days.toString();
                         break;
                     case 'hours':
-                        // If days > 0 and hours is 0, draw a full circle.
-                        progress = (days > 0 && hours === 0) ? 1 : hours / 24;
+                        // Smoothly animate the hour arc over its 24-hour cycle.
+                        progress = (remaining % 86400) / 86400;
                         text = hours.toString().padStart(2, '0');
                         break;
                     case 'minutes':
-                        // If hours > 0 and minutes is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0) && minutes === 0) ? 1 : minutes / 60;
+                        // Smoothly animate the minute arc over its 60-minute cycle.
+                        progress = (remaining % 3600) / 3600;
                         text = minutes.toString().padStart(2, '0');
                         break;
                     case 'seconds':
-                        // If minutes > 0 and seconds is 0, draw a full circle.
-                        progress = ((days > 0 || hours > 0 || minutes > 0) && secondsValue === 0) ? 1 : secondsValue / 60;
+                        // Smoothly animate the seconds arc over its 60-second cycle.
+                        progress = (remaining % 60) / 60;
                         text = secondsValue.toString().padStart(2, '0');
                         break;
                     default:
