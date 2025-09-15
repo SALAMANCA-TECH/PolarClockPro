@@ -800,7 +800,7 @@ const Tools = (function() {
                     if (pomodoroActions.style.display === 'none') {
                         pomodoroActions.style.display = 'flex';
                     }
-                    if (!state.pomodoro.lastMinuteSoundPlayed) {
+                    if (!state.pomodoro.lastMinuteSoundPlayed && !state.pomodoro.endOfCycleSoundPlayed) {
                         const audio = playSound(settings.timerSound);
                         if (audio) {
                             state.pomodoro.currentAudio = audio;
