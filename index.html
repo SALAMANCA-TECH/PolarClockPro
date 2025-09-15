@@ -572,6 +572,78 @@
         .view-panel {
             padding: 1rem;
         }
+        #settingsView {
+            flex-direction: column;
+        }
+        #settings-clock-container, #settings-controls-container {
+            width: 100%;
+            flex: none;
+        }
+    }
+
+    /* New Settings Layout */
+    #settingsView {
+        flex-direction: row;
+        align-items: stretch;
+        padding: 0; /* Remove padding from the parent */
+    }
+    #settings-clock-container {
+        flex: 1; /* Take up half the space */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative; /* For child positioning */
+    }
+    #exampleClockCanvas {
+        max-width: 100%;
+        max-height: 100%;
+        width: 100%;
+        height: 100%;
+    }
+    #settings-controls-container {
+        flex: 1; /* Take up the other half */
+        padding: 2rem;
+        overflow-y: auto;
+        background-color: #1a1a1a; /* Slightly different bg for contrast */
+        border-left: 1px solid #333;
+    }
+    .settings-group {
+        background-color: #2a2a2a;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .settings-group-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        color: #eee;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #444;
+    }
+    .setting-item, .setting-item-full {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+    }
+    .setting-item-full {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .setting-item label, .setting-item-full label {
+        color: #ccc;
+    }
+    .setting-item .format-buttons, .setting-item select {
+        flex-basis: 50%;
+    }
+    .color-preset-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+        width: 100%;
     }
     </style>
     <!-- EmailJS SDK for feedback form -->
@@ -772,54 +844,54 @@
 
     <!-- Settings View -->
     <div id="settingsView" class="view-panel" style="display: none;">
-        <div class="view-header">
-            <button id="backToMainFromSettings" class="back-button">Back</button>
-            <h2 class="view-title">Settings</h2>
+        <!-- Left Side: Example Clock -->
+        <div id="settings-clock-container">
+             <div class="clock-square-wrapper">
+                <canvas id="exampleClockCanvas"></canvas>
+                <div id="exampleDigitalDisplay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; line-height: 1.2; pointer-events: none; z-index: 102;">
+                    <div id="exampleDigitalTime" style="font-size: 1.8em; font-weight: 500;"></div>
+                    <div id="exampleDigitalDate" style="font-size: 0.72em; font-weight: 300; opacity: 0.8;"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="accordion">
-            <!-- Section 1: Clock & Time -->
-            <div class="accordion-item">
-                <button class="accordion-header">Clock & Time</button>
-                <div class="accordion-content">
-                    <div class="settings-section">
-                        <h3>Time Format</h3>
+        <!-- Right Side: Settings Controls -->
+        <div id="settings-controls-container">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="view-title text-2xl">Settings</h2>
+                <button id="backToMainFromSettings" class="back-button">Back</button>
+            </div>
+
+            <!-- Settings Sections -->
+            <div class="space-y-6">
+
+                <!-- Section 1: Clock & Time -->
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Clock & Time</h3>
+                    <div class="setting-item">
+                        <label>Time Format</label>
                         <div class="format-buttons">
                             <button id="format12" class="format-button">12 Hour</button>
                             <button id="format24" class="format-button">24 Hour</button>
                         </div>
                     </div>
-                    <div class="settings-section">
-                        <h3>Inverse Mode</h3>
-                        <div class="setting-toggle">
-                            <span>Inverse Mode</span>
-                            <label class="switch">
-                                <input type="checkbox" id="inverseModeToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
+                    <div class="setting-item">
+                        <label for="inverseModeToggle">Inverse Mode</label>
+                        <label class="switch"><input type="checkbox" id="inverseModeToggle"><span class="slider"></span></label>
                     </div>
-                    <div class="settings-section">
-                        <h3>Digital Display</h3>
-                        <div class="setting-toggle">
-                            <span>Circles</span>
-                            <label class="switch">
-                                <input type="checkbox" id="arcEndCirclesToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
+                    <div class="setting-item">
+                        <label for="arcEndCirclesToggle">Digital Display Circles</label>
+                        <label class="switch"><input type="checkbox" id="arcEndCirclesToggle"><span class="slider"></span></label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Section 2: Visuals & Colors -->
-            <div class="accordion-item">
-                <button class="accordion-header">Visuals & Colors</button>
-                <div class="accordion-content">
-                    <div class="settings-section">
-                        <h3>Color Scheme</h3>
+                <!-- Section 2: Visuals & Colors -->
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Visuals & Colors</h3>
+                    <div class="setting-item-full">
+                        <label>Color Scheme</label>
                         <div class="color-preset-buttons">
-                            <button id="presetDefault" class="color-preset-button">Default</button>
+                             <button id="presetDefault" class="color-preset-button">Default</button>
                             <button id="presetNeon" class="color-preset-button">Neon</button>
                             <button id="presetPastel" class="color-preset-button">Pastel</button>
                             <button id="presetColorblind" class="color-preset-button">Colorblind</button>
@@ -829,9 +901,9 @@
                             <button id="presetSunset" class="color-preset-button">Sunset</button>
                         </div>
                     </div>
-                    <div class="settings-section">
-                        <h3>Color Palettes</h3>
-                        <select id="colorPaletteSelect" class="w-full p-2 bg-gray-700 text-white rounded-md">
+                    <div class="setting-item">
+                        <label for="colorPaletteSelect">Color Palette</label>
+                        <select id="colorPaletteSelect" class="w-full p-2 bg-gray-700 text-white rounded-md" style="max-width: 150px;">
                             <option value="" disabled selected>Select Palette</option>
                             <option value="Red">Red</option>
                             <option value="Orange">Orange</option>
@@ -841,93 +913,58 @@
                             <option value="Purple">Purple</option>
                         </select>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Flow</span>
-                        <label class="switch">
-                            <input type="checkbox" id="flowModeToggle">
-                            <span class="slider"></span>
-                        </label>
+                    <div class="setting-item">
+                        <label for="flowModeToggle">Flow</label>
+                        <label class="switch"><input type="checkbox" id="flowModeToggle"><span class="slider"></span></label>
                     </div>
-                    <div class="setting-toggle">
-                        <span>Reverse</span>
-                        <label class="switch">
-                            <input type="checkbox" id="reverseToggle">
-                            <span class="slider"></span>
-                        </label>
+                     <div class="setting-item">
+                        <label for="reverseToggle">Reverse</label>
+                        <label class="switch"><input type="checkbox" id="reverseToggle"><span class="slider"></span></label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Section 3: Customize Arcs -->
-            <div class="accordion-item">
-                <button class="accordion-header">Customize Arcs</button>
-                <div class="accordion-content">
-                    <div class="settings-section">
-                        <h3>Separators</h3>
-                        <div class="flex w-full justify-center gap-4">
-                            <div class="flex-1">
-                                <h4 class="text-sm text-center text-gray-400 mb-2">Intervals</h4>
-                                <div class="format-buttons">
-                                    <button id="separatorsShow" class="format-button">Show</button>
-                                    <button id="separatorsHide" class="format-button">Hide</button>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm text-center text-gray-400 mb-2">Mode</h4>
-                                <div class="format-buttons">
-                                    <button id="modeStandardSeparators" class="format-button">Standard</button>
-                                    <button id="modeRuler" class="format-button">Ruler</button>
-                                </div>
-                            </div>
+                <!-- Section 3: Customize Arcs -->
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Customize Arcs</h3>
+                    <div class="setting-item">
+                        <label>Separators</label>
+                        <div class="format-buttons">
+                            <button id="separatorsShow" class="format-button">Show</button>
+                            <button id="separatorsHide" class="format-button">Hide</button>
                         </div>
                     </div>
-                    <div class="settings-section">
-                        <div class="flex w-full justify-around gap-4 mb-2" style="max-width: 300px;">
-                            <div class="flex-1 text-center">
-                                <h3 class="text-sm uppercase text-gray-400">Visible Arcs</h3>
-                            </div>
-                            <div class="flex-1 text-center">
-                                <h3 class="text-sm uppercase text-gray-400">Visible Separators</h3>
-                            </div>
+                    <div class="setting-item">
+                        <label>Separator Mode</label>
+                        <div class="format-buttons">
+                            <button id="modeStandardSeparators" class="format-button">Standard</button>
+                            <button id="modeRuler" class="format-button">Ruler</button>
                         </div>
-                        <div class="w-full max-w-xs space-y-2">
-                            <!-- Combined Toggles -->
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Day of Week</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Month</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Day</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Hours</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Minutes</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Seconds</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex-1 text-left">Week of Year</span>
-                                <label class="switch"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
-                                <label class="switch ml-12"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 items-center text-center">
+                        <h4 class="text-sm uppercase text-gray-400">Arc</h4>
+                        <h4 class="text-sm uppercase text-gray-400">Visible</h4>
+                        <h4 class="text-sm uppercase text-gray-400">Separator</h4>
+                        <span>Day of Week</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcDayOfWeek"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorDayOfWeek"><span class="slider"></span></label>
+                        <span>Month</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcMonth"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorMonth"><span class="slider"></span></label>
+                        <span>Day</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcDay"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorDay"><span class="slider"></span></label>
+                        <span>Hours</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcHours"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorHours"><span class="slider"></span></label>
+                        <span>Minutes</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcMinutes"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorMinutes"><span class="slider"></span></label>
+                        <span>Seconds</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcSeconds"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorSeconds"><span class="slider"></span></label>
+                        <span>Week of Year</span>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleArcWeekOfYear"><span class="slider"></span></label>
+                        <label class="switch mx-auto"><input type="checkbox" id="toggleSeparatorWeekOfYear"><span class="slider"></span></label>
                     </div>
                 </div>
             </div>
@@ -987,6 +1024,7 @@
     <script src="js/ui.js" defer></script>
     <script src="js/tools.js" defer></script>
     <script src="js/settings.js" defer></script>
+    <script src="js/example-clock.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 </html>
