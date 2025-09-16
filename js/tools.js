@@ -365,7 +365,9 @@ const Tools = (function() {
         state.pomodoro.remainingSeconds = state.pomodoro.workDuration * 60;
         state.pomodoro.alarmPlaying = false;
         state.pomodoro.isMuted = false;
-        mutePomodoroBtn.classList.remove('active');
+        if (mutePomodoroBtn) {
+            mutePomodoroBtn.classList.remove('active');
+        }
         state.pomodoro.hasStarted = false;
         state.pomodoro.isOneMinuteWarningPlayed = false;
         state.pomodoro.lastMinuteSoundPlayed = false;
@@ -373,9 +375,10 @@ const Tools = (function() {
         state.pomodoro.actionButtonsVisible = false;
         state.pomodoro.endOfCycleSoundPlayed = false;
 
-        // Reset mute state for the new cycle
         state.pomodoro.isMuted = false;
-        mutePomodoroBtn.classList.remove('active');
+        if (mutePomodoroBtn) {
+            mutePomodoroBtn.classList.remove('active');
+        }
 
         if (state.pomodoro.currentAudio) {
             state.pomodoro.currentAudio.pause();
