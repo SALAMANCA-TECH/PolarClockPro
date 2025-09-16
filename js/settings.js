@@ -108,48 +108,6 @@ const Settings = (function() {
         localStorage.setItem('polarClockSettings', JSON.stringify(settings));
     }
 
-    function migrateOldPomodoroSettings() {
-        const oldStateStr = localStorage.getItem('polarClockState');
-        if (!oldStateStr) return;
-
-        try {
-            const oldState = JSON.parse(oldStateStr);
-            if (oldState && oldState.tools && oldState.tools.pomodoro) {
-                const pomodoroState = oldState.tools.pomodoro;
-                let settingsUpdated = false;
-
-                if (pomodoroState.hasOwnProperty('workDuration')) {
-                    settings.pomodoroWorkDuration = pomodoroState.workDuration;
-                    delete pomodoroState.workDuration;
-                    settingsUpdated = true;
-                }
-                if (pomodoroState.hasOwnProperty('shortBreakDuration')) {
-                    settings.pomodoroShortBreakDuration = pomodoroState.shortBreakDuration;
-                    delete pomodoroState.shortBreakDuration;
-                    settingsUpdated = true;
-                }
-                if (pomodoroState.hasOwnProperty('longBreakDuration')) {
-                    settings.pomodoroLongBreakDuration = pomodoroState.longBreakDuration;
-                    delete pomodoroState.longBreakDuration;
-                    settingsUpdated = true;
-                }
-                if (pomodoroState.hasOwnProperty('continuous')) {
-                    settings.pomodoroContinuous = pomodoroState.continuous;
-                    delete pomodoroState.continuous;
-                    settingsUpdated = true;
-                }
-
-                if (settingsUpdated) {
-                    // Resave both the cleaned old state and the updated new settings
-                    localStorage.setItem('polarClockState', JSON.stringify(oldState));
-                    saveSettings();
-                }
-            }
-        } catch (e) {
-            console.error("Error migrating old Pomodoro settings:", e);
-        }
-    }
-
     function loadSettings() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
@@ -163,10 +121,6 @@ const Settings = (function() {
             separatorMode: 'standard',
             alarmSound: 'bell01.mp3',
             stopwatchSound: 'Tick_Tock.wav',
-            pomodoroWorkDuration: 25,
-            pomodoroShortBreakDuration: 5,
-            pomodoroLongBreakDuration: 15,
-            pomodoroContinuous: false,
             arcVisibility: {
                 dayOfWeek: false,
                 month: true,
@@ -192,9 +146,6 @@ const Settings = (function() {
         settings = { ...defaultSettings, ...loaded };
         if (!loaded.arcVisibility) settings.arcVisibility = defaultSettings.arcVisibility;
         if (!loaded.separatorVisibility) settings.separatorVisibility = defaultSettings.separatorVisibility;
-
-        // Run the one-time migration for Pomodoro settings
-        migrateOldPomodoroSettings();
 
         updateCurrentColors();
 
@@ -254,12 +205,6 @@ const Settings = (function() {
                 toggle.checked = settings.separatorVisibility[key];
             }
         });
-
-        // Pomodoro settings
-        document.getElementById('pomodoroWorkDuration').value = settings.pomodoroWorkDuration;
-        document.getElementById('pomodoroShortBreakDuration').value = settings.pomodoroShortBreakDuration;
-        document.getElementById('pomodoroLongBreakDuration').value = settings.pomodoroLongBreakDuration;
-        document.getElementById('pomodoroContinuousToggle').checked = settings.pomodoroContinuous;
     }
 
     function setupEventListeners() {
@@ -353,20 +298,6 @@ const Settings = (function() {
                 applySettingsToUI();
             });
         });
-
-        // Pomodoro Settings
-        document.getElementById('pomodoroWorkDuration').addEventListener('change', createSettingUpdater(() => {
-            settings.pomodoroWorkDuration = parseInt(document.getElementById('pomodoroWorkDuration').value) || 25;
-        }));
-        document.getElementById('pomodoroShortBreakDuration').addEventListener('change', createSettingUpdater(() => {
-            settings.pomodoroShortBreakDuration = parseInt(document.getElementById('pomodoroShortBreakDuration').value) || 5;
-        }));
-        document.getElementById('pomodoroLongBreakDuration').addEventListener('change', createSettingUpdater(() => {
-            settings.pomodoroLongBreakDuration = parseInt(document.getElementById('pomodoroLongBreakDuration').value) || 15;
-        }));
-        document.getElementById('pomodoroContinuousToggle').addEventListener('change', createSettingUpdater(() => {
-            settings.pomodoroContinuous = document.getElementById('pomodoroContinuousToggle').checked;
-        }));
     }
 
     function cycleColorPreset() {
