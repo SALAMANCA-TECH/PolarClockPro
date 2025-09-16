@@ -10,8 +10,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let appState = {
         mode: 'clock', // 'clock', 'timer', 'pomodoro', 'stopwatch'
         tools: {}, // This will hold the state for timer, pomodoro, stopwatch
-        alarms: [] // For advanced alarms
+        alarms: [], // For advanced alarms
+        trackedAlarm: null // To hold info about the currently tracked alarm
     };
+
+    function loadAlarms() {
+        const storedAlarms = localStorage.getItem('polarAlarms');
+        if (storedAlarms) {
+            try {
+                appState.alarms = JSON.parse(storedAlarms);
+            } catch (e) {
+                console.error("Error parsing alarms from localStorage", e);
+                appState.alarms = [];
+            }
+        } else {
+            appState.alarms = [];
+        }
+    }
 
     const savedState = localStorage.getItem('polarClockState');
     if (savedState) {
@@ -23,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         appState.mode = 'clock'; // Always start in clock mode
     }
+
+    loadAlarms(); // Initial load of alarms from their specific storage
 
     // 3. Initialize Modules
     // Clock module needs settings for rendering and the app state for displaying arcs.
@@ -83,7 +100,143 @@ document.addEventListener('DOMContentLoaded', function() {
         settings = Settings.get();
     });
 
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'polarAlarms') {
+            console.log('Alarms updated in another tab. Reloading.');
+            loadAlarms();
+        }
+    });
+
     // 6. Start the application
+    let lastChecked = new Date();
+
+    function playSound(soundFile, volume = 1.0) {
+        if (!soundFile) return;
+        const audio = new Audio(`assets/Sounds/${soundFile}`);
+        audio.volume = volume;
+        audio.play().catch(e => console.error("Error playing sound:", e));
+    }
+
+    function convertTo24Hour(hour, ampm) {
+        hour = parseInt(hour, 10);
+        if (ampm === 'PM' && hour !== 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
+        return hour;
+    }
+
+    function getPreviousAlarmOccurrence(alarm, now) {
+        const alarmHour24 = convertTo24Hour(alarm.hour, alarm.ampm);
+        const alarmMinute = parseInt(alarm.minute, 10);
+
+        let prevOccurrence = new Date(now.getFullYear(), now.getMonth(), now.getDate(), alarmHour24, alarmMinute, 0, 0);
+
+        if (alarm.days && alarm.days.length > 0) {
+            if (prevOccurrence >= now) {
+                prevOccurrence.setDate(prevOccurrence.getDate() - 1);
+            }
+            for (let i = 0; i < 7; i++) {
+                if (alarm.days.includes(prevOccurrence.getDay())) {
+                    return prevOccurrence;
+                }
+                prevOccurrence.setDate(prevOccurrence.getDate() - 1);
+            }
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    function getNextAlarmOccurrence(alarm, now) {
+        const alarmHour24 = convertTo24Hour(alarm.hour, alarm.ampm);
+        const alarmMinute = parseInt(alarm.minute, 10);
+
+        let nextOccurrence = new Date(now.getFullYear(), now.getMonth(), now.getDate(), alarmHour24, alarmMinute, 0, 0);
+
+        if (alarm.days && alarm.days.length > 0) {
+            // If time has passed for today, start check from tomorrow
+            if (nextOccurrence <= now) {
+                nextOccurrence.setDate(nextOccurrence.getDate() + 1);
+            }
+            // Check for the next valid day
+            for (let i = 0; i < 7; i++) {
+                if (alarm.days.includes(nextOccurrence.getDay())) {
+                    return nextOccurrence;
+                }
+                nextOccurrence.setDate(nextOccurrence.getDate() + 1);
+            }
+            return null; // Should not be reached if days are valid
+        } else {
+            // Non-repeating alarm
+            if (alarm.isTemporary) {
+                // For temporary alarms, always return the calculated time.
+                // The checkAlarms function will handle whether it has already fired.
+                return nextOccurrence;
+            } else {
+                // For other non-repeating alarms, only return future times.
+                return nextOccurrence > now ? nextOccurrence : null;
+            }
+        }
+    }
+
+    function checkAlarms() {
+        const now = new Date();
+
+        // --- Handle ringing for any due alarms ---
+        appState.alarms.forEach(alarm => {
+            if (!alarm.enabled) return;
+
+            // Find the next occurrence based on the last time we checked
+            const nextOccurrence = getNextAlarmOccurrence(alarm, lastChecked);
+
+            // If it should have fired between the last check and now, ring it
+            if (nextOccurrence && nextOccurrence > lastChecked && nextOccurrence <= now) {
+                console.log(`Alarm "${alarm.label}" is ringing!`);
+                playSound(alarm.sound);
+
+                if (alarm.isTemporary) {
+                    alarm.enabled = false;
+                    // This change needs to be persisted back to localStorage.
+                    const allAlarms = JSON.parse(localStorage.getItem('polarAlarms') || '[]');
+                    const alarmIndex = allAlarms.findIndex(a => a.id === alarm.id);
+                    if (alarmIndex > -1) {
+                        allAlarms[alarmIndex].enabled = false;
+                        localStorage.setItem('polarAlarms', JSON.stringify(allAlarms));
+                    }
+                }
+            }
+        });
+
+        // --- Handle the single tracked alarm for the UI ---
+        const tracked = appState.alarms.find(a => a.isTracked && a.enabled);
+        if (tracked) {
+            const nextOccurrence = getNextAlarmOccurrence(tracked, now);
+            if (nextOccurrence) {
+                const prevOccurrence = getPreviousAlarmOccurrence(tracked, now);
+                // If there's no previous occurrence (e.g., one-time alarm), default to a 24h cycle for the visual.
+                const totalDuration = prevOccurrence ? nextOccurrence.getTime() - prevOccurrence.getTime() : (24 * 60 * 60 * 1000);
+                const remainingMs = nextOccurrence.getTime() - now.getTime();
+
+                // Only show the arc if the alarm is within the cycle time.
+                if (remainingMs <= totalDuration) {
+                    appState.trackedAlarm = {
+                        remaining: remainingMs,
+                        total: totalDuration
+                    };
+                } else {
+                    appState.trackedAlarm = null;
+                }
+            } else {
+                appState.trackedAlarm = null;
+            }
+        } else {
+            appState.trackedAlarm = null;
+        }
+
+        lastChecked = now; // Update for the next interval
+    }
+
+    setInterval(checkAlarms, 1000);
+
     requestAnimationFrame(update);
 
     // A small delay to ensure the canvas has been sized correctly by the browser's layout engine.
