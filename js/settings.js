@@ -119,7 +119,8 @@ const Settings = (function() {
             colorPreset: 'Default',
             showSeparators: true,
             separatorMode: 'standard',
-            alarmSound: 'bell01.mp3',
+            volume: 1.0,
+            timerSound: 'bell01.mp3',
             stopwatchSound: 'Tick_Tock.wav',
             arcVisibility: {
                 dayOfWeek: false,
@@ -177,6 +178,11 @@ const Settings = (function() {
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
         document.getElementById('reverseToggle').checked = settings.reverseMode;
         document.getElementById('flowModeSelect').value = settings.flowMode;
+
+        // Sound settings
+        document.getElementById('volumeControl').value = settings.volume;
+        document.getElementById('timerSoundSelect').value = settings.timerSound;
+        document.getElementById('stopwatchSoundSelect').value = settings.stopwatchSound;
 
         // New display toggles
         document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
@@ -254,6 +260,17 @@ const Settings = (function() {
 
         document.getElementById('arcEndCirclesToggle').addEventListener('change', createSettingUpdater(() => {
             settings.showArcEndCircles = document.getElementById('arcEndCirclesToggle').checked;
+        }));
+
+        // Sound settings
+        document.getElementById('volumeControl').addEventListener('input', createSettingUpdater(() => {
+            settings.volume = document.getElementById('volumeControl').value;
+        }));
+        document.getElementById('timerSoundSelect').addEventListener('change', createSettingUpdater(() => {
+            settings.timerSound = document.getElementById('timerSoundSelect').value;
+        }));
+        document.getElementById('stopwatchSoundSelect').addEventListener('change', createSettingUpdater(() => {
+            settings.stopwatchSound = document.getElementById('stopwatchSoundSelect').value;
         }));
 
         document.getElementById('modeStandardSeparators').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'standard'; }));
