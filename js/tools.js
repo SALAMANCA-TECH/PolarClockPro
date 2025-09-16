@@ -601,14 +601,8 @@ const Tools = (function() {
 
         document.getElementById('testStopwatchSoundBtn').addEventListener('click', () => {
             if (!state.stopwatch.isMuted) {
-                playSound(settings.stopwatchSound);
+                playSound(settings.stopwatchSound, true);
             }
-        });
-
-        document.getElementById('muteStopwatchSoundBtn').addEventListener('click', () => {
-            state.stopwatch.isMuted = !state.stopwatch.isMuted;
-            document.getElementById('muteStopwatchSoundBtn').classList.toggle('active', state.stopwatch.isMuted);
-            document.dispatchEvent(new CustomEvent('statechange'));
         });
         lapTimesContainer.addEventListener('input', (e) => {
             if (e.target.classList.contains('lap-label-input')) {
