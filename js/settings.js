@@ -119,7 +119,7 @@ const Settings = (function() {
             colorPreset: 'Default',
             showSeparators: true,
             separatorMode: 'standard',
-            volume: 'full',
+            volume: 1.0,
             timerSound: 'bell01.mp3',
             stopwatchSound: 'Tick_Tock.wav',
             arcVisibility: {
@@ -180,10 +180,7 @@ const Settings = (function() {
         document.getElementById('flowModeSelect').value = settings.flowMode;
 
         // Sound settings
-        const volumeButtons = document.querySelectorAll('#volumeToggle .format-button');
-        volumeButtons.forEach(button => {
-            button.classList.toggle('active', button.dataset.volume === settings.volume);
-        });
+        document.getElementById('volumeControl').value = settings.volume;
 
         // New display toggles
         document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
@@ -264,12 +261,9 @@ const Settings = (function() {
         }));
 
         // Sound settings
-        const volumeButtons = document.querySelectorAll('#volumeToggle .format-button');
-        volumeButtons.forEach(button => {
-            button.addEventListener('click', createSettingUpdater(() => {
-                settings.volume = button.dataset.volume;
-            }));
-        });
+        document.getElementById('volumeControl').addEventListener('input', createSettingUpdater(() => {
+            settings.volume = document.getElementById('volumeControl').value;
+        }));
 
         document.getElementById('modeStandardSeparators').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'standard'; }));
         document.getElementById('modeRuler').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'ruler'; }));

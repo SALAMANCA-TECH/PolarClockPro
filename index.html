@@ -308,7 +308,7 @@
         border-color: #666;
     }
 
-    #pomodoroMuteBtn.active, #timerMuteBtn.active {
+    #pomodoroMuteBtn.active, #timerMuteBtn.active, #muteTimerSoundBtn.active, #muteStopwatchSoundBtn.active {
         background-color: #4CAF50;
         color: white;
     }
@@ -781,6 +781,8 @@
                     <option value="short_break_end.mp3">Short Break End</option>
                     <option value="work_end.mp3">Work End</option>
                 </select>
+                <button id="testTimerSoundBtn" class="control-btn">Test</button>
+                <button id="muteTimerSoundBtn" class="control-btn">Mute</button>
             </div>
         </div>
         <!-- Pomodoro Panel -->
@@ -859,6 +861,7 @@
                     <button id="addCatchUpTimeBtn" class="control-btn">Add Time</button>
                 </div>
             </div>
+            <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
             <div class="setting-item">
                 <label for="stopwatchSoundSelect">Stopwatch Sound</label>
                 <select id="stopwatchSoundSelect" class="w-full p-2 bg-gray-700 text-white rounded-md" style="max-width: 180px;">
@@ -874,8 +877,9 @@
                     <option value="short_break_end.mp3">Short Break End</option>
                     <option value="work_end.mp3">Work End</option>
                 </select>
+                <button id="testStopwatchSoundBtn" class="control-btn">Test</button>
+                <button id="muteStopwatchSoundBtn" class="control-btn">Mute</button>
             </div>
-            <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
         </div>
         <!-- Time Calculator Panel -->
         <div id="timeCalculatorPanel" class="ui-panel panel-hidden">
@@ -1064,13 +1068,9 @@
                 <!-- Section 3: Sounds -->
                 <div class="settings-group">
                     <h3 class="settings-group-title">Sounds</h3>
-                    <div class="setting-item">
-                        <label>Volume</label>
-                        <div class="format-buttons" id="volumeToggle">
-                            <button data-volume="off" class="format-button">Off</button>
-                            <button data-volume="medium" class="format-button">Medium</button>
-                            <button data-volume="full" class="format-button">Full</button>
-                        </div>
+                    <div class="setting-item-full">
+                        <label for="volumeControl">Volume</label>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.1" class="w-full">
                     </div>
                 </div>
                 <!-- Section 4: Customize Arcs -->

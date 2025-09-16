@@ -68,7 +68,7 @@ const Tools = (function() {
             currentAudio: null,
             endOfCycleSoundPlayed: false
         },
-        stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [] }
+        stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [], isMuted: false }
     };
 
     // --- Private Functions ---
@@ -197,18 +197,6 @@ const Tools = (function() {
         }
     }
 
-    function muteTimerAudio() {
-        state.timer.isMuted = !state.timer.isMuted;
-        if (state.timer.currentAudio) {
-            state.timer.currentAudio.muted = state.timer.isMuted;
-        }
-        // Also update the button's visual state to give feedback
-        const timerMuteBtn = document.getElementById('timerMuteBtn');
-        if (timerMuteBtn) {
-            timerMuteBtn.classList.toggle('active', state.timer.isMuted);
-        }
-    }
-
     function snoozeTimer() {
         if (state.timer.currentAudio) {
             state.timer.currentAudio.pause();
@@ -282,13 +270,18 @@ const Tools = (function() {
         updateLapDisplay();
         catchUpMinutesInput.value = '';
         catchUpSecondsInput.value = '';
-        playSound(settings.stopwatchSound);
+        if (!state.stopwatch.isMuted) {
+            playSound(settings.stopwatchSound);
+        }
         updateButtonStates();
         document.dispatchEvent(new CustomEvent('statechange'));
     }
 
     function lapStopwatch() {
         if (!state.stopwatch.isRunning && state.stopwatch.elapsedTime === 0) return;
+        if (!state.stopwatch.isMuted) {
+            playSound(settings.stopwatchSound);
+        }
         state.stopwatch.laps.push({ time: state.stopwatch.elapsedTime, label: '' });
         updateLapDisplay();
         document.dispatchEvent(new CustomEvent('statechange'));
@@ -568,13 +561,7 @@ const Tools = (function() {
     function playSound(soundFile) {
         if (!soundFile) return null;
         const audio = new Audio(`assets/Sounds/${soundFile}`);
-        if (settings.volume === 'off') {
-            audio.volume = 0;
-        } else if (settings.volume === 'medium') {
-            audio.volume = 0.5;
-        } else {
-            audio.volume = 1.0;
-        }
+        audio.volume = settings.volume;
         audio.play().catch(e => {
             console.error("Error playing sound:", e);
             const failureMessage = document.getElementById('audio-failure-message');
@@ -612,15 +599,21 @@ const Tools = (function() {
 
         document.getElementById('timerSoundSelect').addEventListener('change', (e) => {
             settings.timerSound = e.target.value;
-            // We need to save the settings, but this module doesn't own the save function.
-            // A more robust solution would be to dispatch a custom event that the settings module listens for.
-            // For now, we'll just update the settings object.
+        });
+
+        document.getElementById('testTimerSoundBtn').addEventListener('click', () => {
+            if (!state.timer.isMuted) {
+                playSound(settings.timerSound);
+            }
+        });
+
+        document.getElementById('muteTimerSoundBtn').addEventListener('click', () => {
+            state.timer.isMuted = !state.timer.isMuted;
+            document.getElementById('muteTimerSoundBtn').classList.toggle('active', state.timer.isMuted);
+            document.dispatchEvent(new CustomEvent('statechange'));
         });
 
         // New Timer Alarm Buttons
-        const timerMuteBtn = document.getElementById('timerMuteBtn');
-        if(timerMuteBtn) timerMuteBtn.addEventListener('click', muteTimerAudio);
-
         const timerSnoozeBtn = document.getElementById('timerSnoozeBtn');
         if(timerSnoozeBtn) timerSnoozeBtn.addEventListener('click', snoozeTimer);
 
@@ -635,6 +628,18 @@ const Tools = (function() {
         addCatchUpTimeBtn.addEventListener('click', addManualCatchUpTime);
         document.getElementById('stopwatchSoundSelect').addEventListener('change', (e) => {
             settings.stopwatchSound = e.target.value;
+        });
+
+        document.getElementById('testStopwatchSoundBtn').addEventListener('click', () => {
+            if (!state.stopwatch.isMuted) {
+                playSound(settings.stopwatchSound);
+            }
+        });
+
+        document.getElementById('muteStopwatchSoundBtn').addEventListener('click', () => {
+            state.stopwatch.isMuted = !state.stopwatch.isMuted;
+            document.getElementById('muteStopwatchSoundBtn').classList.toggle('active', state.stopwatch.isMuted);
+            document.dispatchEvent(new CustomEvent('statechange'));
         });
         lapTimesContainer.addEventListener('input', (e) => {
             if (e.target.classList.contains('lap-label-input')) {
@@ -703,6 +708,7 @@ const Tools = (function() {
             document.getElementById('timerSoundSelect').value = settings.timerSound;
             document.getElementById('stopwatchSoundSelect').value = settings.stopwatchSound;
 
+
             // Set initial Pomodoro input values
             workDurationInput.value = state.pomodoro.workDuration;
             shortBreakDurationInput.value = state.pomodoro.shortBreakDuration;
@@ -753,11 +759,10 @@ const Tools = (function() {
                     if (state.timer.currentAudio) {
                         state.timer.currentAudio.pause();
                     }
-                    const audio = playSound(settings.timerSound);
-                    if (audio) {
-                        state.timer.currentAudio = audio;
-                        if (state.timer.isMuted) {
-                            audio.muted = true;
+                    if (!state.timer.isMuted) {
+                        const audio = playSound(settings.timerSound);
+                        if (audio) {
+                            state.timer.currentAudio = audio;
                         }
                     }
                     state.timer.endOfCycleSoundPlayed = true;
