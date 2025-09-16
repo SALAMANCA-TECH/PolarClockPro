@@ -111,7 +111,7 @@ const Settings = (function() {
     function loadSettings() {
         const savedSettings = localStorage.getItem('polarClockSettings');
         const defaultSettings = {
-            flowMode: false,
+            flowMode: '0',
             showArcEndCircles: true,
             inverseMode: false,
             reverseMode: false,
@@ -176,7 +176,7 @@ const Settings = (function() {
         }
         document.getElementById('inverseModeToggle').checked = settings.inverseMode;
         document.getElementById('reverseToggle').checked = settings.reverseMode;
-        document.getElementById('flowModeToggle').checked = settings.flowMode;
+        document.getElementById('flowModeSelect').value = settings.flowMode;
 
         // New display toggles
         document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
@@ -248,8 +248,8 @@ const Settings = (function() {
             updateCurrentColors();
         }));
 
-        document.getElementById('flowModeToggle').addEventListener('change', createSettingUpdater(() => {
-            settings.flowMode = document.getElementById('flowModeToggle').checked;
+        document.getElementById('flowModeSelect').addEventListener('change', createSettingUpdater(() => {
+            settings.flowMode = document.getElementById('flowModeSelect').value;
         }));
 
         document.getElementById('arcEndCirclesToggle').addEventListener('change', createSettingUpdater(() => {
