@@ -301,12 +301,17 @@ const Settings = (function() {
     }
 
     function cycleColorPreset() {
+        // Announce the change is about to happen, sending the old colors
+        document.dispatchEvent(new CustomEvent('flow-theme-changed', {
+            detail: { oldColors: { ...settings.currentColors } }
+        }));
+
         const themeNames = Object.keys(colorThemes);
         const availableThemes = themeNames.filter(name => name !== settings.colorPreset);
         const randomTheme = availableThemes[Math.floor(Math.random() * availableThemes.length)];
 
         settings.colorPreset = randomTheme;
-        settings.currentColors = colorThemes[randomTheme];
+        updateCurrentColors(); // This will set settings.currentColors to the new theme
 
         saveSettings();
         applySettingsToUI();
