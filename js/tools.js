@@ -180,15 +180,6 @@ const Tools = (function() {
             // Reset for the next cycle
             state.timer.remainingSeconds = state.timer.totalSeconds;
             state.timer.endOfCycleSoundPlayed = false;
-
-            // Deactivate mute for the next cycle
-            if (state.timer.isMuted) {
-                state.timer.isMuted = false;
-                const timerMuteBtn = document.getElementById('timerMuteBtn');
-                if (timerMuteBtn) {
-                    timerMuteBtn.classList.remove('active');
-                }
-            }
         } else {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
@@ -599,6 +590,7 @@ const Tools = (function() {
 
         document.getElementById('timerSoundSelect').addEventListener('change', (e) => {
             settings.timerSound = e.target.value;
+            document.dispatchEvent(new CustomEvent('settings-changed'));
         });
 
         document.getElementById('testTimerSoundBtn').addEventListener('click', () => {
@@ -628,6 +620,7 @@ const Tools = (function() {
         addCatchUpTimeBtn.addEventListener('click', addManualCatchUpTime);
         document.getElementById('stopwatchSoundSelect').addEventListener('change', (e) => {
             settings.stopwatchSound = e.target.value;
+            document.dispatchEvent(new CustomEvent('settings-changed'));
         });
 
         document.getElementById('testStopwatchSoundBtn').addEventListener('click', () => {
