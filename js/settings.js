@@ -119,7 +119,7 @@ const Settings = (function() {
             colorPreset: 'Default',
             showSeparators: true,
             separatorMode: 'standard',
-            volume: 1.0,
+            volume: 'full',
             timerSound: 'bell01.mp3',
             stopwatchSound: 'Tick_Tock.wav',
             arcVisibility: {
@@ -180,9 +180,10 @@ const Settings = (function() {
         document.getElementById('flowModeSelect').value = settings.flowMode;
 
         // Sound settings
-        document.getElementById('volumeControl').value = settings.volume;
-        document.getElementById('timerSoundSelect').value = settings.timerSound;
-        document.getElementById('stopwatchSoundSelect').value = settings.stopwatchSound;
+        const volumeButtons = document.querySelectorAll('#volumeToggle .format-button');
+        volumeButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.volume === settings.volume);
+        });
 
         // New display toggles
         document.getElementById('arcEndCirclesToggle').checked = settings.showArcEndCircles;
@@ -263,15 +264,12 @@ const Settings = (function() {
         }));
 
         // Sound settings
-        document.getElementById('volumeControl').addEventListener('input', createSettingUpdater(() => {
-            settings.volume = document.getElementById('volumeControl').value;
-        }));
-        document.getElementById('timerSoundSelect').addEventListener('change', createSettingUpdater(() => {
-            settings.timerSound = document.getElementById('timerSoundSelect').value;
-        }));
-        document.getElementById('stopwatchSoundSelect').addEventListener('change', createSettingUpdater(() => {
-            settings.stopwatchSound = document.getElementById('stopwatchSoundSelect').value;
-        }));
+        const volumeButtons = document.querySelectorAll('#volumeToggle .format-button');
+        volumeButtons.forEach(button => {
+            button.addEventListener('click', createSettingUpdater(() => {
+                settings.volume = button.dataset.volume;
+            }));
+        });
 
         document.getElementById('modeStandardSeparators').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'standard'; }));
         document.getElementById('modeRuler').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'ruler'; }));

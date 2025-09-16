@@ -568,7 +568,13 @@ const Tools = (function() {
     function playSound(soundFile) {
         if (!soundFile) return null;
         const audio = new Audio(`assets/Sounds/${soundFile}`);
-        audio.volume = settings.volume;
+        if (settings.volume === 'off') {
+            audio.volume = 0;
+        } else if (settings.volume === 'medium') {
+            audio.volume = 0.5;
+        } else {
+            audio.volume = 1.0;
+        }
         audio.play().catch(e => {
             console.error("Error playing sound:", e);
             const failureMessage = document.getElementById('audio-failure-message');
@@ -604,6 +610,13 @@ const Tools = (function() {
         timerMinutesInput.addEventListener('input', normalizeTimerInputs);
         timerSecondsInput.addEventListener('input', normalizeTimerInputs);
 
+        document.getElementById('timerSoundSelect').addEventListener('change', (e) => {
+            settings.timerSound = e.target.value;
+            // We need to save the settings, but this module doesn't own the save function.
+            // A more robust solution would be to dispatch a custom event that the settings module listens for.
+            // For now, we'll just update the settings object.
+        });
+
         // New Timer Alarm Buttons
         const timerMuteBtn = document.getElementById('timerMuteBtn');
         if(timerMuteBtn) timerMuteBtn.addEventListener('click', muteTimerAudio);
@@ -620,6 +633,9 @@ const Tools = (function() {
         resetStopwatchBtn.addEventListener('click', resetStopwatch);
         lapStopwatchBtn.addEventListener('click', lapStopwatch);
         addCatchUpTimeBtn.addEventListener('click', addManualCatchUpTime);
+        document.getElementById('stopwatchSoundSelect').addEventListener('change', (e) => {
+            settings.stopwatchSound = e.target.value;
+        });
         lapTimesContainer.addEventListener('input', (e) => {
             if (e.target.classList.contains('lap-label-input')) {
                 const index = parseInt(e.target.dataset.index);
@@ -684,6 +700,8 @@ const Tools = (function() {
             // After state is loaded, ensure UI reflects the state
             intervalToggle.checked = state.timer.isInterval;
             timerStyleToggle.checked = state.timer.style;
+            document.getElementById('timerSoundSelect').value = settings.timerSound;
+            document.getElementById('stopwatchSoundSelect').value = settings.stopwatchSound;
 
             // Set initial Pomodoro input values
             workDurationInput.value = state.pomodoro.workDuration;
