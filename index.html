@@ -988,8 +988,20 @@
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label for="flowModeToggle">Flow</label>
-                        <label class="switch"><input type="checkbox" id="flowModeToggle"><span class="slider"></span></label>
+                        <label for="flowModeSelect">Flow</label>
+                        <select id="flowModeSelect" class="w-full p-2 bg-gray-700 text-white rounded-md" style="max-width: 150px;">
+                            <option value="0">None</option>
+                            <option value="1">1 Min.</option>
+                            <option value="5">5 Min.</option>
+                            <option value="10">10 Min.</option>
+                            <option value="15">15 Min.</option>
+                            <option value="30">30 Min.</option>
+                            <option value="33">BSG</option>
+                            <option value="60">Hour</option>
+                            <option value="360">Quarter</option>
+                            <option value="720">Half</option>
+                            <option value="1440">Day</option>
+                        </select>
                     </div>
                      <div class="setting-item">
                         <label for="reverseToggle">Reverse</label>

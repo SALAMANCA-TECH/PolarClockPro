@@ -13,6 +13,7 @@ const Clock = (function() {
     let resetAnimations = {};
     const animationDuration = 1500; // 1.5 seconds
     let lastColorChangeMinute = -1;
+    let lastFlowChangeTime = null;
 
     const hasCompletedCycle = (unit, now, lastNow) => {
         switch (unit) {
@@ -468,12 +469,18 @@ const Clock = (function() {
         }
 
         const now = new Date();
-        if (settings.flowMode) {
-            const minutes = now.getMinutes();
-            if (minutes % 5 === 0 && minutes !== lastColorChangeMinute) {
-                Settings.cycleColorPreset();
-                lastColorChangeMinute = minutes;
+        if (settings.flowMode && settings.flowMode !== '0') {
+            if (lastFlowChangeTime === null) {
+                lastFlowChangeTime = now.getTime();
             }
+
+            const flowInterval = parseInt(settings.flowMode, 10) * 60 * 1000; // convert minutes to milliseconds
+            if (now.getTime() - lastFlowChangeTime >= flowInterval) {
+                Settings.cycleColorPreset();
+                lastFlowChangeTime = now.getTime();
+            }
+        } else {
+            lastFlowChangeTime = null; // Reset if flow mode is turned off
         }
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), ms = now.getMilliseconds();
         const dayOfWeek = getDayOfWeek(now);
