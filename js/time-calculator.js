@@ -48,6 +48,84 @@ document.addEventListener('DOMContentLoaded', () => {
     addFormatterListener(time1Input);
     addFormatterListener(operandInput);
 
+    function wordsToNumbers(text) {
+        const numberWords = {
+            'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9,
+            'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
+            'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90
+        };
+        const multipliers = {
+            'hundred': 100, 'thousand': 1000, 'million': 1000000
+        };
+
+        // This regex is complex, but it finds sequences of number-related words.
+        const numberWordRegex = /\b((?:(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)[\s-]*)+(?:and[\s-]*)?)+\b/gi;
+
+        return text.replace(numberWordRegex, (match) => {
+            const words = match.toLowerCase().replace(/ and /g, ' ').replace(/-/g, ' ').split(/\s+/).filter(Boolean);
+
+            let total = 0;
+            let currentNumber = 0;
+
+            for (const word of words) {
+                if (numberWords[word] !== undefined) {
+                    currentNumber += numberWords[word];
+                } else if (multipliers[word] !== undefined) {
+                    if (word === 'hundred') {
+                        currentNumber *= multipliers[word];
+                    } else {
+                        total += currentNumber * multipliers[word];
+                        currentNumber = 0;
+                    }
+                }
+            }
+            total += currentNumber;
+            return total > 0 ? String(total) : '';
+        });
+    }
+
+    function parseNaturalTime(timeStr) {
+        if (!timeStr || typeof timeStr !== 'string') return null;
+
+        // First, convert any number words to digits.
+        const textWithNumbers = wordsToNumbers(timeStr);
+
+        let totalSeconds = 0;
+        const cleanedStr = textWithNumbers.trim().toLowerCase();
+
+        let naturalLanguageFound = false;
+
+        const hourMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(h|hr|hour|hours)/g);
+        if (hourMatches) {
+            naturalLanguageFound = true;
+            hourMatches.forEach(match => {
+                totalSeconds += parseFloat(match) * 3600;
+            });
+        }
+
+        const minuteMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(m|min|minute|minutes)/g);
+        if (minuteMatches) {
+            naturalLanguageFound = true;
+            minuteMatches.forEach(match => {
+                totalSeconds += parseFloat(match) * 60;
+            });
+        }
+
+        const secondMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(s|sec|second|seconds)/g);
+        if (secondMatches) {
+            naturalLanguageFound = true;
+            secondMatches.forEach(match => {
+                totalSeconds += parseFloat(match);
+            });
+        }
+
+        if (naturalLanguageFound) {
+            return totalSeconds;
+        }
+
+        return null;
+    }
+
     // --- LOGIC FOR CALCULATOR 1: ADD DURATION TO TIME ---
     const addTimeButton = document.getElementById('calcAddTime');
     const addTimeResultDiv = document.getElementById('addTimeResult');
@@ -239,9 +317,25 @@ document.addEventListener('DOMContentLoaded', () => {
             let operand = document.getElementById('operand').value;
 
             if (operator === '*' || operator === '/') {
-                const numOperand = parseFloat(operand);
-                if (!isNaN(numOperand)) {
-                    operand = numOperand;
+                // Process words and fractions before parsing.
+                let processedOperand = operand.toLowerCase()
+                    .replace(/ and a half/g, '.5')
+                    .replace(/ a half/g, '.5');
+
+                // Convert number words to digits.
+                processedOperand = wordsToNumbers(processedOperand);
+
+                // Try to parse the processed string as a float.
+                const num = parseFloat(processedOperand);
+
+                if (!isNaN(num)) {
+                    operand = num;
+                } else {
+                    // Fallback to original behavior if parsing fails
+                    const originalNum = parseFloat(operand);
+                    if (!isNaN(originalNum)) {
+                        operand = originalNum;
+                    }
                 }
             }
             
