@@ -793,6 +793,22 @@ const Clock = (function() {
         }
     };
 
+    const drawAlarmArc = () => {
+        if (!globalState.trackedAlarm || !dimensions.alarmRadius || dimensions.alarmRadius <= 0) {
+            return;
+        }
+
+        const { remaining, total } = globalState.trackedAlarm;
+        // Clamp progress between 0 and 1
+        const progress = Math.max(0, Math.min(1, (total - remaining) / total));
+
+        // Start from the top and go clockwise
+        const endAngle = baseStartAngle + (progress * Math.PI * 2);
+        const color = '#DC143C'; // Crimson Red
+
+        drawArc(dimensions.centerX, dimensions.centerY, dimensions.alarmRadius, baseStartAngle, endAngle, color, dimensions.alarmLineWidth);
+    }
+
     const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (globalState.mode === 'pomodoro') {
@@ -804,6 +820,7 @@ const Clock = (function() {
         } else {
             drawClock();
         }
+        drawAlarmArc();
         animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -856,7 +873,7 @@ const Clock = (function() {
             const thinnerLineWidth = renderedLineWidth * 0.5;
             const renderedGap = (1.875 / 57) * baseRadius;
 
-            const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek', 'year'];
+            const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek', 'year', 'alarm'];
             const arcLineWidths = {
                 day: renderedLineWidth,
                 hours: renderedLineWidth,
@@ -865,10 +882,15 @@ const Clock = (function() {
                 dayOfWeek: thinnerLineWidth,
                 month: renderedLineWidth,
                 weekOfYear: thinnerLineWidth,
-                year: thinnerLineWidth
+                year: thinnerLineWidth,
+                alarm: thinnerLineWidth * 0.75 // Extra thin
             };
 
             const isArcVisible = (arcKey) => {
+                // The alarm arc's visibility is for layout calculation only.
+                // It's drawn based on state, not settings.
+                if (arcKey === 'alarm') return true;
+
                 if (globalState.mode === 'timer' && globalState.timer) {
                     const { totalSeconds } = globalState.timer;
                     if (totalSeconds === 0) return false;
