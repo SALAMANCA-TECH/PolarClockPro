@@ -873,7 +873,7 @@ const Clock = (function() {
             const thinnerLineWidth = renderedLineWidth * 0.5;
             const renderedGap = (1.875 / 57) * baseRadius;
 
-            const arcOrder = ['weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek', 'year', 'alarm'];
+            const arcOrder = ['alarm', 'weekOfYear', 'seconds', 'minutes', 'hours', 'day', 'month', 'dayOfWeek', 'year'];
             const arcLineWidths = {
                 day: renderedLineWidth,
                 hours: renderedLineWidth,
