@@ -2,14 +2,12 @@ emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
     const views = {
         about: document.getElementById('aboutView'),
-        pomodoroSettings: document.getElementById('pomodoroSettingsView'),
     };
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
-        backFromPomodoroSettings: document.getElementById('backToMainFromPomodoroSettings'),
     };
     const toolPanels = {
         timer: document.getElementById('timerPanel'),
@@ -184,21 +182,11 @@ const UI = (function() {
                 views.about.style.display = 'none';
             });
 
-            if(navButtons.backFromPomodoroSettings) {
-                navButtons.backFromPomodoroSettings.addEventListener('click', () => {
-                    views.pomodoroSettings.style.display = 'none';
-                });
-            }
-
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
 
             document.addEventListener('modechange', (e) => {
                 updateToolPanelVisibility(e.detail.mode);
-            });
-
-            document.addEventListener('show-pomodoro-settings', () => {
-                showView(views.pomodoroSettings);
             });
 
             // Initialize panel visibility based on the state provided by main.js
