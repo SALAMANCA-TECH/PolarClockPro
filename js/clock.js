@@ -62,11 +62,15 @@ const Clock = (function() {
         }
 
         const remaining = Math.max(0, remainingSeconds);
-        const days = Math.floor(remaining / 86400);
+        // NEW: Decompose time into weeks
+        const weeks = Math.floor(remaining / 604800);
+        const days = Math.floor((remaining % 604800) / 86400);
         const hours = Math.floor((remaining % 86400) / 3600);
         const minutes = Math.floor((remaining % 3600) / 60);
 
+        // NEW: Define arcs to show based on total duration, including weeks
         const arcsToShow = [];
+        if (totalSeconds >= 604800) arcsToShow.push('weekOfYear'); // Hijack weekOfYear for weeks
         if (totalSeconds >= 86400) arcsToShow.push('day');
         if (totalSeconds >= 3600) arcsToShow.push('hours');
         if (totalSeconds >= 60) arcsToShow.push('minutes');
@@ -87,6 +91,10 @@ const Clock = (function() {
                     progress = remaining / totalSeconds;
                 } else {
                     switch (unit) {
+                        // NEW: Add day progress calculation
+                        case 'day':
+                            progress = (remaining % 604800) / 604800; // 7 days
+                            break;
                         case 'hours':
                             progress = (remaining % 86400) / 86400;
                             break;
@@ -102,6 +110,10 @@ const Clock = (function() {
                 }
 
                 switch (unit) {
+                    // NEW: Add week text
+                    case 'weekOfYear':
+                        text = weeks.toString();
+                        break;
                     case 'day':
                         text = days.toString();
                         break;
@@ -132,59 +144,41 @@ const Clock = (function() {
             });
         } else {
             // --- STYLE OFF (Absolute Position Behavior) ---
+            // In this mode, each arc represents its discrete value against a fixed maximum.
             const secondsValue = Math.floor(remaining % 60);
+            // For the 'weeks' arc, we need the initial total to make its progress meaningful.
+            const initialTotalWeeks = Math.ceil(totalSeconds / 604800);
 
             arcsToShow.forEach(unit => {
                 let progress;
                 let text;
 
-                if (!globalState.timer.isRunning) {
-                    // When not running, draw based on absolute input values
-                    switch (unit) {
-                        case 'day':
-                            progress = days / 99; // Assume 99 is a reasonable max
-                            text = days.toString();
-                            break;
-                        case 'hours':
-                            progress = hours / 24;
-                            text = hours.toString().padStart(2, '0');
-                            break;
-                        case 'minutes':
-                            progress = minutes / 60;
-                            text = minutes.toString().padStart(2, '0');
-                            break;
-                        case 'seconds':
-                            progress = secondsValue / 60;
-                            text = secondsValue.toString().padStart(2, '0');
-                            break;
-                        default:
-                            progress = 0;
-                            text = '0';
-                    }
-                } else {
-                    // When running, use the original smooth countdown logic
-                    switch (unit) {
-                        case 'day':
-                            // This behavior is a bit undefined, but we'll keep the original logic
-                            progress = (remaining % (86400 * 7)) / (86400 * 7); // Assume a 7-day cycle if days are shown
-                            text = days.toString();
-                            break;
-                        case 'hours':
-                            progress = (remaining % 86400) / 86400;
-                            text = hours.toString().padStart(2, '0');
-                            break;
-                        case 'minutes':
-                            progress = (remaining % 3600) / 3600;
-                            text = minutes.toString().padStart(2, '0');
-                            break;
-                        case 'seconds':
-                            progress = (remaining % 60) / 60;
-                            text = secondsValue.toString().padStart(2, '0');
-                            break;
-                        default:
-                            progress = 0;
-                            text = '0';
-                    }
+                switch (unit) {
+                    case 'weekOfYear':
+                        // The 'weeks' arc shows overall progress of the weeks countdown.
+                        // It's not a cycle, but a countdown from the initial value.
+                        progress = initialTotalWeeks > 0 ? (remaining / 604800) / initialTotalWeeks : 0;
+                        text = weeks.toString();
+                        break;
+                    case 'day':
+                        progress = days / 7; // Cycle of 7 days
+                        text = days.toString();
+                        break;
+                    case 'hours':
+                        progress = hours / 24; // Cycle of 24 hours
+                        text = hours.toString().padStart(2, '0');
+                        break;
+                    case 'minutes':
+                        progress = minutes / 60; // Cycle of 60 minutes
+                        text = minutes.toString().padStart(2, '0');
+                        break;
+                    case 'seconds':
+                        progress = secondsValue / 60; // Cycle of 60 seconds
+                        text = secondsValue.toString().padStart(2, '0');
+                        break;
+                    default:
+                        progress = 0;
+                        text = '0';
                 }
 
                 const angle = progress * Math.PI * 2;
@@ -212,12 +206,23 @@ const Clock = (function() {
 
         // Draw separators if enabled
         if (settings.showSeparators) {
+            const isRulerMode = settings.separatorMode === 'ruler';
             drawnArcs.forEach(arc => {
                 if (arc.radius > 0 && settings.separatorVisibility[arc.key]) {
                     let count = 60;
                     if (arc.key === 'hours') count = 24;
-                    if (arc.key === 'day') count = 7; // Arbitrary, but better than nothing
-                    drawSeparators(arc.radius, count, arc.lineWidth);
+                    if (arc.key === 'day') count = 7;
+                    if (arc.key === 'weekOfYear') {
+                        const initialTotalWeeks = Math.ceil(totalSeconds / 604800);
+                        count = initialTotalWeeks;
+                    }
+
+                    // Apply ruler mode to all arcs, standard to others
+                    if (isRulerMode) {
+                        drawRulerSeparators(arc.radius, count, arc.lineWidth);
+                    } else {
+                        drawSeparators(arc.radius, count, arc.lineWidth);
+                    }
                 }
             });
         }
@@ -872,6 +877,8 @@ const Clock = (function() {
                     const { totalSeconds } = globalState.timer;
                     if (totalSeconds === 0) return false;
                     switch (arcKey) {
+                        case 'weekOfYear': // Hijacking for 'weeks' in timer mode
+                            return totalSeconds >= 604800;
                         case 'day':
                             return totalSeconds >= 86400;
                         case 'hours':
