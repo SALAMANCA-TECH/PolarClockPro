@@ -11,6 +11,11 @@ const Tools = (function() {
     const lapStopwatchBtn = document.getElementById('lapStopwatch');
     const resetStopwatchBtn = document.getElementById('resetStopwatch');
     const lapTimesContainer = document.getElementById('lapTimes');
+    const stopwatchIntervalSoundToggle = document.getElementById('stopwatchIntervalSoundToggle');
+    const stopwatchIntervalInputs = document.getElementById('stopwatchIntervalInputs');
+    const stopwatchIntervalHours = document.getElementById('stopwatchIntervalHours');
+    const stopwatchIntervalMinutes = document.getElementById('stopwatchIntervalMinutes');
+    const stopwatchIntervalSeconds = document.getElementById('stopwatchIntervalSeconds');
 
 
     const statusDisplay = document.getElementById('pomodoroStatus');
@@ -64,7 +69,16 @@ const Tools = (function() {
             currentAudio: null,
             endOfCycleSoundPlayed: false
         },
-        stopwatch: { startTime: 0, elapsedTime: 0, isRunning: false, laps: [], isMuted: false }
+        stopwatch: {
+            startTime: 0,
+            elapsedTime: 0,
+            isRunning: false,
+            laps: [],
+            isMuted: false,
+            isIntervalSoundEnabled: false,
+            intervalSeconds: 0,
+            lastIntervalPlayed: 0
+        }
     };
 
     // --- Private Functions ---
@@ -239,6 +253,7 @@ const Tools = (function() {
         state.stopwatch.isRunning = false;
         state.stopwatch.elapsedTime = 0;
         state.stopwatch.laps = [];
+        state.stopwatch.lastIntervalPlayed = 0;
         updateLapDisplay();
         if (!state.stopwatch.isMuted) {
             playSound(settings.stopwatchSound);
@@ -526,6 +541,13 @@ const Tools = (function() {
         toggleStopwatchBtn.textContent = state.stopwatch.isRunning ? 'Pause' : 'Start';
     }
 
+    function updateStopwatchInterval() {
+        const hours = parseInt(stopwatchIntervalHours.value) || 0;
+        const minutes = parseInt(stopwatchIntervalMinutes.value) || 0;
+        const seconds = parseInt(stopwatchIntervalSeconds.value) || 0;
+        state.stopwatch.intervalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+    }
+
     function setupAllEventListeners() {
         // Timer
         toggleTimerBtn.addEventListener('click', toggleTimer);
@@ -577,6 +599,15 @@ const Tools = (function() {
             settings.stopwatchSound = e.target.value;
             document.dispatchEvent(new CustomEvent('settings-changed'));
         });
+
+        stopwatchIntervalSoundToggle.addEventListener('change', (e) => {
+            state.stopwatch.isIntervalSoundEnabled = e.target.checked;
+            stopwatchIntervalInputs.style.display = e.target.checked ? 'flex' : 'none';
+        });
+
+        stopwatchIntervalHours.addEventListener('change', updateStopwatchInterval);
+        stopwatchIntervalMinutes.addEventListener('change', updateStopwatchInterval);
+        stopwatchIntervalSeconds.addEventListener('change', updateStopwatchInterval);
 
         document.getElementById('testStopwatchSoundBtn').addEventListener('click', () => {
             if (!state.stopwatch.isMuted) {
@@ -757,6 +788,18 @@ const Tools = (function() {
             updatePomodoroDashboard();
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
+
+                if (state.stopwatch.isIntervalSoundEnabled && state.stopwatch.intervalSeconds > 0) {
+                    const elapsedSeconds = Math.floor(state.stopwatch.elapsedTime / 1000);
+                    const currentInterval = Math.floor(elapsedSeconds / state.stopwatch.intervalSeconds);
+
+                    if (currentInterval > state.stopwatch.lastIntervalPlayed) {
+                        if (!state.stopwatch.isMuted) {
+                           playSound(settings.stopwatchSound);
+                        }
+                        state.stopwatch.lastIntervalPlayed = currentInterval;
+                    }
+                }
             }
         },
         getState: function() {

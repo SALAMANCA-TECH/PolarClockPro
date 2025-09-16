@@ -836,6 +836,22 @@
                 <button id="resetStopwatch">Reset</button>
             </div>
             <ul id="lapTimes" class="w-full max-w-xs space-y-2"></ul>
+            <div class="settings-section w-full max-w-xs">
+                <div class="setting-toggle">
+                    <span>Interval Sound</span>
+                    <label class="switch">
+                        <input type="checkbox" id="stopwatchIntervalSoundToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="stopwatchIntervalInputs" class="flex items-center justify-center gap-2">
+                    <input type="number" id="stopwatchIntervalHours" class="time-input-small" placeholder="HH" min="0" value="0">
+                    <span>:</span>
+                    <input type="number" id="stopwatchIntervalMinutes" class="time-input-small" placeholder="MM" min="0" value="0">
+                    <span>:</span>
+                    <input type="number" id="stopwatchIntervalSeconds" class="time-input-small" placeholder="SS" min="0" value="0">
+                </div>
+            </div>
             <div class="setting-item">
                 <label for="stopwatchSoundSelect">Stopwatch Sound</label>
                 <select id="stopwatchSoundSelect" class="w-full p-2 bg-gray-700 text-white rounded-md" style="max-width: 180px;">
