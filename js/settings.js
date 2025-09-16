@@ -120,7 +120,6 @@ const Settings = (function() {
             showSeparators: true,
             separatorMode: 'standard',
             alarmSound: 'bell01.mp3',
-            timerSound: 'nice_digital_watch.mp3',
             stopwatchSound: 'Tick_Tock.wav',
             arcVisibility: {
                 dayOfWeek: false,
