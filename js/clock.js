@@ -15,6 +15,11 @@ const Clock = (function() {
     let lastColorChangeMinute = -1;
     let lastFlowChangeTime = null;
 
+    let isFlowTransitioning = false;
+    let flowTransitionStartTime = 0;
+    let flowTransitionDuration = 1500; // ms
+    let previousColors = null;
+
     const hasCompletedCycle = (unit, now, lastNow) => {
         switch (unit) {
             case 'seconds':
@@ -469,19 +474,91 @@ const Clock = (function() {
         }
 
         const now = new Date();
+        const nowMs = now.getTime();
+
+        // --- Flow Mode Logic ---
         if (settings.flowMode && settings.flowMode !== '0') {
-            if (lastFlowChangeTime === null) {
-                lastFlowChangeTime = now.getTime();
+            const flowValue = parseInt(settings.flowMode, 10);
+            let trigger = false;
+
+            if (flowValue === 33) { // BSG case (interval-based)
+                if (lastFlowChangeTime === null) {
+                    lastFlowChangeTime = nowMs;
+                }
+                const flowInterval = flowValue * 60 * 1000;
+                if (nowMs - lastFlowChangeTime >= flowInterval) {
+                    trigger = true;
+                    lastFlowChangeTime = nowMs;
+                }
+            } else { // Scheduled intervals (on the minute/hour)
+                lastFlowChangeTime = null;
+                const s = now.getSeconds();
+                const m = now.getMinutes();
+                const h = now.getHours();
+
+                if (s === 0) {
+                    if (flowValue === 1 && m !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 5 && m % 5 === 0 && m !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 10 && m % 10 === 0 && m !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 15 && m % 15 === 0 && m !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 30 && m % 30 === 0 && m !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 60 && m === 0 && h !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 360 && m === 0 && h % 6 === 0 && h !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 720 && m === 0 && h % 12 === 0 && h !== lastColorChangeMinute) trigger = true;
+                    else if (flowValue === 1440 && m === 0 && h === 0 && now.getDate() !== lastColorChangeMinute) trigger = true;
+                }
+
+                if (trigger) {
+                    if (flowValue >= 1440) lastColorChangeMinute = now.getDate();
+                    else if (flowValue >= 60) lastColorChangeMinute = h;
+                    else lastColorChangeMinute = m;
+                }
             }
 
-            const flowInterval = parseInt(settings.flowMode, 10) * 60 * 1000; // convert minutes to milliseconds
-            if (now.getTime() - lastFlowChangeTime >= flowInterval) {
+            if (trigger) {
                 Settings.cycleColorPreset();
-                lastFlowChangeTime = now.getTime();
             }
         } else {
-            lastFlowChangeTime = null; // Reset if flow mode is turned off
+            lastFlowChangeTime = null;
+            lastColorChangeMinute = -1;
         }
+
+        // --- Transition Animation Logic ---
+        if (isFlowTransitioning) {
+            const elapsed = nowMs - flowTransitionStartTime;
+            if (elapsed >= flowTransitionDuration) {
+                isFlowTransitioning = false;
+                previousColors = null;
+            }
+        }
+
+        // --- Drawing Logic ---
+        if (isFlowTransitioning && previousColors) {
+            const progress = (nowMs - flowTransitionStartTime) / flowTransitionDuration;
+            // 1. Draw the old theme fully
+            drawClockArcs(now, previousColors);
+
+            // 2. Draw the new theme on top, with a clipping mask for the wipe effect
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(dimensions.centerX, dimensions.centerY);
+            ctx.arc(dimensions.centerX, dimensions.centerY, Math.max(dimensions.centerX, dimensions.centerY), baseStartAngle, baseStartAngle + (Math.PI * 2 * progress), false);
+            ctx.closePath();
+            ctx.clip();
+
+            drawClockArcs(now, settings.currentColors);
+
+            ctx.restore(); // Remove clipping mask
+        } else {
+            // Normal drawing
+            drawClockArcs(now, settings.currentColors);
+        }
+
+        lastNow = now;
+    };
+
+    function drawClockArcs(now, colors) {
+        const nowMs = now.getTime();
         const year = now.getFullYear(), month = now.getMonth(), date = now.getDate(), hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds(), ms = now.getMilliseconds();
         const dayOfWeek = getDayOfWeek(now);
         const daysInMonth = getDaysInMonth(year, month);
@@ -508,48 +585,39 @@ const Clock = (function() {
         const secondsEndAngle = baseStartAngle + ((seconds + ms / 1000) / 60) * Math.PI * 2;
         const weekOfYearEndAngle = baseStartAngle + weekOfYearProgress * Math.PI * 2;
 
-        // Arcs are now always defined and drawn
         const arcs = [
-            { key: 'dayOfWeek', radius: dimensions.dayOfWeekRadius, colors: settings.currentColors.dayOfWeek, lineWidth: dimensions.dayOfWeekLineWidth, endAngle: dayOfWeekEndAngle },
-            { key: 'month', radius: dimensions.monthRadius, colors: settings.currentColors.month, lineWidth: dimensions.monthLineWidth, endAngle: monthEndAngle },
-            { key: 'day', radius: dimensions.dayRadius, colors: settings.currentColors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
-            { key: 'hours', radius: dimensions.hoursRadius, colors: settings.currentColors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
-            { key: 'minutes', radius: dimensions.minutesRadius, colors: settings.currentColors.minutes, lineWidth: dimensions.minutesLineWidth, endAngle: minutesEndAngle },
-            { key: 'seconds', radius: dimensions.secondsRadius, colors: settings.currentColors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle },
-            { key: 'weekOfYear', radius: dimensions.weekOfYearRadius, colors: settings.currentColors.weekOfYear, lineWidth: dimensions.weekOfYearLineWidth, endAngle: weekOfYearEndAngle }
+            { key: 'dayOfWeek', radius: dimensions.dayOfWeekRadius, color: colors.dayOfWeek, lineWidth: dimensions.dayOfWeekLineWidth, endAngle: dayOfWeekEndAngle },
+            { key: 'month', radius: dimensions.monthRadius, color: colors.month, lineWidth: dimensions.monthLineWidth, endAngle: monthEndAngle },
+            { key: 'day', radius: dimensions.dayRadius, color: colors.day, lineWidth: dimensions.dayLineWidth, endAngle: dayEndAngle },
+            { key: 'hours', radius: dimensions.hoursRadius, color: colors.hours, lineWidth: dimensions.hoursLineWidth, endAngle: hoursEndAngle },
+            { key: 'minutes', radius: dimensions.minutesRadius, color: colors.minutes, lineWidth: dimensions.minutesLineWidth, endAngle: minutesEndAngle },
+            { key: 'seconds', radius: dimensions.secondsRadius, color: colors.seconds, lineWidth: dimensions.secondsLineWidth, endAngle: secondsEndAngle },
+            { key: 'weekOfYear', radius: dimensions.weekOfYearRadius, color: colors.weekOfYear, lineWidth: dimensions.weekOfYearLineWidth, endAngle: weekOfYearEndAngle }
         ];
 
-        const nowMs = now.getTime();
         const visibleArcs = arcs.filter(arc => settings.arcVisibility[arc.key]);
 
-        // First, draw all the arcs.
         visibleArcs.forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
+            if (arc.radius > 0 && arc.color) {
                 if (hasCompletedCycle(arc.key, now, lastNow)) {
                     if (!resetAnimations[arc.key] || !resetAnimations[arc.key].isAnimating) {
                         resetAnimations[arc.key] = { isAnimating: true, startTime: nowMs };
                     }
                 }
 
-                // ALWAYS draw the primary arc representing the current time.
                 if (settings.inverseMode && globalState.mode === 'clock') {
-                    // Draw the "anticipation" arc ("Cycle B")
                     if (shouldShowAnticipationArc(arc.key, now)) {
                         const anticipationProgress = ms / 1000;
                         const anticipationEndAngle = baseStartAngle + (anticipationProgress * Math.PI * 2);
-                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, anticipationEndAngle, arc.colors, arc.lineWidth);
+                        drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, anticipationEndAngle, arc.color, arc.lineWidth);
                     }
-
-                    // Draw the main inverse arc ("Cycle A")
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, arc.endAngle, baseStartAngle + Math.PI * 2, arc.color, arc.lineWidth);
                 } else {
-                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.colors, arc.lineWidth);
+                    drawArc(dimensions.centerX, dimensions.centerY, arc.radius, baseStartAngle, arc.endAngle, arc.color, arc.lineWidth);
                 }
 
-                // If a wipe animation is active, draw it on top.
                 const anim = resetAnimations[arc.key];
                 if (anim && anim.isAnimating) {
-                    // In "inverse" mode, the animation is jarring, so we'll skip it.
                     if (settings.inverseMode && globalState.mode === 'clock') {
                         anim.isAnimating = false;
                     } else {
@@ -557,70 +625,48 @@ const Clock = (function() {
                         if (elapsed < animationDuration) {
                             const progress = elapsed / animationDuration;
                             const animatedStartAngle = baseStartAngle + (progress * Math.PI * 2);
-                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.colors, arc.lineWidth);
+                            drawArc(dimensions.centerX, dimensions.centerY, arc.radius, animatedStartAngle, baseStartAngle + Math.PI * 2, arc.color, arc.lineWidth);
                         } else {
                             anim.isAnimating = false;
                         }
                     }
                 }
-
-                // Get the label text ready for the next step.
                 arc.text = getLabelText(arc.key, now);
             }
         });
 
-        // Second, draw the separators over the arcs.
         if (settings.showSeparators) {
             const isRulerMode = settings.separatorMode === 'ruler';
-
             if (settings.arcVisibility.seconds && settings.separatorVisibility.seconds) {
-                if (isRulerMode) {
-                    drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
-                } else {
-                    drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
-                }
+                isRulerMode ? drawRulerSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth) : drawSeparators(dimensions.secondsRadius, 60, dimensions.secondsLineWidth);
             }
-
             if (settings.arcVisibility.minutes && settings.separatorVisibility.minutes) {
-                if (isRulerMode) {
-                    drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-                } else {
-                    drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
-                }
+                isRulerMode ? drawRulerSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth) : drawSeparators(dimensions.minutesRadius, 60, dimensions.minutesLineWidth);
             }
-
-            // Other arcs always use standard separators
             if (settings.arcVisibility.hours && settings.separatorVisibility.hours) {
                 drawSeparators(dimensions.hoursRadius, 12, dimensions.hoursLineWidth);
-                if (settings.separatorMode === 'ruler') {
-                    drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
-                }
+                if (isRulerMode) drawAdvancedRulerSeparators(dimensions.hoursRadius, 12, 4, dimensions.hoursLineWidth, 'hours');
             }
             if (settings.arcVisibility.day && settings.separatorVisibility.day) drawSeparators(dimensions.dayRadius, daysInMonth, dimensions.dayLineWidth);
             if (settings.arcVisibility.month && settings.separatorVisibility.month) {
                 drawSeparators(dimensions.monthRadius, 12, dimensions.monthLineWidth);
-                if (settings.separatorMode === 'ruler') {
-                    drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
-                }
+                if (isRulerMode) drawAdvancedRulerSeparators(dimensions.monthRadius, 12, 4, dimensions.monthLineWidth, 'month');
             }
             if (settings.arcVisibility.dayOfWeek && settings.separatorVisibility.dayOfWeek) drawSeparators(dimensions.dayOfWeekRadius, 7, dimensions.dayOfWeekLineWidth);
             if (settings.arcVisibility.weekOfYear && settings.separatorVisibility.weekOfYear) drawSeparators(dimensions.weekOfYearRadius, getTotalWeeksInYear(now.getFullYear()), dimensions.weekOfYearLineWidth);
         }
 
-        // Finally, draw the labels (and their circles) on top of everything.
         visibleArcs.forEach(arc => {
-            if (arc.radius > 0 && settings.currentColors) {
+            if (arc.radius > 0 && arc.color) {
                 drawLabel(arc);
             }
         });
-
-        lastNow = now;
 
         if (!isFirstFrameDrawn && dimensions.secondsRadius > 0) {
             isFirstFrameDrawn = true;
             canvas.dispatchEvent(new CustomEvent('clockready', { bubbles: true }));
         }
-    };
+    }
 
     const drawStopwatch = () => {
         if (!settings.currentColors || !globalState.stopwatch) {
@@ -766,6 +812,13 @@ const Clock = (function() {
             settings = initialSettings;
             globalState = initialState;
             window.addEventListener('resize', () => this.resize());
+
+            document.addEventListener('flow-theme-changed', (e) => {
+                previousColors = e.detail.oldColors;
+                isFlowTransitioning = true;
+                flowTransitionStartTime = Date.now();
+            });
+
             this.resume();
         },
         pause: function() {
