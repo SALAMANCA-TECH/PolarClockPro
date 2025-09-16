@@ -2,10 +2,8 @@ const Tools = (function() {
     // --- DOM Element Selections ---
     const toggleTimerBtn = document.getElementById('toggleTimerBtn');
     const resetTimerBtn = document.getElementById('resetTimer');
-    const timerDaysInput = document.getElementById('timerDays');
-    const timerHoursInput = document.getElementById('timerHours');
-    const timerMinutesInput = document.getElementById('timerMinutes');
-    const timerSecondsInput = document.getElementById('timerSeconds');
+    const timerExpressionInput = document.getElementById('timerExpressionInput');
+    const timerDisplay = document.getElementById('timerDisplay');
     const intervalToggle = document.getElementById('intervalToggle');
     const timerStyleToggle = document.getElementById('timerStyleToggle');
 
@@ -35,6 +33,7 @@ const Tools = (function() {
 
     // --- Module State ---
     let settings = {};
+    let currentTestSound = null;
     const state = {
         timer: {
             totalSeconds: 0,
@@ -74,39 +73,29 @@ const Tools = (function() {
     // --- Private Functions ---
 
     function setTimerInputsDisabled(disabled) {
-        timerDaysInput.disabled = disabled;
-        timerHoursInput.disabled = disabled;
-        timerMinutesInput.disabled = disabled;
-        timerSecondsInput.disabled = disabled;
+        timerExpressionInput.disabled = disabled;
+    }
+
+    function formatSecondsToDDHHMMSS(totalSeconds) {
+        const days = Math.floor(totalSeconds / 86400);
+        totalSeconds %= 86400;
+        const hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+
+        return `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
     // Timer Functions
     function normalizeTimerInputs() {
-        const days = parseInt(timerDaysInput.value) || 0;
-        const hours = parseInt(timerHoursInput.value) || 0;
-        const minutes = parseInt(timerMinutesInput.value) || 0;
-        const seconds = parseInt(timerSecondsInput.value) || 0;
+        const expression = timerExpressionInput.value;
+        const totalSeconds = TimeCalculator.parseNaturalTime(expression) || 0;
 
-        let totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
-
-        const newDays = Math.floor(totalSeconds / 86400);
-        totalSeconds %= 86400;
-        const newHours = Math.floor(totalSeconds / 3600);
-        totalSeconds %= 3600;
-        const newMinutes = Math.floor(totalSeconds / 60);
-        const newSeconds = totalSeconds % 60;
-
-        timerDaysInput.value = newDays;
-        timerHoursInput.value = newHours;
-        timerMinutesInput.value = newMinutes;
-        timerSecondsInput.value = newSeconds;
-
-        const finalTotalSeconds = (newDays * 86400) + (newHours * 3600) + (newMinutes * 60) + newSeconds;
-        state.timer.totalSeconds = finalTotalSeconds;
-        // Only reset remaining seconds if the timer isn't running.
-        // This prevents overwriting the countdown when an input is blurred.
+        state.timer.totalSeconds = totalSeconds;
         if (!state.timer.isRunning) {
-            state.timer.remainingSeconds = finalTotalSeconds;
+            state.timer.remainingSeconds = totalSeconds;
+            timerDisplay.textContent = formatSecondsToDDHHMMSS(totalSeconds);
         }
         document.dispatchEvent(new CustomEvent('statechange'));
     }
@@ -121,8 +110,6 @@ const Tools = (function() {
     }
 
     function startTimer() {
-        // When starting, if the timer is at 0, we must get the values from the inputs.
-        // Normalizing here also handles the case where a user types and immediately hits start.
         if (state.timer.remainingSeconds <= 0) {
             normalizeTimerInputs();
         }
@@ -130,7 +117,6 @@ const Tools = (function() {
         if (state.timer.remainingSeconds > 0) {
             state.timer.isRunning = true;
             setTimerInputsDisabled(true);
-            // Reset the sound played flag whenever the timer starts/resumes
             if (state.timer.remainingSeconds > 58) {
                 state.timer.endOfCycleSoundPlayed = false;
             }
@@ -150,7 +136,6 @@ const Tools = (function() {
         state.timer.totalSeconds = 0;
         state.timer.remainingSeconds = 0;
 
-        // Reset new state flags
         state.timer.alarmPlaying = false;
         state.timer.isMuted = false;
         state.timer.isSnoozing = false;
@@ -161,10 +146,9 @@ const Tools = (function() {
             state.timer.currentAudio = null;
         }
 
-        timerDaysInput.value = "0";
-        timerHoursInput.value = "0";
-        timerMinutesInput.value = "0";
-        timerSecondsInput.value = "0";
+        timerExpressionInput.value = "";
+        timerDisplay.textContent = "00:00:00:00";
+
 
         const timeInputs = document.querySelector('.time-inputs');
         if (timeInputs) {
@@ -177,13 +161,18 @@ const Tools = (function() {
 
     function timerFinished() {
         if (state.timer.isInterval) {
-            // Reset for the next cycle
             state.timer.remainingSeconds = state.timer.totalSeconds;
             state.timer.endOfCycleSoundPlayed = false;
+             if (!state.timer.isMuted) {
+                playSound(settings.timerSound);
+            }
         } else {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
             state.timer.remainingSeconds = 0;
+            if (!state.timer.isMuted) {
+                playSound(settings.timerSound);
+            }
             updateTimerUI();
         }
     }
@@ -196,9 +185,8 @@ const Tools = (function() {
         state.timer.remainingSeconds += 300; // Add 5 minutes
         state.timer.isSnoozing = true;
         state.timer.alarmPlaying = false;
-        state.timer.endOfCycleSoundPlayed = false; // Allow sound to play again after snooze
+        state.timer.endOfCycleSoundPlayed = false;
 
-        // Deactivate mute for the next cycle
         if (state.timer.isMuted) {
             state.timer.isMuted = false;
             const timerMuteBtn = document.getElementById('timerMuteBtn');
@@ -207,9 +195,9 @@ const Tools = (function() {
             }
         }
 
-        startTimer(); // This will set isRunning and update UI correctly
-        updateTimerUI(); // Ensure alarm controls are hidden
-        updateButtonStates(); // Ensure button text is correct
+        startTimer();
+        updateTimerUI();
+        updateButtonStates();
     }
 
     function stopTimerAlarm() {
@@ -221,20 +209,16 @@ const Tools = (function() {
     }
 
     function restartTimer() {
-        // Stop any currently playing sound
         if (state.timer.currentAudio) {
             state.timer.currentAudio.pause();
             state.timer.currentAudio = null;
         }
-
-        // Reset state for a new run, preserving the total duration
         state.timer.remainingSeconds = state.timer.totalSeconds;
         state.timer.alarmPlaying = false;
         state.timer.isSnoozing = false;
         state.timer.isMuted = false;
         state.timer.endOfCycleSoundPlayed = false;
 
-        // Start the timer again
         startTimer();
     }
 
@@ -314,7 +298,6 @@ const Tools = (function() {
 
     // Pomodoro Functions
     function togglePomodoro() {
-        // If alarm is playing, any action should stop it and start the next phase.
         if (state.pomodoro.alarmPlaying) {
             endCycle();
             return;
@@ -322,7 +305,6 @@ const Tools = (function() {
 
         state.pomodoro.isRunning = !state.pomodoro.isRunning;
 
-        // Handle audio pausing/resuming
         if (state.pomodoro.currentAudio) {
             if (state.pomodoro.isRunning) {
                 state.pomodoro.currentAudio.play();
@@ -335,9 +317,8 @@ const Tools = (function() {
             state.pomodoro.hasStarted = true;
         }
 
-        // If we are starting a completed timer, start the next phase.
         if (state.pomodoro.isRunning && state.pomodoro.remainingSeconds <= 0) {
-            startNextPomodoroPhase(false); // Don't play sound on manual start.
+            startNextPomodoroPhase(false);
         }
         updatePomodoroUI();
     }
@@ -384,7 +365,6 @@ const Tools = (function() {
         if (state.pomodoro.currentAudio) {
             state.pomodoro.currentAudio.muted = state.pomodoro.isMuted;
         }
-        // Also update the button's visual state to give feedback
         mutePomodoroBtn.classList.toggle('active', state.pomodoro.isMuted);
     }
 
@@ -395,10 +375,7 @@ const Tools = (function() {
         }
         state.pomodoro.remainingSeconds += 300; // Add 5 minutes
         state.pomodoro.isSnoozing = true;
-        state.pomodoro.endOfCycleSoundPlayed = false; // Allow sound to play again.
-        // By resetting this flag, we ensure that if the timer counts down
-        // to 58 seconds again in this same (extended) cycle, the warning
-        // sound will replay as requested.
+        state.pomodoro.endOfCycleSoundPlayed = false;
     }
 
     function endCycle() {
@@ -413,7 +390,6 @@ const Tools = (function() {
         let nextPhase = 'work';
         let duration = state.pomodoro.workDuration * 60;
 
-        // Determine next phase only if not snoozing
         if (!state.pomodoro.isSnoozing) {
             if (state.pomodoro.phase === 'work') {
                 state.pomodoro.cycles++;
@@ -447,7 +423,7 @@ const Tools = (function() {
         }
 
         updatePomodoroDashboard();
-        state.pomodoro.isRunning = true; // Auto-start the next cycle
+        state.pomodoro.isRunning = true;
     }
 
     function formatToHHMMSS(totalSeconds) {
@@ -460,7 +436,6 @@ const Tools = (function() {
     function updatePomodoroDashboard() {
         const { phase, remainingSeconds, workDuration, shortBreakDuration, longBreakDuration, isRunning, hasStarted, isSnoozing } = state.pomodoro;
 
-        // Update time text content first
         pomodoroWorkDisplay.textContent = formatToHHMMSS(phase === 'work' ? remainingSeconds : workDuration * 60);
         pomodoroShortBreakDisplay.textContent = formatToHHMMSS(phase === 'shortBreak' ? remainingSeconds : shortBreakDuration * 60);
         pomodoroLongBreakDisplay.textContent = formatToHHMMSS(phase === 'longBreak' ? remainingSeconds : longBreakDuration * 60);
@@ -469,33 +444,29 @@ const Tools = (function() {
         const shortBreakItem = pomodoroShortBreakDisplay.parentElement;
         const longBreakItem = pomodoroLongBreakDisplay.parentElement;
 
-        // Hide all items by default
         workItem.style.display = 'none';
         shortBreakItem.style.display = 'none';
         longBreakItem.style.display = 'none';
 
-        // Reset all classes
         const allDisplays = [pomodoroWorkDisplay, pomodoroShortBreakDisplay, pomodoroLongBreakDisplay];
         allDisplays.forEach(display => display.classList.remove('active', 'paused', 'snoozed'));
 
         let activeDisplay;
         let activeItem;
 
-        // Determine active phase and show the corresponding item
         if (phase === 'work') {
             activeDisplay = pomodoroWorkDisplay;
             activeItem = workItem;
         } else if (phase === 'shortBreak') {
             activeDisplay = pomodoroShortBreakDisplay;
             activeItem = shortBreakItem;
-        } else { // longBreak
+        } else {
             activeDisplay = pomodoroLongBreakDisplay;
             activeItem = longBreakItem;
         }
 
-        activeItem.style.display = 'flex'; // Show the active item
+        activeItem.style.display = 'flex';
 
-        // Apply class based on state
         if (isSnoozing) {
             activeDisplay.classList.add('snoozed');
         } else if (isRunning) {
@@ -504,7 +475,6 @@ const Tools = (function() {
             activeDisplay.classList.add('paused');
         }
 
-        // Update the main status title
         let statusText = "Work Session";
         if (isSnoozing) {
             statusText = "Snoozing";
@@ -522,15 +492,10 @@ const Tools = (function() {
         const toggleBtn = document.getElementById('togglePomodoroBtn');
         const resetBtn = document.getElementById('resetPomodoro');
 
-        if (!mainControls) return; // Exit if the elements are not on the page
+        if (!mainControls) return;
 
-        // Main toggle button text
         toggleBtn.textContent = state.pomodoro.isRunning ? 'Pause' : 'Start';
-
-        // Reset button visibility
         resetBtn.style.display = state.pomodoro.hasStarted ? 'inline-block' : 'none';
-
-        // Control sets visibility
         mainControls.style.display = state.pomodoro.alarmPlaying ? 'none' : 'flex';
         alarmControls.style.display = state.pomodoro.alarmPlaying ? 'flex' : 'none';
     }
@@ -541,15 +506,20 @@ const Tools = (function() {
 
         if (!mainControls || !alarmControls) return;
 
-        // Show alarm controls if the timer is actually ringing, OR if it's in the last 58 seconds of a timer that was originally longer than 58s.
-        const showAlarmControls = state.timer.alarmPlaying || (state.timer.remainingSeconds <= 58 && state.timer.totalSeconds > 58);
+        const showAlarmControls = state.timer.alarmPlaying;
 
         mainControls.style.display = showAlarmControls ? 'none' : 'flex';
         alarmControls.style.display = showAlarmControls ? 'flex' : 'none';
     }
 
-    // Shared Functions
-    function playSound(soundFile) {
+    function playSound(soundFile, isTest = false) {
+        if (isTest) {
+            if (currentTestSound && !currentTestSound.paused) {
+                currentTestSound.pause();
+                currentTestSound.currentTime = 0;
+            }
+        }
+
         if (!soundFile) return null;
         const audio = new Audio(`assets/Sounds/${soundFile}`);
         audio.volume = settings.volume;
@@ -563,6 +533,11 @@ const Tools = (function() {
                 }, 5000);
             }
         });
+
+        if (isTest) {
+            currentTestSound = audio;
+        }
+
         return audio;
     }
 
@@ -583,10 +558,8 @@ const Tools = (function() {
             state.timer.style = e.target.checked;
             document.dispatchEvent(new CustomEvent('statechange'));
         });
-        timerDaysInput.addEventListener('input', normalizeTimerInputs);
-        timerHoursInput.addEventListener('input', normalizeTimerInputs);
-        timerMinutesInput.addEventListener('input', normalizeTimerInputs);
-        timerSecondsInput.addEventListener('input', normalizeTimerInputs);
+        timerExpressionInput.addEventListener('blur', normalizeTimerInputs);
+
 
         document.getElementById('timerSoundSelect').addEventListener('change', (e) => {
             settings.timerSound = e.target.value;
@@ -594,20 +567,23 @@ const Tools = (function() {
         });
 
         document.getElementById('testTimerSoundBtn').addEventListener('click', () => {
-            if (!state.timer.isMuted) {
-                playSound(settings.timerSound);
+             if (!state.timer.isMuted) {
+                playSound(settings.timerSound, true);
             }
-        });
-
-        document.getElementById('muteTimerSoundBtn').addEventListener('click', () => {
-            state.timer.isMuted = !state.timer.isMuted;
-            document.getElementById('muteTimerSoundBtn').classList.toggle('active', state.timer.isMuted);
-            document.dispatchEvent(new CustomEvent('statechange'));
         });
 
         // New Timer Alarm Buttons
         const timerSnoozeBtn = document.getElementById('timerSnoozeBtn');
         if(timerSnoozeBtn) timerSnoozeBtn.addEventListener('click', snoozeTimer);
+
+        const timerMuteBtn = document.getElementById('timerMuteBtn');
+        if(timerMuteBtn) timerMuteBtn.addEventListener('click', () => {
+             state.timer.isMuted = !state.timer.isMuted;
+            timerMuteBtn.classList.toggle('active', state.timer.isMuted);
+            if (state.timer.currentAudio) {
+                state.timer.currentAudio.muted = state.timer.isMuted;
+            }
+        });
 
         const timerStopBtn = document.getElementById('timerStopBtn');
         if(timerStopBtn) timerStopBtn.addEventListener('click', restartTimer);
@@ -679,7 +655,6 @@ const Tools = (function() {
             settings = appSettings;
 
             if (initialState) {
-                // Restore state, ensuring timers aren't running on load
                 if (initialState.timer) {
                     Object.assign(state.timer, initialState.timer);
                     state.timer.isRunning = false;
@@ -687,22 +662,18 @@ const Tools = (function() {
                 if (initialState.pomodoro) {
                     Object.assign(state.pomodoro, initialState.pomodoro);
                     state.pomodoro.isRunning = false;
-                    state.pomodoro.alarmPlaying = false; // Ensure alarm isn't stuck on
+                    state.pomodoro.alarmPlaying = false;
                 }
                 if (initialState.stopwatch) {
                     Object.assign(state.stopwatch, initialState.stopwatch);
                     state.stopwatch.isRunning = false;
                 }
             }
-
-            // After state is loaded, ensure UI reflects the state
             intervalToggle.checked = state.timer.isInterval;
             timerStyleToggle.checked = state.timer.style;
             document.getElementById('timerSoundSelect').value = settings.timerSound;
             document.getElementById('stopwatchSoundSelect').value = settings.stopwatchSound;
 
-
-            // Set initial Pomodoro input values
             workDurationInput.value = state.pomodoro.workDuration;
             shortBreakDurationInput.value = state.pomodoro.shortBreakDuration;
             longBreakDurationInput.value = state.pomodoro.longBreakDuration;
@@ -722,19 +693,8 @@ const Tools = (function() {
                     timerFinished();
                 }
 
-                // Update input fields in real-time
-                const remaining = Math.max(0, state.timer.remainingSeconds);
-                const days = Math.floor(remaining / 86400);
-                const hours = Math.floor((remaining % 86400) / 3600);
-                const minutes = Math.floor((remaining % 3600) / 60);
-                const seconds = Math.floor(remaining % 60);
+                timerDisplay.textContent = formatSecondsToDDHHMMSS(state.timer.remainingSeconds);
 
-                timerDaysInput.value = days;
-                timerHoursInput.value = hours;
-                timerMinutesInput.value = minutes;
-                timerSecondsInput.value = seconds;
-
-                // Snooze visual feedback
                 const timeInputs = document.querySelector('.time-inputs');
                 if (timeInputs) {
                     if (state.timer.isSnoozing && !timeInputs.classList.contains('snoozed')) {
@@ -743,8 +703,6 @@ const Tools = (function() {
                         timeInputs.classList.remove('snoozed');
                     }
                 }
-
-                // End-of-cycle sound cue at 58 seconds
                 if (
                     Math.floor(state.timer.remainingSeconds) === 58 &&
                     !state.timer.endOfCycleSoundPlayed
@@ -766,7 +724,6 @@ const Tools = (function() {
             if (state.pomodoro.isRunning && !state.pomodoro.alarmPlaying) {
                 state.pomodoro.remainingSeconds -= deltaTime;
 
-                // End-of-cycle sound cue at 58 seconds
                 if (
                     Math.floor(state.pomodoro.remainingSeconds) === 58 &&
                     !state.pomodoro.endOfCycleSoundPlayed
@@ -785,14 +742,12 @@ const Tools = (function() {
                     }
 
                     if (soundFile) {
-                        // If there's an existing sound, stop it before playing the new one.
                         if (state.pomodoro.currentAudio) {
                             state.pomodoro.currentAudio.pause();
                         }
                         const audio = playSound(soundFile);
                         if (audio) {
                             state.pomodoro.currentAudio = audio;
-                            // Respect global mute state
                             if (state.pomodoro.isMuted) {
                                 audio.muted = true;
                             }
@@ -826,13 +781,12 @@ const Tools = (function() {
                     }
                 }
             }
-            updatePomodoroDashboard(); // Keep display updated regardless of running state
+            updatePomodoroDashboard();
             if (state.stopwatch.isRunning) {
                 state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
             }
         },
         getState: function() {
-            // Return a copy of the state relevant to other modules (like the clock)
             return {
                 timer: { ...state.timer },
                 pomodoro: { ...state.pomodoro },

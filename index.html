@@ -722,27 +722,10 @@
     <div id="controlsContainer">
         <!-- Timer Panel -->
         <div id="timerPanel" class="ui-panel panel-hidden">
-             <div class="time-inputs">
-                <div class="input-group">
-                    <input type="number" id="timerDays" placeholder="0" min="0" value="0">
-                    <label>Days</label>
-                </div>
-                <span>:</span>
-                <div class="input-group">
-                    <input type="number" id="timerHours" placeholder="0" min="0" value="0">
-                    <label>Hours</label>
-                </div>
-                <span>:</span>
-                <div class="input-group">
-                    <input type="number" id="timerMinutes" placeholder="00" min="0" value="0">
-                    <label>Minutes</label>
-                </div>
-                <span>:</span>
-                <div class="input-group">
-                    <input type="number" id="timerSeconds" placeholder="00" min="0" value="0">
-                    <label>Seconds</label>
-                </div>
+            <div class="time-inputs">
+                <input type="text" id="timerExpressionInput" placeholder="e.g., 1h 30m or 90min" class="w-full text-center text-2xl bg-transparent border-b-2 border-gray-600 focus:border-green-500 outline-none">
             </div>
+            <div id="timerDisplay" class="text-4xl font-mono">00:00:00:00</div>
             <div class="control-buttons" id="timer-main-controls">
                 <button id="toggleTimerBtn">Start</button>
                 <button id="resetTimer">Reset</button>
@@ -782,7 +765,6 @@
                     <option value="work_end.mp3">Work End</option>
                 </select>
                 <button id="testTimerSoundBtn" class="control-btn">Test</button>
-                <button id="muteTimerSoundBtn" class="control-btn">Mute</button>
             </div>
         </div>
         <!-- Pomodoro Panel -->

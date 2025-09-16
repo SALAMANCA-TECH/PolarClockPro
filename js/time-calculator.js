@@ -1,52 +1,4 @@
-// This script will run once the DOM is fully loaded.
-document.addEventListener('DOMContentLoaded', () => {
-
-    // --- LIVE INPUT FORMATTING ---
-    const durationInput = document.getElementById('duration');
-    const time1Input = document.getElementById('time1');
-    const operandInput = document.getElementById('operand');
-
-    if (durationInput) {
-        durationInput.addEventListener('blur', () => {
-            const value = durationInput.value;
-            let seconds = parseNaturalTime(value);
-            if (seconds === null) {
-                const parts = value.split(':');
-                if (parts.length === 2) {
-                    const hour = parseInt(parts[0], 10);
-                    const minute = parseInt(parts[1], 10);
-                    if (!isNaN(hour) && !isNaN(minute)) {
-                        seconds = hour * 3600 + minute * 60;
-                    }
-                }
-            }
-
-            if (seconds !== null) {
-                const formatted = formatSecondsToHHMM(seconds);
-                if (formatted !== null) {
-                    durationInput.value = formatted;
-                }
-            }
-        });
-    }
-
-    function addFormatterListener(element) {
-        if (element) {
-            element.addEventListener('blur', () => {
-                const value = element.value;
-                const seconds = parseHmsToSeconds(value);
-                if (seconds !== null) {
-                    const formatted = formatSecondsToHms(seconds);
-                    if (!formatted.toLowerCase().includes('error')) {
-                        element.value = formatted;
-                    }
-                }
-            });
-        }
-    }
-
-    addFormatterListener(time1Input);
-    addFormatterListener(operandInput);
+const TimeCalculator = (function() {
 
     function wordsToNumbers(text) {
         const numberWords = {
@@ -58,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
             'hundred': 100, 'thousand': 1000, 'million': 1000000
         };
 
-        // This regex is complex, but it finds sequences of number-related words.
         const numberWordRegex = /\b((?:(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)[\s-]*)+(?:and[\s-]*)?)+\b/gi;
 
         return text.replace(numberWordRegex, (match) => {
@@ -87,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseNaturalTime(timeStr) {
         if (!timeStr || typeof timeStr !== 'string') return null;
 
-        // First, convert any number words to digits.
         const textWithNumbers = wordsToNumbers(timeStr);
 
         let totalSeconds = 0;
@@ -123,8 +73,106 @@ document.addEventListener('DOMContentLoaded', () => {
             return totalSeconds;
         }
 
+        // Fallback for colon-separated time
+        const parts = cleanedStr.split(':').map(Number);
+        if (!parts.some(isNaN)) {
+            let seconds = 0;
+            if (parts.length === 1) { // ss
+                seconds = parts[0];
+            } else if (parts.length === 2) { // mm:ss
+                seconds = parts[0] * 60 + parts[1];
+            } else if (parts.length === 3) { // hh:mm:ss
+                seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+            }
+             else if (parts.length === 4) { // dd:hh:mm:ss
+                seconds = parts[0] * 86400 + parts[1] * 3600 + parts[2] * 60 + parts[3];
+            }
+            if(seconds > 0) return seconds;
+        }
+
+
         return null;
     }
+
+    function parseHmsToSeconds(timeStr) {
+        let seconds = parseNaturalTime(String(timeStr));
+        if (seconds !== null) {
+            return seconds;
+        }
+
+        const parts = String(timeStr).split(':').map(Number);
+        if (parts.some(isNaN)) return null;
+
+        seconds = 0;
+        if (parts.length === 1) { // ss
+            seconds = parts[0];
+        } else if (parts.length === 2) { // mm:ss
+            seconds = parts[0] * 60 + parts[1];
+        } else if (parts.length === 3) { // hh:mm:ss
+            seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+        } else {
+            return null; // Invalid number of parts
+        }
+        return seconds;
+    }
+
+    // --- Public API ---
+    return {
+        wordsToNumbers: wordsToNumbers,
+        parseNaturalTime: parseNaturalTime,
+        parseHmsToSeconds: parseHmsToSeconds
+    };
+})();
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- LIVE INPUT FORMATTING ---
+    const durationInput = document.getElementById('duration');
+    const time1Input = document.getElementById('time1');
+    const operandInput = document.getElementById('operand');
+
+    if (durationInput) {
+        durationInput.addEventListener('blur', () => {
+            const value = durationInput.value;
+            let seconds = TimeCalculator.parseNaturalTime(value);
+            if (seconds === null) {
+                const parts = value.split(':');
+                if (parts.length === 2) {
+                    const hour = parseInt(parts[0], 10);
+                    const minute = parseInt(parts[1], 10);
+                    if (!isNaN(hour) && !isNaN(minute)) {
+                        seconds = hour * 3600 + minute * 60;
+                    }
+                }
+            }
+
+            if (seconds !== null) {
+                const formatted = formatSecondsToHHMM(seconds);
+                if (formatted !== null) {
+                    durationInput.value = formatted;
+                }
+            }
+        });
+    }
+
+    function addFormatterListener(element) {
+        if (element) {
+            element.addEventListener('blur', () => {
+                const value = element.value;
+                const seconds = TimeCalculator.parseHmsToSeconds(value);
+                if (seconds !== null) {
+                    const formatted = formatSecondsToHms(seconds);
+                    if (!formatted.toLowerCase().includes('error')) {
+                        element.value = formatted;
+                    }
+                }
+            });
+        }
+    }
+
+    addFormatterListener(time1Input);
+    addFormatterListener(operandInput);
 
     // --- LOGIC FOR CALCULATOR 1: ADD DURATION TO TIME ---
     const addTimeButton = document.getElementById('calcAddTime');
@@ -135,91 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const start = document.getElementById('startTime').value;
             const duration = document.getElementById('duration').value;
             const startDay = document.getElementById('startDay').value;
-            
+
             const result = addTime(start, duration, startDay || null);
-            
+
             addTimeResultDiv.innerHTML = `Result: <span class="font-bold">${result}</span>`;
             addTimeResultDiv.classList.remove('hidden');
         });
     }
 
-    function wordsToNumbers(text) {
-        const numberWords = {
-            'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9,
-            'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
-            'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90
-        };
-        const multipliers = {
-            'hundred': 100, 'thousand': 1000, 'million': 1000000
-        };
-
-        // This regex is complex, but it finds sequences of number-related words.
-        const numberWordRegex = /\b((?:(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)[\s-]*)+(?:and[\s-]*)?)+\b/gi;
-
-        return text.replace(numberWordRegex, (match) => {
-            const words = match.toLowerCase().replace(/ and /g, ' ').replace(/-/g, ' ').split(/\s+/).filter(Boolean);
-
-            let total = 0;
-            let currentNumber = 0;
-
-            for (const word of words) {
-                if (numberWords[word] !== undefined) {
-                    currentNumber += numberWords[word];
-                } else if (multipliers[word] !== undefined) {
-                    if (word === 'hundred') {
-                        currentNumber *= multipliers[word];
-                    } else {
-                        total += currentNumber * multipliers[word];
-                        currentNumber = 0;
-                    }
-                }
-            }
-            total += currentNumber;
-            return total > 0 ? total : '';
-        });
-    }
-
-    function parseNaturalTime(timeStr) {
-        if (!timeStr || typeof timeStr !== 'string') return null;
-
-        // First, convert any number words to digits.
-        const textWithNumbers = wordsToNumbers(timeStr);
-
-        let totalSeconds = 0;
-        const cleanedStr = textWithNumbers.trim().toLowerCase();
-
-        let naturalLanguageFound = false;
-
-        const hourMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(h|hr|hour|hours)/g);
-        if (hourMatches) {
-            naturalLanguageFound = true;
-            hourMatches.forEach(match => {
-                totalSeconds += parseFloat(match) * 3600;
-            });
-        }
-
-        const minuteMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(m|min|minute|minutes)/g);
-        if (minuteMatches) {
-            naturalLanguageFound = true;
-            minuteMatches.forEach(match => {
-                totalSeconds += parseFloat(match) * 60;
-            });
-        }
-
-        const secondMatches = cleanedStr.match(/(\d+(?:\.\d+)?)\s*(s|sec|second|seconds)/g);
-        if (secondMatches) {
-            naturalLanguageFound = true;
-            secondMatches.forEach(match => {
-                totalSeconds += parseFloat(match);
-            });
-        }
-
-        if (naturalLanguageFound) {
-            return totalSeconds;
-        }
-
-        return null;
-    }
 
     function addTime(start, duration, startDay = null) {
         // 1. Parse Start Time
@@ -252,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialTimestamp = initialDate.getTime();
 
         // 3. Parse Duration and Calculate New Time
-        let durationSeconds = parseNaturalTime(duration);
+        let durationSeconds = TimeCalculator.parseNaturalTime(duration);
 
         if (durationSeconds === null) {
             // If natural time parsing fails, try the hh:mm format
@@ -323,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .replace(/ a half/g, '.5');
 
                 // Convert number words to digits.
-                processedOperand = wordsToNumbers(processedOperand);
+                processedOperand = TimeCalculator.wordsToNumbers(processedOperand);
 
                 // Try to parse the processed string as a float.
                 const num = parseFloat(processedOperand);
@@ -344,29 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
             arithmeticResultDiv.innerHTML = `Result: <span class="font-bold">${result}</span>`;
             arithmeticResultDiv.classList.remove('hidden');
         });
-    }
-
-
-    function parseHmsToSeconds(timeStr) {
-        let seconds = parseNaturalTime(String(timeStr));
-        if (seconds !== null) {
-            return seconds;
-        }
-
-        const parts = String(timeStr).split(':').map(Number);
-        if (parts.some(isNaN)) return null;
-        
-        seconds = 0;
-        if (parts.length === 1) { // ss
-            seconds = parts[0];
-        } else if (parts.length === 2) { // mm:ss
-            seconds = parts[0] * 60 + parts[1];
-        } else if (parts.length === 3) { // hh:mm:ss
-            seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-        } else {
-            return null; // Invalid number of parts
-        }
-        return seconds;
     }
 
     function formatSecondsToHHMM(totalSeconds) {
@@ -395,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculateTime(time1, operator, operand) {
-        const initialSeconds = parseHmsToSeconds(time1);
+        const initialSeconds = TimeCalculator.parseHmsToSeconds(time1);
         if (initialSeconds === null) return "Error: Invalid format for initial time. Use 'hh:mm:ss'.";
 
         let resultSeconds;
@@ -403,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (operator) {
             case '+':
             case '-':
-                const operandSeconds = parseHmsToSeconds(operand);
+                const operandSeconds = TimeCalculator.parseHmsToSeconds(operand);
                 if (operandSeconds === null) return "Error: Invalid format for operand time. Use 'hh:mm:ss'.";
                 resultSeconds = operator === '+' ? initialSeconds + operandSeconds : initialSeconds - operandSeconds;
                 break;
