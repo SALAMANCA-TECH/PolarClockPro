@@ -386,16 +386,17 @@ const Clock = (function() {
     };
 
     const getTotalWeeksInYear = (year) => {
-        const date = new Date(year, 11, 28); // December 28th is always in the last week of the year
-        return getWeekOfYear(date);
+        // ISO 8601 defines Dec 28th as always being in the last week of the year.
+        return getWeekOfYear(new Date(year, 11, 28));
     };
 
     const getWeekOfYear = (date) => {
-        const start = new Date(date.getFullYear(), 0, 1);
-        const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
-        const oneDay = 1000 * 60 * 60 * 24;
-        const day = Math.floor(diff / oneDay);
-        return Math.ceil((day + 1) / 7);
+        // ISO 8601 week number calculation.
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     };
 
     const getLabelText = (unit, now) => {
