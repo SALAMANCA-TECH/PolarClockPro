@@ -265,6 +265,8 @@ const Settings = (function() {
             settings.volume = document.getElementById('volumeControl').value;
         }));
 
+        document.addEventListener('settings-changed', saveSettings);
+
         document.getElementById('modeStandardSeparators').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'standard'; }));
         document.getElementById('modeRuler').addEventListener('click', createSettingUpdater(() => { settings.separatorMode = 'ruler'; }));
 
