@@ -12,9 +12,6 @@ const Tools = (function() {
     const resetStopwatchBtn = document.getElementById('resetStopwatch');
     const lapTimesContainer = document.getElementById('lapTimes');
 
-    const catchUpMinutesInput = document.getElementById('catchUpMinutes');
-    const catchUpSecondsInput = document.getElementById('catchUpSeconds');
-    const addCatchUpTimeBtn = document.getElementById('addCatchUpTimeBtn');
 
     const statusDisplay = document.getElementById('pomodoroStatus');
     const pomodoroWorkDisplay = document.getElementById('pomodoroWorkDisplay');
@@ -243,8 +240,6 @@ const Tools = (function() {
         state.stopwatch.elapsedTime = 0;
         state.stopwatch.laps = [];
         updateLapDisplay();
-        catchUpMinutesInput.value = '';
-        catchUpSecondsInput.value = '';
         if (!state.stopwatch.isMuted) {
             playSound(settings.stopwatchSound);
         }
@@ -279,21 +274,6 @@ const Tools = (function() {
     function formatTime(ms) {
         const d = new Date(ms);
         return `${d.getUTCMinutes().toString().padStart(2, '0')}:${d.getUTCSeconds().toString().padStart(2, '0')}.${d.getUTCMilliseconds().toString().padStart(3, '0')}`;
-    }
-
-    function addManualCatchUpTime() {
-        const minutes = parseInt(catchUpMinutesInput.value) || 0;
-        const seconds = parseInt(catchUpSecondsInput.value) || 0;
-        const timeToAddMs = (minutes * 60 + seconds) * 1000;
-        if (timeToAddMs > 0) {
-            state.stopwatch.elapsedTime += timeToAddMs;
-            if (state.stopwatch.isRunning) {
-                state.stopwatch.startTime -= timeToAddMs;
-            }
-            catchUpMinutesInput.value = '';
-            catchUpSecondsInput.value = '';
-            document.dispatchEvent(new CustomEvent('statechange'));
-        }
     }
 
     // Pomodoro Functions
@@ -593,7 +573,6 @@ const Tools = (function() {
         toggleStopwatchBtn.addEventListener('click', toggleStopwatch);
         resetStopwatchBtn.addEventListener('click', resetStopwatch);
         lapStopwatchBtn.addEventListener('click', lapStopwatch);
-        addCatchUpTimeBtn.addEventListener('click', addManualCatchUpTime);
         document.getElementById('stopwatchSoundSelect').addEventListener('change', (e) => {
             settings.stopwatchSound = e.target.value;
             document.dispatchEvent(new CustomEvent('settings-changed'));
