@@ -177,10 +177,6 @@ const Tools = (function() {
 
     function timerFinished() {
         if (state.timer.isInterval) {
-            const audio = playSound(settings.timerSound);
-            if (audio && state.timer.isMuted) {
-                audio.muted = true;
-            }
             // Reset for the next cycle
             state.timer.remainingSeconds = state.timer.totalSeconds;
             state.timer.endOfCycleSoundPlayed = false;
@@ -197,13 +193,6 @@ const Tools = (function() {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
             state.timer.remainingSeconds = 0;
-            const audio = playSound(settings.timerSound);
-            if (audio) {
-                state.timer.currentAudio = audio;
-                if (state.timer.isMuted) {
-                    audio.muted = true;
-                }
-            }
             updateTimerUI();
         }
     }
@@ -463,9 +452,6 @@ const Tools = (function() {
             pomodoroActions.style.display = 'none';
         }
 
-        if (playSoundOnStart && !state.pomodoro.isMuted) {
-            playSound(settings.timerSound);
-        }
         updatePomodoroDashboard();
         state.pomodoro.isRunning = true; // Auto-start the next cycle
     }
@@ -795,13 +781,6 @@ const Tools = (function() {
                         pomodoroActions.style.display = 'flex';
                     }
                     if (!state.pomodoro.lastMinuteSoundPlayed && !state.pomodoro.endOfCycleSoundPlayed) {
-                        const audio = playSound(settings.timerSound);
-                        if (audio) {
-                            state.pomodoro.currentAudio = audio;
-                            if (state.pomodoro.isMuted) {
-                                audio.muted = true;
-                            }
-                        }
                         state.pomodoro.lastMinuteSoundPlayed = true;
                     }
                 } else {
@@ -817,9 +796,6 @@ const Tools = (function() {
                     } else {
                         state.pomodoro.remainingSeconds = 0;
                         state.pomodoro.alarmPlaying = true;
-                        if (!state.pomodoro.isMuted) {
-                            playSound(settings.timerSound || 'bell01.mp3');
-                        }
                         updatePomodoroUI();
                     }
                 }
