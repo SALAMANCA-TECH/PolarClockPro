@@ -282,6 +282,7 @@ const Tools = (function() {
         updateLapDisplay();
         catchUpMinutesInput.value = '';
         catchUpSecondsInput.value = '';
+        playSound(settings.stopwatchSound);
         updateButtonStates();
         document.dispatchEvent(new CustomEvent('statechange'));
     }
@@ -567,7 +568,7 @@ const Tools = (function() {
     function playSound(soundFile) {
         if (!soundFile) return null;
         const audio = new Audio(`assets/Sounds/${soundFile}`);
-        audio.volume = settings.volume || 1.0;
+        audio.volume = settings.volume;
         audio.play().catch(e => {
             console.error("Error playing sound:", e);
             const failureMessage = document.getElementById('audio-failure-message');
@@ -734,7 +735,7 @@ const Tools = (function() {
                     if (state.timer.currentAudio) {
                         state.timer.currentAudio.pause();
                     }
-                    const audio = playSound('long_break_end.mp3');
+                    const audio = playSound(settings.timerSound);
                     if (audio) {
                         state.timer.currentAudio = audio;
                         if (state.timer.isMuted) {
