@@ -24,3 +24,11 @@ Under "Structured Work Timers," select "Pomodoro Technique."
 The innermost data arc on the clock will now visually represent the 25-minute work interval.
 
 When the work interval is over, the clock will signal it's time for your 5-minute break.
+
+### Advanced Features
+Polar Clock Pro's Pomodoro timer comes with several advanced features to tailor it to your workflow.
+
+- **Custom Durations:** In the Pomodoro settings, you can change the default durations for your Work sessions, Short Breaks, and Long Breaks.
+- **Continuous Mode:** Enable this toggle to have the clock automatically start the next phase (e.g., transitioning from a work session to a break) without any manual input.
+- **Alarm Controls:** When a session ends, you'll have controls to Mute the alarm sound or Snooze the timer if you need a few extra moments.
+- **Visual Display:** The Pomodoro timer is rendered on the main clock face, showing hours, minutes, and seconds, so you always have a clear visual indicator of your remaining time.
