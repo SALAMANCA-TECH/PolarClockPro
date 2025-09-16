@@ -177,7 +177,7 @@ const Tools = (function() {
 
     function timerFinished() {
         if (state.timer.isInterval) {
-            const audio = playSound(settings.timerSound);
+            const audio = playSound(settings.alarmSound);
             if (audio && state.timer.isMuted) {
                 audio.muted = true;
             }
@@ -197,7 +197,7 @@ const Tools = (function() {
             state.timer.isRunning = false;
             state.timer.alarmPlaying = true;
             state.timer.remainingSeconds = 0;
-            const audio = playSound(settings.timerSound);
+            const audio = playSound(settings.alarmSound);
             if (audio) {
                 state.timer.currentAudio = audio;
                 if (state.timer.isMuted) {
@@ -464,7 +464,7 @@ const Tools = (function() {
         }
 
         if (playSoundOnStart && !state.pomodoro.isMuted) {
-            playSound(settings.timerSound);
+            playSound(settings.alarmSound);
         }
         updatePomodoroDashboard();
         state.pomodoro.isRunning = true; // Auto-start the next cycle
@@ -795,7 +795,7 @@ const Tools = (function() {
                         pomodoroActions.style.display = 'flex';
                     }
                     if (!state.pomodoro.lastMinuteSoundPlayed && !state.pomodoro.endOfCycleSoundPlayed) {
-                        const audio = playSound(settings.timerSound);
+                        const audio = playSound(settings.alarmSound);
                         if (audio) {
                             state.pomodoro.currentAudio = audio;
                             if (state.pomodoro.isMuted) {
@@ -818,7 +818,7 @@ const Tools = (function() {
                         state.pomodoro.remainingSeconds = 0;
                         state.pomodoro.alarmPlaying = true;
                         if (!state.pomodoro.isMuted) {
-                            playSound(settings.timerSound || 'bell01.mp3');
+                            playSound(settings.alarmSound || 'bell01.mp3');
                         }
                         updatePomodoroUI();
                     }
