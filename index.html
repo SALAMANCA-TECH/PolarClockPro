@@ -685,6 +685,50 @@
         height: 24px;
         filter: invert(1);
     }
+
+    @media (max-width: 600px) {
+        body {
+            padding-bottom: 70px; /* Space for the nav bar */
+        }
+
+        #bottom-ui-container {
+            position: static;
+        }
+
+        #mobile-nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1a1a1a;
+            padding: 10px 0;
+            z-index: 200;
+            border-top: 1px solid #333;
+        }
+
+        /* The original container is now just a wrapper, remove its styles */
+        #bottom-toolbar {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .main-nav-button {
+            position: relative;
+            top: auto;
+            right: auto;
+            bottom: auto;
+            left: auto;
+        }
+
+        /* Adjust the main clock container to prevent overlap */
+        .canvas-container {
+            width: 85vw;
+            height: 85vw;
+        }
+    }
     </style>
     <!-- EmailJS SDK for feedback form -->
     <script type="text/javascript"
@@ -715,9 +759,11 @@
                     <button id="goToAlarmsBtn" class="tool-select-button" data-mode="alarms">Alarms</button>
                 </div>
                 <div id="bottom-toolbar" class="main-nav-buttons">
-                    <button id="toggleControlsBtn" class="main-nav-button"><img src="assets/icons/timer.svg" class="svg-icon"></button>
-                    <button id="goToSettingsBtn" class="main-nav-button"><img src="assets/icons/settings.svg" class="svg-icon"></button>
-                    <button id="goToAboutBtn" class="main-nav-button"><img src="assets/icons/about.svg" class="svg-icon"></button>
+                    <div id="mobile-nav-bar">
+                        <button id="toggleControlsBtn" class="main-nav-button"><img src="assets/icons/timer.svg" class="svg-icon"></button>
+                        <button id="goToSettingsBtn" class="main-nav-button"><img src="assets/icons/settings.svg" class="svg-icon"></button>
+                        <button id="goToAboutBtn" class="main-nav-button"><img src="assets/icons/about.svg" class="svg-icon"></button>
+                    </div>
                 </div>
             </div>
         </div>
