@@ -1,13 +1,41 @@
 emailjs.init({ publicKey: 'sNYr9pKKXT9VzeDIE' });
 const UI = (function() {
-    const views = {
-        about: document.getElementById('aboutView'),
-    };
+    const mainClockContainer = document.querySelector('.canvas-container');
+
+    function showPage(pageId) {
+        // Hide all full-page containers
+        document.querySelectorAll('.page-container, #aboutView, .canvas-container').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Hide the tool panels container as well, except when showing the clock
+        if (pageId !== 'clock' && controlsContainer) {
+            controlsContainer.style.display = 'none';
+        }
+
+
+        if (pageId === 'clock') {
+            mainClockContainer.style.display = 'flex';
+        } else {
+            const pageToShow = document.getElementById(pageId);
+            if (pageToShow) {
+                // The about view uses flexbox for centering
+                if (pageId === 'aboutView') {
+                    pageToShow.style.display = 'flex';
+                } else {
+                    pageToShow.style.display = 'block';
+                }
+            }
+        }
+    }
+
     const navButtons = {
         toggleControls: document.getElementById('toggleControlsBtn'),
         goToSettings: document.getElementById('goToSettingsBtn'),
         goToAbout: document.getElementById('goToAboutBtn'),
         backFromAbout: document.getElementById('backToMainFromAbout'),
+        backToClock: document.getElementById('backToClockBtn'),
+        backToClockFromCalc: document.getElementById('backToClockBtnFromCalc'),
     };
     const toolPanels = {
         timer: document.getElementById('timerPanel'),
@@ -15,19 +43,14 @@ const UI = (function() {
         stopwatch: document.getElementById('stopwatchPanel'),
         timeCalculator: document.getElementById('timeCalculatorPanel'),
     };
+    const controlsContainer = document.getElementById('controlsContainer');
     const toolSelectMenu = document.getElementById('tool-select-menu');
+    const bottomToolbar = document.getElementById('bottom-toolbar');
     const toolSelectButtons = document.querySelectorAll('.tool-select-button');
 
     const pomodoroInfoModal = document.getElementById('pomodoroInfoModal');
     const pomodoroInfoBtn = document.getElementById('pomodoroInfoBtn');
     const closePomodoroInfoBtn = document.getElementById('closePomodoroInfoBtn');
-
-    function showView(viewToShow) {
-        Object.values(views).forEach(v => v.style.display = 'none');
-        if (viewToShow) {
-            viewToShow.style.display = 'flex';
-        }
-    }
 
     function updateToolPanelVisibility(mode) {
         const controlsContainer = document.getElementById('controlsContainer');
@@ -131,9 +154,9 @@ const UI = (function() {
     }
 
     return {
+        showPage,
         init: function(appState) {
             const optionsBtn = document.getElementById('optionsBtn');
-            const bottomToolbar = document.getElementById('bottom-toolbar');
 
             if (optionsBtn && bottomToolbar) {
                 optionsBtn.addEventListener('click', () => {
@@ -153,12 +176,14 @@ const UI = (function() {
                 button.addEventListener('click', () => {
                     const mode = button.dataset.mode;
                     if (mode === 'alarms') {
-                        window.location.href = 'alarms.html';
-                        return;
+                        showPage('alarms-page');
+                    } else if (mode === 'timeCalculator') {
+                        showPage('time-calc-page');
+                    } else {
+                        document.dispatchEvent(new CustomEvent('modechange', {
+                            detail: { mode: mode }
+                        }));
                     }
-                    document.dispatchEvent(new CustomEvent('modechange', {
-                        detail: { mode: mode }
-                    }));
                     toolSelectMenu.classList.add('panel-hidden'); // Hide menu after selection
                 });
             });
@@ -174,13 +199,27 @@ const UI = (function() {
                 }
             });
             navButtons.goToAbout.addEventListener('click', () => {
-                showView(views.about);
+                showPage('aboutView');
                 initAboutPage();
             });
 
             navButtons.backFromAbout.addEventListener('click', () => {
-                views.about.style.display = 'none';
+                showPage('clock');
             });
+
+            if (navButtons.backToClock) {
+                navButtons.backToClock.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage('clock');
+                });
+            }
+
+            if (navButtons.backToClockFromCalc) {
+                navButtons.backToClockFromCalc.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage('clock');
+                });
+            }
 
             pomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.remove('hidden'));
             closePomodoroInfoBtn.addEventListener('click', () => pomodoroInfoModal.classList.add('hidden'));
