@@ -5,24 +5,27 @@ const UI = (function() {
     function showPage(pageId) {
         // Hide all full-page containers
         document.querySelectorAll('.page-container, #aboutView, .canvas-container').forEach(el => {
-            el.style.display = 'none';
+            el.classList.add('panel-hidden'); // Use class to hide
+            el.style.display = ''; // Clear inline style
         });
 
-        // Hide the tool panels container as well, except when showing the clock
-        if (pageId !== 'clock' && controlsContainer) {
+        // Hide the tool panels container as well
+        if (controlsContainer) {
             controlsContainer.style.display = 'none';
         }
 
-
         if (pageId === 'clock') {
+            mainClockContainer.classList.remove('panel-hidden');
             mainClockContainer.style.display = 'flex';
         } else {
             const pageToShow = document.getElementById(pageId);
             if (pageToShow) {
+                pageToShow.classList.remove('panel-hidden');
                 // The about view uses flexbox for centering
                 if (pageId === 'aboutView') {
                     pageToShow.style.display = 'flex';
                 } else {
+                    // For other pages, block is fine.
                     pageToShow.style.display = 'block';
                 }
             }
